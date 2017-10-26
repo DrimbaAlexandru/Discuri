@@ -1,0 +1,2 @@
+className=org.sqlite.JDBC
+conDetails=jdbc:sqlite:E:\\ProiectLaboratorMPP.db
