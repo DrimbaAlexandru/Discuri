@@ -122,6 +122,10 @@ public class WavFile
 
                 win = new WavCachedWindow( temp_buffer, i, temp_length, wavFile.getNumChannels() );
                 put_samples( win );
+                if( temp_length == sample_number )
+                {
+                    return win;
+                }
 
                 for( j = 0; j < temp_length; j++ )
                 {

@@ -3,6 +3,7 @@ package MVC.GUI;
 import WavFile.BasicWavFile.BasicWavFileException;
 import WavFile.WavCache.WavCachedWindow;
 import WavFile.WavFile;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -59,10 +60,11 @@ public class Main_window
     Position, selection and audio data variables
     --------------------------------*/
     private int zoom_index = 0;
-    private int window_size = 16384;
+    private int window_size = 32768;
     private int first_sample_index = 0;
 
     private int selection_start_index = 0;
+    private int selection_started_index = 0;
     private int selection_end_index = 0;
 
     private double l_window[];
@@ -80,6 +82,9 @@ public class Main_window
     private int window_left_pad = 25;
     private int display_window_height;
     private int display_window_width;
+
+    private boolean run_updater = true;
+    private boolean was_LMB_pressed = false;
 
     private boolean inv_select, inv_samples; /* Flags for updating selection and samples related GUI components
 
@@ -122,13 +127,322 @@ public class Main_window
         if( inv_samples )
         {
             drawSamples();
+            refreshSelection();
         }
 
         if( inv_select )
         {
+            drawSamples();
             refreshSelection();
         }
     } /* refresh_view */
+
+
+    /*----------------------------------------
+    Method name: loadWAV()
+    Description: Handle loading of .wav file and initialize
+                 GUI controls' actions
+    ----------------------------------------*/
+
+    private void loadWAV()
+    {
+        /*--------------------------------
+        Local Variables
+        --------------------------------*/
+        FileChooser fc = new FileChooser();
+
+        /*--------------------------------
+        Create "Open File" dialog
+        --------------------------------*/
+        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "WAV Files", "*.wav" ) );
+        File f = fc.showOpenDialog( localScene.getWindow() );
+        if( f != null )
+        {
+            raw_wav_filepath = f.getAbsolutePath();
+        }
+        else
+        {
+            raw_wav_filepath = ""; /* cancel the initialization if the file open failed */
+            return;
+        }
+
+        try
+        {
+            wavFile = new WavFile( raw_wav_filepath, 44100 ); /* create the Wav file access instance */
+        }
+        catch( Exception e )
+        {
+            e.printStackTrace();
+            return;
+        }
+
+        /*--------------------------------
+        Initialize variables and GUI components
+        --------------------------------*/
+        inv_select = true;
+        inv_samples = true;
+
+        sample_number = ( int )wavFile.getSampleNumber();
+        channel_number = wavFile.getChannelsNumber();
+
+        current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
+        sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
+
+        time_scroll.setMin( 0 );
+        time_scroll.setMax( sample_number );
+        time_scroll.setUnitIncrement( 1 );
+        time_scroll.setOnMouseClicked( e ->
+                                       {
+                                           set_first_sample_index( ( int )time_scroll.getValue() );
+                                       } );
+        time_scroll.setOnDragDone( e ->
+                                   {
+                                       set_first_sample_index( ( int )time_scroll.getValue() );
+                                   } );
+
+        btn_next_frame.setOnMouseClicked( e ->
+                                          {
+                                              set_first_sample_index( first_sample_index + window_size );
+                                          } );
+        btn_next_sample.setOnMouseClicked( e ->
+                                           {
+                                               set_first_sample_index( first_sample_index + ( window_size + display_window_width - 1 ) / display_window_width );
+                                           } );
+        btn_prev_frame.setOnMouseClicked( e ->
+                                          {
+                                              set_first_sample_index( first_sample_index - window_size );
+                                          } );
+        btn_prev_sample.setOnMouseClicked( e ->
+                                           {
+                                               set_first_sample_index( first_sample_index - ( window_size + display_window_width - 1 ) / display_window_width );
+
+                                           } );
+        btn_constrict_select.setOnMouseClicked( e ->
+                                                {
+                                                    window_size /= 2;
+                                                    if( window_size < 4 )
+                                                    {
+                                                        window_size = 4;
+                                                    }
+                                                    inv_samples = true;
+                                                } );
+        btn_expand_select.setOnMouseClicked( e ->
+                                             {
+                                                 window_size *= 2;
+                                                 if( window_size > sample_number )
+                                                 {
+                                                     window_size = sample_number;
+                                                 }
+                                                 inv_samples = true;
+                                             } );
+        btn_zoom_in.setOnMouseClicked( e->
+                                       {
+                                           zoom_index++;
+                                           inv_samples = true;
+                                       });
+        btn_zoom_out.setOnMouseClicked( e->
+                                        {
+                                            zoom_index--;
+                                            inv_samples = true;
+                                        });
+        main_canvas.setOnMousePressed( e->
+                                       {
+                                           if( e.getX() >= window_left_pad ) /* Selection change handling */
+                                           {
+                                               selection_start_index = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
+                                               selection_started_index = selection_start_index;
+                                               selection_end_index = selection_start_index;
+                                               inv_select = true;
+                                           }
+                                       });
+
+        main_canvas.setOnMouseDragged( e ->
+                                     {
+                                         if( !was_LMB_pressed )
+                                         {
+                                             if( e.isPrimaryButtonDown() ) /* LMB has just been pressed */
+                                             {
+                                                 was_LMB_pressed = true;
+                                                 if( ( e.getX() >= window_left_pad ) ) /* Selection change handling */
+                                                 {
+                                                     inv_select = true;
+                                                     selection_start_index = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
+                                                     selection_started_index = selection_start_index;
+                                                     selection_end_index = selection_start_index;
+                                                 }
+                                                 else /* Vertical zoom handling */
+                                                 {
+                                                     ;
+                                                 }
+                                             }
+                                         }
+                                         else
+                                         {
+                                             if( e.isPrimaryButtonDown() ) /* LMB is still pressed */
+                                             {
+                                                 if( ( e.getX() >= window_left_pad ) ) /* Selection change handling */
+                                                 {
+                                                     inv_select = true;
+                                                     int temp = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
+
+                                                     if(temp<selection_started_index)
+                                                     {
+                                                         selection_start_index = temp;
+                                                         selection_end_index = selection_started_index;
+                                                     }
+                                                     else
+                                                     {
+                                                         selection_start_index = selection_started_index;
+                                                         selection_end_index = temp;
+                                                     }
+                                                 }
+                                                 else /* Vertical zoom handling */
+                                                 {
+                                                     ;
+                                                 }
+                                             }
+                                             else /* LMB has been released */
+                                             {
+                                                 was_LMB_pressed = false;
+                                             }
+                                         }
+
+
+                                     } );
+    } /* loadWAV */
+
+
+    /*----------------------------------------
+    Method name: drawSamples
+    Description: Refresh the audio-samples related
+                 GUI components
+    ----------------------------------------*/
+
+    private void drawSamples()
+    {
+        /*--------------------------------
+        Local variables
+        --------------------------------*/
+        int i;
+        int display_window_size;
+        WavCachedWindow win;
+        final GraphicsContext gc = main_canvas.getGraphicsContext2D();
+
+        /* Handle no WAV file loaded case */
+        if( wavFile == null )
+        {
+            return;
+        }
+
+        /*--------------------------------
+        Initialize variables
+        --------------------------------*/
+        if( window_size < display_window_width )
+        {
+            display_window_size = window_size;
+        }
+        else
+        {
+            display_window_size = 2 * display_window_width;
+        }
+        l_window = new double[ display_window_size ];
+        r_window = new double[ display_window_size ];
+
+        /*--------------------------------
+        Redraw the canvas
+        --------------------------------*/
+        gc.setFill( Color.WHITE );
+        gc.fillRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
+
+        gc.setFill( Color.MEDIUMBLUE );
+        gc.fillRect( window_left_pad + ( double )( selection_start_index - first_sample_index ) / window_size * display_window_width, 0, ( double )( selection_end_index - selection_start_index ) / window_size * display_window_width + 1, main_canvas.getHeight() );
+
+        gc.setStroke( Color.BLACK );
+        gc.strokeLine( window_left_pad, 0, window_left_pad, main_canvas.getHeight() );
+        gc.strokeLine( window_left_pad, main_canvas.getHeight() / 2, main_canvas.getWidth(), main_canvas.getHeight() / 2 );
+        gc.strokeRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
+
+        //System.out.println( "Window size: " + window_size );
+        //System.out.println( "Window from sample " + first_sample_index + " to sample " + last_sample_index );
+
+        try
+        {
+            win = wavFile.get_compact_samples( first_sample_index, window_size, display_window_size, false );
+            for( i = 0; i < display_window_size; i++ )
+            {
+                l_window[ i ] = win.getSample( i, 0 );
+                r_window[ i ] = win.getSample( i, ( channel_number < 2 ) ? 0 : 1 );
+            }
+        }
+        catch( IOException | BasicWavFileException e )
+        {
+            e.printStackTrace();
+            return;
+        }
+
+        for( i = 0; i < display_window_size - 1; i++ )
+        {
+            /* Draw L channel */
+            gc.setStroke( Color.GREEN );
+            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
+                           ( 1 + Math.min( Math.max( -l_window[ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
+                           ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
+                           ( 1 + Math.min( Math.max( -l_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
+
+            /* Draw R channel */
+            gc.setStroke( Color.BLUE );
+            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
+                           ( 1 + Math.min( Math.max( -r_window[ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
+                           ( i + 1 ) * display_window_width / ( display_window_size )+ window_left_pad,
+                           ( 1 + Math.min( Math.max( -r_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
+
+            /* Draw L-R channel */
+            gc.setStroke( Color.PINK );
+            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
+                           ( 1 + Math.min( Math.max( -( l_window[ i ] - r_window[ i ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2,
+                           ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
+                           ( 1 + Math.min( Math.max( -( l_window[ i + 1] - r_window[ i + 1 ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2 );
+        }
+        main_canvas.getGraphicsContext2D().setFill( Color.BLACK );
+        inv_samples = false;
+    } /* drawSamples */
+
+
+    /*----------------------------------------
+    Method name: refreshSelection
+    Description: Update selection related UI controls
+    ----------------------------------------*/
+
+    private void refreshSelection()
+    {
+        if( wavFile == null )
+        {
+            return;
+        }
+        final int sel_len = selection_end_index - selection_start_index;
+        final int seconds = selection_start_index / wavFile.getSampleRate();
+        final int milliseconds = ( selection_start_index % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate();
+        time_scroll.setValue( selection_start_index );
+        position_indicator.setText( "samples / " + ( sample_number ) +
+                                            " ( " + String.format( "%02d", seconds / 360 ) +
+                                            ":" + String.format( "%02d", seconds / 60 % 60 ) +
+                                            ":" + String.format( "%02d", seconds % 60 ) +
+                                            "." + String.format( "%03d", milliseconds ) +
+                                            " / " + String.format( "%02d", ( sample_number / wavFile.getSampleRate() ) / 3600 ) +
+                                            ":" + String.format( "%02d", sample_number / wavFile.getSampleRate() / 60 % 60 ) +
+                                            ":" + String.format( "%02d", sample_number / wavFile.getSampleRate() % 60 ) +
+                                            "." + String.format( "%02d", ( sample_number % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate() ) + " )" );
+        current_sample_spinner.getValueFactory().setValue( selection_start_index );
+        sel_len_indicator.setText( "samples ( "+
+                                           String.format( "%02d", sel_len / wavFile.getSampleRate() / 3600 ) +
+                                           ":" + String.format( "%02d", sel_len / wavFile.getSampleRate() / 60 % 60 ) +
+                                           ":" + String.format( "%02d", sel_len / wavFile.getSampleRate() % 60 ) +
+                                           "." + String.format( "%02d", ( sel_len % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate() ) + " )" );
+        sel_len_spinner.getValueFactory().setValue( sel_len );
+        time_scroll.setBlockIncrement( window_size );
+        time_scroll.setValue( first_sample_index );
+        inv_select = false;
+    }
 
 
     /*----------------------------------------
@@ -147,6 +461,7 @@ public class Main_window
             mainLayout = l.load();
             display_window_height = ( int )main_canvas.getHeight();
             display_window_width = ( int )main_canvas.getWidth() - window_left_pad;
+            startRefresher();
             btn_open_wav.setOnMouseClicked( e ->
                                             {
                                                 loadWAV();
@@ -184,251 +499,51 @@ public class Main_window
         refresh_view();
         localStage.setOnCloseRequest( ( e ) ->
                                       {
+                                          run_updater = false;
+                                          try
+                                          {
+                                              Thread.sleep( 50 );
+                                          }
+                                          catch( InterruptedException e1 )
+                                          {
+                                              e1.printStackTrace();
+                                          }
                                           //TBD: Show save/don't save dialog
                                       } );
     } /* run() */
 
 
-    /*----------------------------------------
-    Method name: loadWAV()
-    Description: Handle loading of .wav file
-    ----------------------------------------*/
-
-    private void loadWAV()
+    private void startRefresher()
     {
-        FileChooser fc = new FileChooser();
-
-        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "WAV Files", "*.wav" ) );
-        File f = fc.showOpenDialog( localScene.getWindow() );
-        if( f != null )
-        {
-            raw_wav_filepath = f.getAbsolutePath();
-        }
-        else
-        {
-            raw_wav_filepath = "";
-            return;
-        }
-
-        try
-        {
-            wavFile = new WavFile( raw_wav_filepath, 44100 );
-        }
-        catch( Exception e )
-        {
-            e.printStackTrace();
-            return;
-        }
-
-        inv_select = true;
-        inv_samples = true;
-
-        sample_number = ( int )wavFile.getSampleNumber();
-        channel_number = wavFile.getChannelsNumber();
-
-        time_scroll.setMin( 0 );
-        time_scroll.setMax( sample_number );
-        time_scroll.setBlockIncrement( window_size );
-        time_scroll.setUnitIncrement( 1 );
-        time_scroll.setOnMouseClicked( e->{
-            set_first_sample_index( ( int )time_scroll.getValue() );
-            refresh_view();} );
-
-        current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
-        sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
-
-        btn_next_frame.setOnMouseClicked( e ->
-                                          {
-                                              set_first_sample_index( first_sample_index + window_size );
-                                          } );
-        btn_next_sample.setOnMouseClicked( e ->
-                                           {
-                                               set_first_sample_index( first_sample_index + ( window_size + display_window_width - 1 ) / display_window_width );
-                                           } );
-        btn_prev_frame.setOnMouseClicked( e ->
-                                          {
-                                              set_first_sample_index( first_sample_index - window_size );
-                                          } );
-        btn_prev_sample.setOnMouseClicked( e ->
-                                           {
-                                               set_first_sample_index( first_sample_index - ( window_size + display_window_width - 1 ) / display_window_width );
-
-                                           } );
-        btn_constrict_select.setOnMouseClicked( e ->
-                                                {
-                                                    window_size /= 2;
-                                                    if( window_size < 4 )
-                                                    {
-                                                        window_size = 4;
-                                                    }
-                                                    inv_samples = true;
-                                                    refresh_view();
-                                                } );
-        btn_expand_select.setOnMouseClicked( e ->
-                                             {
-                                                 window_size *= 2;
-                                                 if( window_size > sample_number )
-                                                 {
-                                                     window_size = sample_number;
-                                                 }
-                                                 inv_samples = true;
-                                                 refresh_view();
-                                             } );
-        btn_zoom_in.setOnMouseClicked( e->
-                                       {
-                                           zoom_index++;
-                                           inv_samples = true;
-                                           refresh_view();
-                                       });
-        btn_zoom_out.setOnMouseClicked( e->
+        Thread th = new Thread( () ->
+                                {
+                                    while( run_updater )
+                                    {
+                                        Platform.runLater( () ->
+                                                           {
+                                                               refresh_view();
+                                                           } );
+                                        try
                                         {
-                                            zoom_index--;
-                                            inv_samples = true;
-                                            refresh_view();
-                                        });
-        main_canvas.setOnMousePressed( e->
-                                       {
-                                           if( e.getX() >= window_left_pad ) // Selection change handling
-                                           {
-                                               selection_start_index = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
-                                               inv_select = true;
-                                           }
-                                           else //Vertical zoom handling
-                                           {
-
-                                           }
-
-                                           System.out.println( "Pressed" );
-                                       });
-        main_canvas.setOnMouseMoved( e ->
+                                            Thread.sleep( 25 );
+                                        }
+                                        catch( InterruptedException e )
                                         {
-                                            inv_select = true;
-
-                                            int temp = selection_start_index;
-                                            selection_end_index = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
-                                            selection_start_index = Math.min( temp, selection_end_index );
-                                            selection_end_index = Math.max( temp, selection_end_index );
-
-                                            System.out.println( "Released" );
-                                            System.out.println( selection_start_index );
-                                            System.out.println( selection_end_index );
-                                            refresh_view();
-                                        } );
-
-        refresh_view();
-    }
-
-    private void drawSamples()
-    {
-        int i;  /* loop index */
-        int last_sample_index;
-        int display_window_size;
-        WavCachedWindow win;
-        final GraphicsContext gc = main_canvas.getGraphicsContext2D();
-
-        if( window_size < display_window_width )
-        {
-            display_window_size = window_size;
-        }
-        else
-        {
-            display_window_size = 2 * display_window_width;
-        }
-        l_window = new double[ display_window_size ];
-        r_window = new double[ display_window_size ];
-
-        gc.setFill( Color.WHITE );
-        gc.fillRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
-        gc.setStroke( Color.BLACK );
-        gc.strokeLine( window_left_pad, 0, window_left_pad, main_canvas.getHeight() );
-        gc.strokeLine( window_left_pad, main_canvas.getHeight() / 2, main_canvas.getWidth(), main_canvas.getHeight() / 2 );
-        gc.strokeRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
-
-        if( wavFile == null )
-        {
-            return;
-        }
-
-        last_sample_index = first_sample_index + window_size - 1;
-
-        System.out.println( "Window size: " + window_size );
-        System.out.println( "Window from sample " + first_sample_index + " to sample " + last_sample_index );
-
-        try
-        {
-            win = wavFile.get_compact_samples( first_sample_index, window_size, display_window_size, false );
-            for( i = 0; i < display_window_size; i++ )
-            {
-                l_window[ i ] = win.getSample( i, 0 );
-                r_window[ i ] = win.getSample( i, ( channel_number < 2 ) ? 0 : 1 );
-            }
-        }
-        catch( IOException | BasicWavFileException e )
-        {
-            e.printStackTrace();
-            return;
-        }
-
-        for( i = 0; i < display_window_size - 1; i++ )
-        {
-            gc.setStroke( Color.GREEN );
-            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -l_window[ i ] * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2,
-                           ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -l_window[ i + 1 ] * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2 );
-
-            gc.setStroke( Color.BLUE );
-            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -r_window[ i ] * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2,
-                           ( i + 1 ) * display_window_width / ( display_window_size )+ window_left_pad,
-                           ( 1 + Math.min( Math.max( -r_window[ i + 1 ] * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2 );
-
-            gc.setStroke( Color.PINK );
-            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -( l_window[ i ] - r_window[ i ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2,
-                           ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -( l_window[ i + 1] - r_window[ i + 1 ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2 );
-        }
-        main_canvas.getGraphicsContext2D().setFill( Color.BLACK );
-        inv_samples = false;
-    }
-
-
-    private void refreshSelection()
-    {
-        if( wavFile == null )
-        {
-            return;
-        }
-        final int sel_len = selection_end_index - selection_start_index;
-        final int seconds = selection_start_index / wavFile.getSampleRate();
-        final int milliseconds = ( selection_start_index % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate();
-        time_scroll.setValue( selection_start_index );
-        position_indicator.setText( "samples / " + ( sample_number ) +
-                                            " ( " + String.format( "%02d", seconds / 360 ) +
-                                            ":" + String.format( "%02d", seconds / 60 % 60 ) +
-                                            ":" + String.format( "%02d", seconds % 60 ) +
-                                            "." + String.format( "%03d", milliseconds ) +
-                                            " / " + String.format( "%02d", ( sample_number / wavFile.getSampleRate() ) / 3600 ) +
-                                            ":" + String.format( "%02d", sample_number / wavFile.getSampleRate() / 60 % 60 ) +
-                                            ":" + String.format( "%02d", sample_number / wavFile.getSampleRate() % 60 ) +
-                                            "." + String.format( "%02d", ( sample_number % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate() ) + " )" );
-        current_sample_spinner.getValueFactory().setValue( selection_start_index );
-        sel_len_indicator.setText( "samples ( "+
-                                           String.format( "%02d", sel_len / wavFile.getSampleRate() / 3600 ) +
-                                           ":" + String.format( "%02d", sel_len / wavFile.getSampleRate() / 60 % 60 ) +
-                                           ":" + String.format( "%02d", sel_len / wavFile.getSampleRate() % 60 ) +
-                                           "." + String.format( "%02d", ( sel_len % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate() ) + " )" );
-        sel_len_spinner.getValueFactory().setValue( sel_len );
-        inv_select = false;
+                                            break;
+                                        }
+                                    }
+                                } );
+        th.setDaemon(true);
+        th.start();
     }
 
 }
 
 /* TODO:
 * - Make get_compact_samples() use more values when computing min/max values; optimize to minimize reads.
-* - Use correct number of samples for windows smaller than the display width
-* - Fix bugs....
 * - Implement get_compact_samples() branch for when sample_number is larger than the cache size.
 * - Add controls for: zoom factor, window size;
+* - Optimize getters by passing the whole cache window futher down if it contains all the samples needed
+* - Optimize cache by condensating togheter consecutive small windows
+* - Optimize getters by locking from getting flushed the cache windows that we need
  */

@@ -356,7 +356,7 @@ public class BasicWavFile
 
 		for (int b=0 ; b<bytesPerSample ; b++)
 		{
-			if (bufferPointer == bytesRead) 
+			if (bufferPointer == bytesRead)
 			{
 				int read = IOStream.read(buffer, 0, BUFFER_SIZE);
 				if (read == -1) throw new BasicWavFileException("Not enough data available");
@@ -701,6 +701,9 @@ public class BasicWavFile
         if( ioState == IOState.RW )
         {
             IOStream.seek( header_size + bytesPerSample * ( samples_to_skip * numChannels + channel ) );
+			frameCounter = samples_to_skip;
+            bufferPointer = 0;
+            bytesRead = 0;
         }
     }
 }
