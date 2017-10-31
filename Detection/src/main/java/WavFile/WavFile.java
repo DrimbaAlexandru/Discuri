@@ -235,7 +235,7 @@ public class WavFile
 
     public void flush() throws IOException, BasicWavFileException
     {
-        for( WavCachedWindow win : cache.getCaches().values() )
+        for( WavCachedWindow win : cache.getCaches() )
         {
             if( win.isModified() )
             {

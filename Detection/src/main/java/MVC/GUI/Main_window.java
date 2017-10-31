@@ -84,7 +84,9 @@ public class Main_window
     private int display_window_width;
 
     private boolean run_updater = true;
-    private boolean was_LMB_pressed = false;
+    private boolean main_canvas_LMB_down_on_samples;
+    private boolean main_canvas_LMB_down_on_zoom;
+    private int periodic_window_increment = 0;
 
     private boolean inv_select, inv_samples; /* Flags for updating selection and samples related GUI components
 
@@ -124,13 +126,7 @@ public class Main_window
 
     private void refresh_view()
     {
-        if( inv_samples )
-        {
-            drawSamples();
-            refreshSelection();
-        }
-
-        if( inv_select )
+        if( inv_select || inv_samples)
         {
             drawSamples();
             refreshSelection();
@@ -247,68 +243,62 @@ public class Main_window
                                         });
         main_canvas.setOnMousePressed( e->
                                        {
-                                           if( e.getX() >= window_left_pad ) /* Selection change handling */
+                                           System.out.println( "Pressed" );
+                                           main_canvas_LMB_down_on_samples = false;
+                                           main_canvas_LMB_down_on_zoom = false;
+                                           if( e.getX() >= window_left_pad && e.getX() <=main_canvas.getWidth() ) /* Selection change handling */
                                            {
                                                selection_start_index = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
                                                selection_started_index = selection_start_index;
                                                selection_end_index = selection_start_index;
                                                inv_select = true;
+                                               main_canvas_LMB_down_on_samples = true;
                                            }
+                                           if( e.getX() < window_left_pad && e.getX() >= 0 ) /* Zoom change handling */
+                                           {
+                                               main_canvas_LMB_down_on_zoom = true;
+                                           }
+
                                        });
+        main_canvas.setOnMouseReleased( e ->
+                                        {
+                                            System.out.println( "Released" );
+                                            periodic_window_increment = 0;
+                                        } );
 
         main_canvas.setOnMouseDragged( e ->
-                                     {
-                                         if( !was_LMB_pressed )
-                                         {
-                                             if( e.isPrimaryButtonDown() ) /* LMB has just been pressed */
-                                             {
-                                                 was_LMB_pressed = true;
-                                                 if( ( e.getX() >= window_left_pad ) ) /* Selection change handling */
-                                                 {
-                                                     inv_select = true;
-                                                     selection_start_index = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
-                                                     selection_started_index = selection_start_index;
-                                                     selection_end_index = selection_start_index;
-                                                 }
-                                                 else /* Vertical zoom handling */
-                                                 {
-                                                     ;
-                                                 }
-                                             }
-                                         }
-                                         else
-                                         {
-                                             if( e.isPrimaryButtonDown() ) /* LMB is still pressed */
-                                             {
-                                                 if( ( e.getX() >= window_left_pad ) ) /* Selection change handling */
-                                                 {
-                                                     inv_select = true;
-                                                     int temp = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
+                                       {
+                                           if( main_canvas_LMB_down_on_samples ) /* Selection change handling */
+                                           {
+                                               periodic_window_increment = 0;
+                                               inv_select = true;
+                                               int temp = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
 
-                                                     if(temp<selection_started_index)
-                                                     {
-                                                         selection_start_index = temp;
-                                                         selection_end_index = selection_started_index;
-                                                     }
-                                                     else
-                                                     {
-                                                         selection_start_index = selection_started_index;
-                                                         selection_end_index = temp;
-                                                     }
-                                                 }
-                                                 else /* Vertical zoom handling */
-                                                 {
-                                                     ;
-                                                 }
-                                             }
-                                             else /* LMB has been released */
-                                             {
-                                                 was_LMB_pressed = false;
-                                             }
-                                         }
+                                               if( temp < selection_started_index )
+                                               {
+                                                   selection_start_index = temp;
+                                                   selection_end_index = selection_started_index;
+                                               }
+                                               else
+                                               {
+                                                   selection_start_index = selection_started_index;
+                                                   selection_end_index = temp;
+                                               }
+                                               if( e.getX() < window_left_pad || e.getX() > main_canvas.getWidth() )
+                                               {
+                                                   periodic_window_increment = ( int )( window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
+                                               }
+                                               if( e.getX() > main_canvas.getWidth() )
+                                               {
+                                                   periodic_window_increment = ( int )( window_size * ( ( e.getX() - main_canvas.getWidth() ) / ( display_window_width ) ) );
+                                               }
+                                           }
+                                           else /* Vertical zoom handling */
+                                           {
+                                               ;
+                                           }
 
-
-                                     } );
+                                       } );
     } /* loadWAV */
 
 
@@ -374,7 +364,7 @@ public class Main_window
                 r_window[ i ] = win.getSample( i, ( channel_number < 2 ) ? 0 : 1 );
             }
         }
-        catch( IOException | BasicWavFileException e )
+        catch( Exception e )
         {
             e.printStackTrace();
             return;
@@ -502,7 +492,7 @@ public class Main_window
                                           run_updater = false;
                                           try
                                           {
-                                              Thread.sleep( 50 );
+                                              Thread.sleep( 100 );
                                           }
                                           catch( InterruptedException e1 )
                                           {
@@ -521,11 +511,27 @@ public class Main_window
                                     {
                                         Platform.runLater( () ->
                                                            {
+                                                               if( periodic_window_increment != 0 )
+                                                               {
+                                                                   if( periodic_window_increment > 0 )
+                                                                   {
+                                                                       periodic_window_increment = Math.min( periodic_window_increment, window_size / 2 );
+                                                                       set_first_sample_index( first_sample_index + periodic_window_increment );
+                                                                       selection_end_index = first_sample_index + window_size;
+                                                                   }
+                                                                   else
+                                                                   {
+                                                                       periodic_window_increment = Math.max( periodic_window_increment, -window_size / 2 );
+                                                                       set_first_sample_index( first_sample_index + periodic_window_increment );
+                                                                       selection_start_index = first_sample_index;
+                                                                   }
+
+                                                               }
                                                                refresh_view();
                                                            } );
                                         try
                                         {
-                                            Thread.sleep( 25 );
+                                            Thread.sleep( 50 );
                                         }
                                         catch( InterruptedException e )
                                         {
@@ -543,7 +549,6 @@ public class Main_window
 * - Make get_compact_samples() use more values when computing min/max values; optimize to minimize reads.
 * - Implement get_compact_samples() branch for when sample_number is larger than the cache size.
 * - Add controls for: zoom factor, window size;
-* - Optimize getters by passing the whole cache window futher down if it contains all the samples needed
 * - Optimize cache by condensating togheter consecutive small windows
 * - Optimize getters by locking from getting flushed the cache windows that we need
  */

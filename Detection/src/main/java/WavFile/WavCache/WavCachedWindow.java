@@ -85,6 +85,11 @@ public class WavCachedWindow {
         return modified;
     }
 
+    public void setModified()
+    {
+        this.modified = true;
+    }
+
     public void markAsFlushed()
     {
         modified = false;
