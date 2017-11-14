@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 
 public class CMain extends Application {
 
-    public void start(Stage stage)
+    public void start( Stage stage )
     {
         Main_window mw = new Main_window();
         mw.run();

@@ -1,5 +1,6 @@
 package MVC.GUI;
 
+import SignalProcessing.LiniarPrediction.BurgeMethodExtrapolation;
 import WavFile.BasicWavFile.BasicWavFileException;
 import WavFile.WavCache.WavCachedWindow;
 import WavFile.WavFile;
@@ -11,6 +12,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -63,12 +65,14 @@ public class Main_window
     private int window_size = 32768;
     private int first_sample_index = 0;
 
+    private boolean update_samples_window = true;
+
     private int selection_start_index = 0;
     private int selection_started_index = 0;
     private int selection_end_index = 0;
 
-    private double l_window[];
-    private double r_window[];
+    private double l_window[] = new double[ 0 ];
+    private double r_window[] = new double[ 0 ];
 
     private String raw_wav_filepath = "";
 
@@ -105,6 +109,11 @@ public class Main_window
         int value       /* new value for the first sample index */
     )
     {
+        if( first_sample_index != value )
+        {
+            update_samples_window = true;
+        }
+
         first_sample_index = value;
         if( first_sample_index >= sample_number - window_size )
         {
@@ -177,6 +186,7 @@ public class Main_window
         --------------------------------*/
         inv_select = true;
         inv_samples = true;
+        update_samples_window = true;
 
         sample_number = ( int )wavFile.getSampleNumber();
         channel_number = wavFile.getChannelsNumber();
@@ -215,6 +225,7 @@ public class Main_window
                                            } );
         btn_constrict_select.setOnMouseClicked( e ->
                                                 {
+                                                    update_samples_window = true;
                                                     window_size /= 2;
                                                     if( window_size < 4 )
                                                     {
@@ -224,6 +235,7 @@ public class Main_window
                                                 } );
         btn_expand_select.setOnMouseClicked( e ->
                                              {
+                                                 update_samples_window = true;
                                                  window_size *= 2;
                                                  if( window_size > sample_number )
                                                  {
@@ -299,6 +311,16 @@ public class Main_window
                                            }
 
                                        } );
+        localScene.setOnKeyReleased( e ->
+                                     {
+                                         System.out.println( "Meh" );
+                                         if( e.getCode()== KeyCode.I /*&& e.isControlDown()*/ )
+                                         {
+                                             System.out.println( "Aha" );
+                                             interpolate_selection();
+                                         }
+                                     } );
+
     } /* loadWAV */
 
 
@@ -335,16 +357,19 @@ public class Main_window
         {
             display_window_size = 2 * display_window_width;
         }
-        l_window = new double[ display_window_size ];
-        r_window = new double[ display_window_size ];
 
+        if( display_window_size > l_window.length )
+        {
+            l_window = new double[ display_window_size ];
+            r_window = new double[ display_window_size ];
+        }
         /*--------------------------------
         Redraw the canvas
         --------------------------------*/
         gc.setFill( Color.WHITE );
         gc.fillRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
 
-        gc.setFill( Color.MEDIUMBLUE );
+        gc.setFill( new Color( 0, 0.5, 1, 0.1 ) );
         gc.fillRect( window_left_pad + ( double )( selection_start_index - first_sample_index ) / window_size * display_window_width, 0, ( double )( selection_end_index - selection_start_index ) / window_size * display_window_width + 1, main_canvas.getHeight() );
 
         gc.setStroke( Color.BLACK );
@@ -357,11 +382,15 @@ public class Main_window
 
         try
         {
-            win = wavFile.get_compact_samples( first_sample_index, window_size, display_window_size, false );
-            for( i = 0; i < display_window_size; i++ )
+            if( update_samples_window )
             {
-                l_window[ i ] = win.getSample( i, 0 );
-                r_window[ i ] = win.getSample( i, ( channel_number < 2 ) ? 0 : 1 );
+                win = wavFile.get_compact_samples( first_sample_index, window_size, display_window_size, false );
+                update_samples_window = false;
+                for( i = 0; i < display_window_size; i++ )
+                {
+                    l_window[ i ] = win.getSample( i, 0 );
+                    r_window[ i ] = win.getSample( i, ( channel_number < 2 ) ? 0 : 1 );
+                }
             }
         }
         catch( Exception e )
@@ -543,6 +572,58 @@ public class Main_window
         th.start();
     }
 
+    private void interpolate_selection()
+    {
+        int ch, i, len = selection_end_index - selection_start_index;
+        double[] left = new double[ len ];
+        double[] center = new double[ len ];
+        double[] right = new double[ len ];
+        WavCachedWindow win;
+        for( ch = 0; ch < wavFile.getChannelsNumber(); ch++ )
+        {
+            try
+            {
+                win = wavFile.get_samples( selection_start_index - len, len );
+                for( i = 0; i < len; i++ )
+                {
+                    left[ i ] = win.getSample( selection_start_index - len + i, ch );
+                }
+                win = wavFile.get_samples( selection_start_index + len, len );
+                for( i = 0; i < len; i++ )
+                {
+                    right[ i ] = win.getSample( selection_start_index + len + i, ch );
+                }
+
+                BurgeMethodExtrapolation bme = new BurgeMethodExtrapolation( left, len, len );
+                bme.predict_forward( len, center );
+
+                if( ch == 0 )
+                {
+                    for( i = 0; i < len; i++ )
+                    {
+                        l_window[ selection_start_index - first_sample_index + i - len ] = left[ i ];
+                        l_window[ selection_start_index - first_sample_index + i ] = center[ i ];
+                        l_window[ selection_start_index - first_sample_index + i + len ] = right[ i ];
+                    }
+                }
+                else
+                {
+                    for( i = 0; i < len; i++ )
+                    {
+                        r_window[ selection_start_index - first_sample_index + i - len ] = left[ i ];
+                        r_window[ selection_start_index - first_sample_index + i ] = center[ i ];
+                        r_window[ selection_start_index - first_sample_index + i + len ] = right[ i ];
+                    }
+                }
+                inv_samples = true;
+            }
+            catch( IOException | BasicWavFileException e )
+            {
+                e.printStackTrace();
+            }
+        }
+
+    }
 }
 
 /* TODO:
