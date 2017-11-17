@@ -1,6 +1,8 @@
 package MVC.GUI;
 
-import SignalProcessing.LiniarPrediction.BurgeMethodExtrapolation;
+import SignalProcessing.LiniarPrediction.BurgLP;
+import SignalProcessing.LiniarPrediction.LinearPrediction;
+import SignalProcessing.LiniarPrediction.NotEnoughSamplesException;
 import WavFile.BasicWavFile.BasicWavFileException;
 import WavFile.WavCache.WavCachedWindow;
 import WavFile.WavFile;
@@ -21,8 +23,6 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Observable;
-import java.util.Observer;
 
 /**
  * Created by Alex on 27.03.2017.
@@ -231,6 +231,7 @@ public class Main_window
                                                     {
                                                         window_size = 4;
                                                     }
+                                                    set_first_sample_index( ( selection_start_index + selection_end_index ) / 2 - window_size / 2 );
                                                     inv_samples = true;
                                                 } );
         btn_expand_select.setOnMouseClicked( e ->
@@ -241,6 +242,7 @@ public class Main_window
                                                  {
                                                      window_size = sample_number;
                                                  }
+                                                 set_first_sample_index( first_sample_index - window_size / 4 );
                                                  inv_samples = true;
                                              } );
         btn_zoom_in.setOnMouseClicked( e->
@@ -313,10 +315,8 @@ public class Main_window
                                        } );
         localScene.setOnKeyReleased( e ->
                                      {
-                                         System.out.println( "Meh" );
-                                         if( e.getCode()== KeyCode.I /*&& e.isControlDown()*/ )
+                                         if( e.getCode()== KeyCode.I && e.isControlDown() )
                                          {
-                                             System.out.println( "Aha" );
                                              interpolate_selection();
                                          }
                                      } );
@@ -568,53 +568,58 @@ public class Main_window
                                         }
                                     }
                                 } );
-        th.setDaemon(true);
+        //th.setDaemon( true );
         th.start();
     }
 
     private void interpolate_selection()
     {
         int ch, i, len = selection_end_index - selection_start_index;
-        double[] left = new double[ len ];
+        int side_len = Math.min( Math.max( 1024, len ), Math.min( selection_start_index, sample_number - selection_end_index ) );
+        double[] left = new double[ side_len ];
         double[] center = new double[ len ];
-        double[] right = new double[ len ];
+        double[] right = new double[ side_len  ];
         WavCachedWindow win;
         for( ch = 0; ch < wavFile.getChannelsNumber(); ch++ )
         {
             try
             {
-                win = wavFile.get_samples( selection_start_index - len, len );
-                for( i = 0; i < len; i++ )
+                win = wavFile.get_samples( selection_start_index - side_len, side_len );
+                for( i = 0; i < side_len ; i++ )
                 {
-                    left[ i ] = win.getSample( selection_start_index - len + i, ch );
+                    left[ i ] = win.getSample( selection_start_index - side_len + i, ch );
                 }
-                win = wavFile.get_samples( selection_start_index + len, len );
-                for( i = 0; i < len; i++ )
+                win = wavFile.get_samples( selection_start_index + len, side_len );
+                for( i = 0; i < side_len; i++ )
                 {
                     right[ i ] = win.getSample( selection_start_index + len + i, ch );
                 }
 
-                BurgeMethodExtrapolation bme = new BurgeMethodExtrapolation( left, len, len );
-                bme.predict_forward( len, center );
+                LinearPrediction LP = new BurgLP();
 
-                if( ch == 0 )
+                try
                 {
-                    for( i = 0; i < len; i++ )
+                    LP.extrapolate( left, center, right, side_len, len, side_len );
+                    if( ch == 0 )
                     {
-                        l_window[ selection_start_index - first_sample_index + i - len ] = left[ i ];
-                        l_window[ selection_start_index - first_sample_index + i ] = center[ i ];
-                        l_window[ selection_start_index - first_sample_index + i + len ] = right[ i ];
+                        for( i = 0; i < len; i++ )
+                        {
+                            l_window[ selection_start_index - first_sample_index + i ] = center[ i ];
+                        }
+                    }
+                    else
+                    {
+                        for( i = 0; i < len; i++ )
+                        {
+                            r_window[ selection_start_index - first_sample_index + i ] = center[ i ];
+                        }
                     }
                 }
-                else
+                catch( NotEnoughSamplesException e )
                 {
-                    for( i = 0; i < len; i++ )
-                    {
-                        r_window[ selection_start_index - first_sample_index + i - len ] = left[ i ];
-                        r_window[ selection_start_index - first_sample_index + i ] = center[ i ];
-                        r_window[ selection_start_index - first_sample_index + i + len ] = right[ i ];
-                    }
+                    e.printStackTrace();
                 }
+
                 inv_samples = true;
             }
             catch( IOException | BasicWavFileException e )
