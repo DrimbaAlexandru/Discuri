@@ -5,14 +5,18 @@ package MarkerFile;
  */
  class Marking
 {
-    public int first_sample_index;
-    public int length;
-    public int channel;
+    public int first_marked_sample;
+    public int last_marked_sample;
 
-    public Marking( int fsi, int len, int ch )
+    public Marking( int fs, int ls )
     {
-        first_sample_index = fsi;
-        length = len;
-        channel = ch;
+        first_marked_sample = fs;
+        last_marked_sample = ls;
+    }
+
+    @Override
+    public String toString()
+    {
+        return first_marked_sample + "->" + last_marked_sample;
     }
 }

@@ -1,5 +1,6 @@
 package MVC.GUI;
 
+import MarkerFile.MarkerFile;
 import SignalProcessing.LiniarPrediction.BurgLP;
 import SignalProcessing.LiniarPrediction.LinearPrediction;
 import SignalProcessing.LiniarPrediction.NotEnoughSamplesException;
@@ -23,6 +24,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 
 /**
  * Created by Alex on 27.03.2017.
@@ -77,6 +79,7 @@ public class Main_window
     private String raw_wav_filepath = "";
 
     private WavFile wavFile = null;
+    private MarkerFile markerFile;
     private int sample_number;
     private int channel_number;
 
@@ -319,6 +322,10 @@ public class Main_window
                                          {
                                              interpolate_selection();
                                          }
+                                         if( e.getCode()== KeyCode.M && e.isControlDown() )
+                                         {
+                                             mark_selection();
+                                         }
                                      } );
 
     } /* loadWAV */
@@ -402,14 +409,28 @@ public class Main_window
         for( i = 0; i < display_window_size - 1; i++ )
         {
             /* Draw L channel */
-            gc.setStroke( Color.GREEN );
+            if( markerFile.isMarked( first_sample_index + i, 0 ) )
+            {
+                gc.setStroke( Color.RED );
+            }
+            else
+            {
+                gc.setStroke( Color.GREEN );
+            }
             gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
                            ( 1 + Math.min( Math.max( -l_window[ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
                            ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
                            ( 1 + Math.min( Math.max( -l_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
 
             /* Draw R channel */
-            gc.setStroke( Color.BLUE );
+            if( markerFile.isMarked( first_sample_index + i, 1 ) )
+            {
+                gc.setStroke( Color.RED );
+            }
+            else
+            {
+                gc.setStroke( Color.BLUE );
+            };
             gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
                            ( 1 + Math.min( Math.max( -r_window[ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
                            ( i + 1 ) * display_window_width / ( display_window_size )+ window_left_pad,
@@ -478,6 +499,7 @@ public class Main_window
         try
         {
             mainLayout = l.load();
+            markerFile = MarkerFile.fromFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
             display_window_height = ( int )main_canvas.getHeight();
             display_window_width = ( int )main_canvas.getWidth() - window_left_pad;
             startRefresher();
@@ -489,6 +511,10 @@ public class Main_window
         catch( IOException e )
         {
             e.printStackTrace();
+        }
+        catch( ParseException e )
+        {
+            System.err.println( e.getMessage() );
         }
     } /* Main_window */
 
@@ -627,7 +653,13 @@ public class Main_window
                 e.printStackTrace();
             }
         }
+    }
 
+    private void mark_selection()
+    {
+        markerFile.addMark( selection_start_index, selection_end_index, 0 );
+        markerFile.addMark( selection_start_index, selection_end_index, 1 );
+        inv_samples = true;
     }
 }
 
