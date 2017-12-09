@@ -99,6 +99,13 @@ public class MarkerFile
         {
             o.write( "ch1 " + m.first_marked_sample + " " + m.last_marked_sample + "\r\n" );
         }
+        o.close();
+    }
+
+    public void writeMarkingsToFile() throws IOException
+    {
+        OutputStreamWriter os = new OutputStreamWriter( new FileOutputStream( path ) );
+        writeMarkingsToFile( os );
     }
 
     public static MarkerFile fromFile( String file ) throws FileNotFoundException, ParseException
@@ -124,6 +131,7 @@ public class MarkerFile
                 {
                     mf.r_markings.put( fmi, new Marking( fmi, lmi ) );
                 }
+
             }
             catch( Exception e )
             {

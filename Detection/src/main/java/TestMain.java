@@ -1,16 +1,4 @@
 import MarkerFile.MarkerFile;
-import Utils.Complex;
-import WavFile.BasicWavFile.BasicWavFileException;
-import WavFile.WavCache.WavCache;
-import WavFile.WavCache.WavCacheError;
-import WavFile.WavCache.WavCachedWindow;
-import WavFile.WavFile;
-
-import java.io.FileInputStream;
-import java.io.IOException;
-
-import static SignalProcessing.FourierTransforms.Fourier.FFT;
-import static SignalProcessing.FourierTransforms.Fourier.IFFT;
 
 /**
  * Created by Alex on 08.09.2017.

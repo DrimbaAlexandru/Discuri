@@ -2,9 +2,9 @@ package WavFile;
 
 import WavFile.BasicWavFile.BasicWavFile;
 import WavFile.BasicWavFile.BasicWavFileException;
-import WavFile.WavCache.WavCache;
-import WavFile.WavCache.WavCacheError;
-import WavFile.WavCache.WavCachedWindow;
+import WavFile.AudioDataCache.AudioDataCache;
+import WavFile.AudioDataCache.WavCacheError;
+import WavFile.AudioDataCache.AudioSamplesWindow;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,21 +14,20 @@ import java.io.IOException;
  */
 public class WavFile
 {
-
     private BasicWavFile wavFile;
-    private WavCache cache;
+    private AudioDataCache cache;
 
     public WavFile( String filepath, long cached_samples_number ) throws IOException, BasicWavFileException
     {
         wavFile = BasicWavFile.openWavFile( new File( filepath ) );
-        cache = new WavCache( cached_samples_number * wavFile.getNumChannels() );
+        cache = new AudioDataCache( cached_samples_number * wavFile.getNumChannels() );
     }
 
-    public void put_samples( WavCachedWindow samples ) throws IOException, BasicWavFileException
+    public void put_samples( AudioSamplesWindow samples ) throws IOException, BasicWavFileException
     {
         int i, j;
         int k;
-        WavCachedWindow win;
+        AudioSamplesWindow win;
         double localBuffer[][];
         int localSize;
         boolean needs_free;
@@ -98,13 +97,13 @@ public class WavFile
         }
     }
 
-    public WavCachedWindow get_samples( int first_sample_index, int sample_number ) throws IOException, BasicWavFileException
+    public AudioSamplesWindow get_samples( int first_sample_index, int sample_number ) throws IOException, BasicWavFileException
     {
         double samples[][] = new double[ sample_number ][ wavFile.getNumChannels() ];
         double temp_buffer[][];
         int i, j, k;
         int temp_length;
-        WavCachedWindow win;
+        AudioSamplesWindow win;
         if( sample_number > cache.getMaxCacheSize() )
         {
             throw new BasicWavFileException( "The requested amount of data cannot fit the cache. Use get_compact_samples() or use a smaller window size" );
@@ -120,7 +119,7 @@ public class WavFile
                 temp_buffer = new double[ temp_length ][ wavFile.getNumChannels() ];
                 read_samples( i, temp_buffer, temp_length );
 
-                win = new WavCachedWindow( temp_buffer, i, temp_length, wavFile.getNumChannels() );
+                win = new AudioSamplesWindow( temp_buffer, i, temp_length, wavFile.getNumChannels() );
                 put_samples( win );
                 if( temp_length == sample_number )
                 {
@@ -152,7 +151,7 @@ public class WavFile
                 i += temp_length - 1;
             }
         }
-        return new WavCachedWindow( samples, first_sample_index, sample_number, wavFile.getNumChannels() );
+        return new AudioSamplesWindow( samples, first_sample_index, sample_number, wavFile.getNumChannels() );
     }
 
     private void read_samples( int first_sample_index, double buffer[][], int sample_number ) throws IOException, BasicWavFileException
@@ -165,12 +164,12 @@ public class WavFile
         wavFile.readFrames( buffer, sample_number );
     }
 
-    public WavCachedWindow get_compact_samples( int first_sample_index, int sample_number, int resulted_sample_number, boolean alternate_min_max ) throws IOException, BasicWavFileException
+    public AudioSamplesWindow get_compact_samples( int first_sample_index, int sample_number, int resulted_sample_number, boolean alternate_min_max ) throws IOException, BasicWavFileException
     {
         int i, j, previ, curi;
         boolean alt;
         double samples[][] = new double[ resulted_sample_number ][ getChannelsNumber() ];
-        WavCachedWindow win;
+        AudioSamplesWindow win;
 
         previ = -1;
         alt = false;
@@ -224,10 +223,10 @@ public class WavFile
             }
 
         }
-        return new WavCachedWindow( samples, 0, resulted_sample_number, getChannelsNumber() );
+        return new AudioSamplesWindow( samples, 0, resulted_sample_number, getChannelsNumber() );
     }
 
-    private void write_samples( WavCachedWindow win ) throws IOException, BasicWavFileException
+    private void write_samples( AudioSamplesWindow win ) throws IOException, BasicWavFileException
     {
         wavFile.set_stream_position( win.getFirst_sample_index(), 0 );
         wavFile.writeFrames( win.getSamples(), win.getSample_number() );
@@ -235,7 +234,7 @@ public class WavFile
 
     public void flush() throws IOException, BasicWavFileException
     {
-        for( WavCachedWindow win : cache.getCaches() )
+        for( AudioSamplesWindow win : cache.getCaches() )
         {
             if( win.isModified() )
             {

@@ -1,34 +1,34 @@
-package WavFile.WavCache;
+package WavFile.AudioDataCache;
 
-import WavFile.BasicWavFile.BasicWavFileException;
+import AudioDataSource.Exceptions.DataSourceException;
 
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static AudioDataSource.Exceptions.DataSourceExceptionCause.NOT_ENOUGH_FREE_SPACE;
+import static AudioDataSource.Exceptions.DataSourceExceptionCause.NOT_ENOUGH_SPACE;
+import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_ALREADY_CACHED;
 
 /**
  * Created by Alex on 10.09.2017.
  */
-public class WavCache
+public class AudioDataCache
 {
-
     private long maxCacheSize = 44100 * 2;
     private long usedCacheSize = 0;
     private int maxCachePageSize = 32768;
 
-    private TreeSet< WavCachedWindow > ordered_caches = new TreeSet<>( ( cw1, cw2 ) ->
+    private TreeSet< AudioSamplesWindow > ordered_caches = new TreeSet<>( ( cw1, cw2 ) ->
                                                                        {
                                                                            return cw1.getFirst_sample_index() - cw2.getFirst_sample_index();
                                                                        } );
-    private LinkedList< WavCachedWindow > cache_acces = new LinkedList<>();
-
-    WavCacheError lastErr = WavCacheError.NO_ERR;
+    private LinkedList< AudioSamplesWindow > cache_acces = new LinkedList<>();
 
     private boolean containedIn( int value, int minInclusive, int maxExclusive )
     {
         return ( ( value >= minInclusive ) && ( value < maxExclusive ) );
     }
 
-    public WavCache()
+    public AudioDataCache()
     {
     }
 
@@ -38,77 +38,72 @@ public class WavCache
         System.out.println( usedCacheSize + " samples cached" );
         System.out.println( ( maxCacheSize - usedCacheSize ) + " samples free" );
         System.out.println( "Cache windows:" );
-        for( WavCachedWindow w : ordered_caches )
+        for( AudioSamplesWindow w : ordered_caches )
         {
             System.out.println( w.getFirst_sample_index() + " to " + ( w.getFirst_sample_index() + w.getSample_number() ) + "( " + w.getSample_number() + " samples )" );
         }
         System.out.println( "-------" );
     }
 
-    public WavCache( long _maxCacheSize )
+    public AudioDataCache( long _maxCacheSize )
     {
         maxCacheSize = _maxCacheSize;
     }
 
     public boolean containsSample( int sample_index )
     {
-        WavCachedWindow win = ordered_caches.floor( new WavCachedWindow( null, sample_index, 1, 1 ) );
+        AudioSamplesWindow win = ordered_caches.floor( new AudioSamplesWindow( null, sample_index, 1, 1 ) );
         boolean result = false;
         if( win != null )
         {
             result = win.containsSample( sample_index );
         }
-
-        lastErr = result ? WavCacheError.NO_ERR : WavCacheError.SAMPLE_NOT_CACHED;
         return result;
     }
 
-    public void newCache( double samples[][], int first_sample_index, int samples_number, int channels ) throws BasicWavFileException
+    public void newCache( AudioSamplesWindow win ) throws DataSourceException
     {
         showCacheStatus();
-        WavCachedWindow left, right;
+        AudioSamplesWindow left, right;
         int i;
 
-        if( samples_number * channels > maxCacheSize )
+        if( win.getSample_number() * win.getChannel_number() > maxCacheSize )
         {
-            lastErr = WavCacheError.NOT_ENOUGH_SPACE;
-            throw new BasicWavFileException( "Not enough space in cache" );
+            throw new DataSourceException( "Not enough space in cache", NOT_ENOUGH_SPACE );
         }
 
-        if( samples_number * channels > maxCacheSize - usedCacheSize )
+        if( win.getSample_number() * win.getChannel_number() > maxCacheSize - usedCacheSize )
         {
-            lastErr = WavCacheError.NOT_ENOUGH_FREE_SPACE;
-            throw new BasicWavFileException( "Not enough free space in cache" );
+            throw new DataSourceException( "Not enough free space in cache", NOT_ENOUGH_FREE_SPACE );
         }
 
-        left = ordered_caches.floor( new WavCachedWindow( null, first_sample_index, 0, 0 ) );
-        right = ordered_caches.ceiling( new WavCachedWindow( null, first_sample_index, 0, 0 ) );
+        left = ordered_caches.floor( new AudioSamplesWindow( null, win.getFirst_sample_index(), 0, 0 ) );
+        right = ordered_caches.ceiling( new AudioSamplesWindow( null, win.getFirst_sample_index(), 0, 0 ) );
 
         if( ( left != null )
-              && ( containedIn( first_sample_index, left.getFirst_sample_index(), left.getFirst_sample_index() + left.getSample_number() )
-                   || containedIn( first_sample_index + samples_number - 1, left.getFirst_sample_index(), left.getFirst_sample_index() + left.getSample_number() )
-                   || containedIn( left.getFirst_sample_index(), first_sample_index, first_sample_index + samples_number ) ) )
+              && ( containedIn( win.getFirst_sample_index(), left.getFirst_sample_index(), left.getFirst_sample_index() + left.getSample_number() )
+                   || containedIn( win.getFirst_sample_index() + win.getSample_number() - 1, left.getFirst_sample_index(), left.getFirst_sample_index() + left.getSample_number() )
+                   || containedIn( left.getFirst_sample_index(), win.getFirst_sample_index(), win.getFirst_sample_index() + win.getSample_number() ) ) )
         {
-            lastErr = WavCacheError.SAMPLE_ALREADY_CACHED;
-            throw new BasicWavFileException( "Current interval overlaps with cache. Tried to add cache interval " +
-                                                     first_sample_index + " to " + ( first_sample_index + samples_number ) +
+            throw new DataSourceException( "Current interval overlaps with cache. Tried to add cache interval " +
+                                                     win.getFirst_sample_index() + " to " + ( win.getFirst_sample_index() + win.getSample_number() ) +
                                                      ". Window from " + left.getFirst_sample_index() + " to "
-                                                     + ( left.getFirst_sample_index() + left.getSample_number() ) + " already contains it" );
+                                                     + ( left.getFirst_sample_index() + left.getSample_number() ) + " already contains it" ,
+                                           SAMPLE_ALREADY_CACHED );
         }
 
         if( ( right != null )
-              && ( containedIn( first_sample_index, right.getFirst_sample_index(), right.getFirst_sample_index() + right.getSample_number() )
-                   || containedIn( first_sample_index + samples_number - 1, right.getFirst_sample_index(), right.getFirst_sample_index() + right.getSample_number() )
-                   || containedIn( right.getFirst_sample_index(), first_sample_index, first_sample_index + samples_number ) ) )
+              && ( containedIn( win.getFirst_sample_index(), right.getFirst_sample_index(), right.getFirst_sample_index() + right.getSample_number() )
+                   || containedIn( win.getFirst_sample_index() + win.getSample_number() - 1, right.getFirst_sample_index(), right.getFirst_sample_index() + right.getSample_number() )
+                   || containedIn( right.getFirst_sample_index(), win.getFirst_sample_index(), win.getFirst_sample_index() + win.getSample_number() ) ) )
         {
-            lastErr = WavCacheError.SAMPLE_ALREADY_CACHED;
-            throw new BasicWavFileException( "Current interval overlaps with cache. Tried to add cache interval " +
-                                                     first_sample_index + " to " + ( first_sample_index + samples_number ) +
+            throw new DataSourceException( "Current interval overlaps with cache. Tried to add cache interval " +
+                                                     win.getFirst_sample_index() + " to " + ( win.getFirst_sample_index() + win.getSample_number() ) +
                                                      ". Window from " + right.getFirst_sample_index() + " to "
-                                                     + ( right.getFirst_sample_index() + right.getSample_number() ) + " already contains it" );
+                                                     + ( right.getFirst_sample_index() + right.getSample_number() ) + " already contains it" ,
+                                           SAMPLE_ALREADY_CACHED );
         }
 
-        lastErr = WavCacheError.NO_ERR;
         i = 0;/*
         if( ( left != null )
               && ( left.getSample_number() * left.getChannel_number() < maxCachePageSize )
@@ -147,52 +142,50 @@ public class WavCache
         }
 */
         //caches.put( caches.size(), new WavCachedWindow( samples, first_sample_index, samples_number, channels ) );
-        while( i < samples_number )
+        while( i < win.getSample_number() )
         {
-            double buffer[][] = new double[ maxCachePageSize ][ channels ];
-            int temp_len = ( ( samples_number - i ) * channels > maxCachePageSize ) ? maxCachePageSize / channels : samples_number - i;
+            int temp_len = ( ( win.getSample_number() - i ) * win.getChannel_number() > maxCachePageSize ) ? maxCachePageSize / win.getChannel_number() : win.getSample_number() - i;
+            double buffer[][] = new double[ win.getChannel_number() ][ temp_len ];
             for( int j = 0; j < temp_len; j++ )
             {
-                for( int c = 0; c < channels; c++ )
+                for( int c = 0; c < win.getChannel_number(); c++ )
                 {
-                    buffer[ j ][ c ] = samples[ i ][ c ];
+                    buffer[ c ][ j ] = win.getSample( i + win.getFirst_sample_index(), c );
                 }
                 i++;
             }
-            WavCachedWindow newWin = new WavCachedWindow( buffer, i - temp_len + first_sample_index, temp_len, channels );
+            AudioSamplesWindow newWin = new AudioSamplesWindow( buffer, i - temp_len + win.getFirst_sample_index(), temp_len, win.getChannel_number() );
             ordered_caches.add( newWin );
             cache_acces.add( newWin );
         }
 
-        usedCacheSize += samples_number * channels;
+        usedCacheSize += win.getChannel_number() * win.getSample_number();
     }
 
-    public WavCachedWindow getCacheWindow( int sample_index )
+    public AudioSamplesWindow getCacheWindow( int sample_index )
     {
-        WavCachedWindow result;
-        result = ordered_caches.floor( new WavCachedWindow( null, sample_index, 0, 0 ) );
+        AudioSamplesWindow result;
+        result = ordered_caches.floor( new AudioSamplesWindow( null, sample_index, 0, 0 ) );
         if( result != null && !result.containsSample( sample_index ) )
         {
             result = null;
         }
-        lastErr = WavCacheError.SAMPLE_NOT_CACHED;
         if( result != null )
         {
             cache_acces.remove( result );
             cache_acces.add( result );
-            lastErr = WavCacheError.NO_ERR;
         }
         return result;
     }
 
-    public WavCachedWindow getOldestUsedCache()
+    public AudioSamplesWindow getOldestUsedCache()
     {
-        return cache_acces.pollFirst();
+        return cache_acces.getFirst();
     }
 
     public boolean freeOldestCache()
     {
-        WavCachedWindow win = getOldestUsedCache();
+        AudioSamplesWindow win = getOldestUsedCache();
         if( ( win == null ) || ( win.isModified() ) )
             return false;
         else
@@ -206,8 +199,8 @@ public class WavCache
 
     public int getNextCachedSampleIndex( int sample_index )
     {
-        WavCachedWindow left = ordered_caches.floor( new WavCachedWindow( null, sample_index, 0, 0 ) );
-        WavCachedWindow right = ordered_caches.ceiling( new WavCachedWindow( null, sample_index, 0, 0 ) );
+        AudioSamplesWindow left = ordered_caches.floor( new AudioSamplesWindow( null, sample_index, 0, 0 ) );
+        AudioSamplesWindow right = ordered_caches.ceiling( new AudioSamplesWindow( null, sample_index, 0, 0 ) );
         if( left == null )
         {
             if( right == null )
@@ -239,11 +232,7 @@ public class WavCache
         }
     }
 
-    public WavCacheError getLastErr() {
-        return lastErr;
-    }
-
-    public TreeSet< WavCachedWindow > getCaches()
+    public TreeSet< AudioSamplesWindow > getCaches()
     {
         return ordered_caches;
     }

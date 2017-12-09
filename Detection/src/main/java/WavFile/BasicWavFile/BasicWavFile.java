@@ -414,7 +414,7 @@ public class BasicWavFile
 		{
 			if (frameCounter == numFrames) return f;
 
-			for (int c=0 ; c<numChannels ; c++) sampleBuffer[offset][c] = (int) readSample();
+			for (int c=0 ; c<numChannels ; c++) sampleBuffer[c][offset] = (int) readSample();
 
 			offset ++;
 			frameCounter ++;
@@ -461,7 +461,7 @@ public class BasicWavFile
 		{
 			if (frameCounter == numFrames) return f;
 
-			for (int c=0 ; c<numChannels ; c++) writeSample(sampleBuffer[offset][c]);
+			for (int c=0 ; c<numChannels ; c++) writeSample(sampleBuffer[c][offset]);
 
 			offset ++;
 			frameCounter ++;
@@ -510,7 +510,7 @@ public class BasicWavFile
 		{
 			if (frameCounter == numFrames) return f;
 
-			for (int c=0 ; c<numChannels ; c++) sampleBuffer[offset][c] = readSample();
+			for (int c=0 ; c<numChannels ; c++) sampleBuffer[c][offset] = readSample();
 
 			offset ++;
 			frameCounter ++;
@@ -557,7 +557,7 @@ public class BasicWavFile
 		{
 			if (frameCounter == numFrames) return f;
 
-			for (int c=0 ; c<numChannels ; c++) writeSample(sampleBuffer[offset][c]);
+			for (int c=0 ; c<numChannels ; c++) writeSample(sampleBuffer[c][offset]);
 
 			offset ++;
 			frameCounter ++;
@@ -606,7 +606,7 @@ public class BasicWavFile
 		{
 			if (frameCounter == numFrames) return f;
 
-			for (int c=0 ; c<numChannels ; c++) sampleBuffer[offset][c] = floatOffset + (double) readSample() / floatScale;
+			for (int c=0 ; c<numChannels ; c++) sampleBuffer[c][offset] = floatOffset + (double) readSample() / floatScale;
 
 			offset ++;
 			frameCounter ++;
@@ -653,7 +653,7 @@ public class BasicWavFile
 		{
 			if (frameCounter == numFrames) return f;
 
-			for (int c=0 ; c<numChannels ; c++) writeSample((long) (floatScale * (floatOffset + sampleBuffer[offset][c])));
+			for (int c=0 ; c<numChannels ; c++) writeSample((long) (floatScale * (floatOffset + sampleBuffer[c][offset])));
 
 			offset ++;
 			frameCounter ++;

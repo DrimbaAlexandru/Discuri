@@ -1,12 +1,14 @@
 package MVC.GUI;
 
+import AudioDataSource.CachedAudioDataSource;
+import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.WavAudioDataSource;
 import MarkerFile.MarkerFile;
 import SignalProcessing.LiniarPrediction.BurgLP;
 import SignalProcessing.LiniarPrediction.LinearPrediction;
 import SignalProcessing.LiniarPrediction.NotEnoughSamplesException;
 import WavFile.BasicWavFile.BasicWavFileException;
-import WavFile.WavCache.WavCachedWindow;
-import WavFile.WavFile;
+import WavFile.AudioDataCache.AudioSamplesWindow;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -78,7 +80,7 @@ public class Main_window
 
     private String raw_wav_filepath = "";
 
-    private WavFile wavFile = null;
+    private CachedAudioDataSource dataSource = null;
     private MarkerFile markerFile;
     private int sample_number;
     private int channel_number;
@@ -176,7 +178,10 @@ public class Main_window
 
         try
         {
-            wavFile = new WavFile( raw_wav_filepath, 44100 ); /* create the Wav file access instance */
+            File file = new File( raw_wav_filepath );
+            WavAudioDataSource wavDS = new WavAudioDataSource( file );
+            dataSource = new CachedAudioDataSource( wavDS, 44100 );
+
         }
         catch( Exception e )
         {
@@ -191,8 +196,8 @@ public class Main_window
         inv_samples = true;
         update_samples_window = true;
 
-        sample_number = ( int )wavFile.getSampleNumber();
-        channel_number = wavFile.getChannelsNumber();
+        sample_number = ( int )dataSource.get_sample_number();
+        channel_number = dataSource.get_channel_number();
 
         current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
         sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
@@ -344,11 +349,11 @@ public class Main_window
         --------------------------------*/
         int i;
         int display_window_size;
-        WavCachedWindow win;
+        AudioSamplesWindow win;
         final GraphicsContext gc = main_canvas.getGraphicsContext2D();
 
         /* Handle no WAV file loaded case */
-        if( wavFile == null )
+        if( dataSource == null )
         {
             return;
         }
@@ -391,7 +396,7 @@ public class Main_window
         {
             if( update_samples_window )
             {
-                win = wavFile.get_compact_samples( first_sample_index, window_size, display_window_size, false );
+                win = dataSource.get_resized_samples( first_sample_index, window_size, display_window_size );
                 update_samples_window = false;
                 for( i = 0; i < display_window_size; i++ )
                 {
@@ -455,29 +460,29 @@ public class Main_window
 
     private void refreshSelection()
     {
-        if( wavFile == null )
+        if( dataSource == null )
         {
             return;
         }
         final int sel_len = selection_end_index - selection_start_index;
-        final int seconds = selection_start_index / wavFile.getSampleRate();
-        final int milliseconds = ( selection_start_index % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate();
+        final int seconds = selection_start_index / dataSource.get_sample_rate();
+        final int milliseconds = ( selection_start_index % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate();
         time_scroll.setValue( selection_start_index );
         position_indicator.setText( "samples / " + ( sample_number ) +
                                             " ( " + String.format( "%02d", seconds / 360 ) +
                                             ":" + String.format( "%02d", seconds / 60 % 60 ) +
                                             ":" + String.format( "%02d", seconds % 60 ) +
                                             "." + String.format( "%03d", milliseconds ) +
-                                            " / " + String.format( "%02d", ( sample_number / wavFile.getSampleRate() ) / 3600 ) +
-                                            ":" + String.format( "%02d", sample_number / wavFile.getSampleRate() / 60 % 60 ) +
-                                            ":" + String.format( "%02d", sample_number / wavFile.getSampleRate() % 60 ) +
-                                            "." + String.format( "%02d", ( sample_number % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate() ) + " )" );
+                                            " / " + String.format( "%02d", ( sample_number / dataSource.get_sample_rate() ) / 3600 ) +
+                                            ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() / 60 % 60 ) +
+                                            ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() % 60 ) +
+                                            "." + String.format( "%02d", ( sample_number % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
         current_sample_spinner.getValueFactory().setValue( selection_start_index );
         sel_len_indicator.setText( "samples ( "+
-                                           String.format( "%02d", sel_len / wavFile.getSampleRate() / 3600 ) +
-                                           ":" + String.format( "%02d", sel_len / wavFile.getSampleRate() / 60 % 60 ) +
-                                           ":" + String.format( "%02d", sel_len / wavFile.getSampleRate() % 60 ) +
-                                           "." + String.format( "%02d", ( sel_len % wavFile.getSampleRate() * 1000 ) / wavFile.getSampleRate() ) + " )" );
+                                           String.format( "%02d", sel_len / dataSource.get_sample_rate() / 3600 ) +
+                                           ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() / 60 % 60 ) +
+                                           ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() % 60 ) +
+                                           "." + String.format( "%02d", ( sel_len % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
         sel_len_spinner.getValueFactory().setValue( sel_len );
         time_scroll.setBlockIncrement( window_size );
         time_scroll.setValue( first_sample_index );
@@ -553,6 +558,14 @@ public class Main_window
                                           {
                                               e1.printStackTrace();
                                           }
+                                          try
+                                          {
+                                              markerFile.writeMarkingsToFile();
+                                          }
+                                          catch( IOException e1 )
+                                          {
+                                              e1.printStackTrace();
+                                          }
                                           //TBD: Show save/don't save dialog
                                       } );
     } /* run() */
@@ -605,17 +618,17 @@ public class Main_window
         double[] left = new double[ side_len ];
         double[] center = new double[ len ];
         double[] right = new double[ side_len  ];
-        WavCachedWindow win;
-        for( ch = 0; ch < wavFile.getChannelsNumber(); ch++ )
+        AudioSamplesWindow win;
+        for( ch = 0; ch < dataSource.get_channel_number(); ch++ )
         {
             try
             {
-                win = wavFile.get_samples( selection_start_index - side_len, side_len );
+                win = dataSource.get_samples( selection_start_index - side_len, side_len );
                 for( i = 0; i < side_len ; i++ )
                 {
                     left[ i ] = win.getSample( selection_start_index - side_len + i, ch );
                 }
-                win = wavFile.get_samples( selection_start_index + len, side_len );
+                win = dataSource.get_samples( selection_start_index + len, side_len );
                 for( i = 0; i < side_len; i++ )
                 {
                     right[ i ] = win.getSample( selection_start_index + len + i, ch );
@@ -648,7 +661,7 @@ public class Main_window
 
                 inv_samples = true;
             }
-            catch( IOException | BasicWavFileException e )
+            catch( DataSourceException e )
             {
                 e.printStackTrace();
             }
