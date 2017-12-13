@@ -73,8 +73,6 @@ public class MarkerFile
                 {
                     keys_tbd.add( m.first_marked_sample );
                 }
-
-
             }
         }
         for( int k : keys_tbd )

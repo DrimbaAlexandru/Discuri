@@ -1,4 +1,8 @@
+import AudioDataSource.AUFileAudioSource;
+import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
+import WavFile.AudioDataCache.AudioSamplesWindow;
 
 /**
  * Created by Alex on 08.09.2017.
@@ -7,7 +11,7 @@ public class TestMain {
 
     public static void main(String args[])
     {
-        MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\dump.txt" );
+        /*MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\dump.txt" );
         mf.addMark( 10, 20, 0 );    //10-20
         mf.addMark( 30, 40, 0 );    //10-20, 30-40
         mf.addMark( 21, 25, 0 );    //10-25, 30-40
@@ -35,6 +39,18 @@ public class TestMain {
             {
                 System.out.println( i + " is not marked" );
             }
+        }*/
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\8.wav" );
+            AUFileAudioSource au = new AUFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.au", 1, 44100, 2 );
+            au.put_samples( wav.get_samples( 0, wav.get_sample_number() ) );
+            au.close();
+        }
+        catch( DataSourceException e )
+        {
+            System.err.println( e.getDSEcause().name() + " : " + e.getMessage() );
+            e.printStackTrace();
         }
     }
 }
