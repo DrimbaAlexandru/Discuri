@@ -1,4 +1,4 @@
-package WavFile.AudioDataCache;
+package AudioDataSource.ADCache;
 
 import AudioDataSource.Exceptions.DataSourceException;
 

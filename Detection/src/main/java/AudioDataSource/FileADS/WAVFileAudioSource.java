@@ -1,8 +1,9 @@
-package AudioDataSource;
+package AudioDataSource.FileADS;
 
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
-import WavFile.AudioDataCache.AudioSamplesWindow;
+import AudioDataSource.ADCache.AudioSamplesWindow;
+import AudioDataSource.IAudioDataSource;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -20,7 +21,7 @@ public class WAVFileAudioSource implements IAudioDataSource
     private int sample_rate;
     private int byte_depth;
     private int frame_size;
-    private ByteOrder bo = ByteOrder.LITTLE_ENDIAN;
+    private static ByteOrder bo = ByteOrder.LITTLE_ENDIAN;
 
     private static final int chunkID = 0x46464952;
     private static final int fmt_chunk_ID = 0x20746d66;
@@ -33,15 +34,17 @@ public class WAVFileAudioSource implements IAudioDataSource
     private int fmt_chunk_offset;
     private int data_chunk_offset;
     private RandomAccessFile file;
+    private String file_path;
 
-    private final int buffer_size = 1024 * 8; //must be a multiple of 8
-    private final byte buffer[] = new byte[ buffer_size ];
+    private static final int buffer_size = 1024 * 8; //must be a multiple of 8
+    private static final byte buffer[] = new byte[ buffer_size ];
     private ByteBuffer byteBuffer = ByteBuffer.wrap( buffer );
 
     public WAVFileAudioSource( String path ) throws DataSourceException
     {
         try
         {
+            file_path = path;
             file = new RandomAccessFile( path, "rw" );
             byteBuffer.order( bo );
             readHeader();
@@ -55,6 +58,7 @@ public class WAVFileAudioSource implements IAudioDataSource
 
     public WAVFileAudioSource( String path, int channel_number, int sample_rate, int byte_depth ) throws DataSourceException
     {
+        file_path = path;
         this.channel_number = channel_number;
         this.sample_number = 0;
         this.sample_rate = sample_rate;
@@ -422,4 +426,10 @@ public class WAVFileAudioSource implements IAudioDataSource
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
     }
+
+    public String getFile_path()
+    {
+        return file_path;
+    }
+
 }

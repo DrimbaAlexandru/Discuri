@@ -2,13 +2,12 @@ package MVC.GUI;
 
 import AudioDataSource.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.WavAudioDataSource;
+import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
 import SignalProcessing.LiniarPrediction.BurgLP;
 import SignalProcessing.LiniarPrediction.LinearPrediction;
 import SignalProcessing.LiniarPrediction.NotEnoughSamplesException;
-import WavFile.BasicWavFile.BasicWavFileException;
-import WavFile.AudioDataCache.AudioSamplesWindow;
+import AudioDataSource.ADCache.AudioSamplesWindow;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -178,8 +177,7 @@ public class Main_window
 
         try
         {
-            File file = new File( raw_wav_filepath );
-            WavAudioDataSource wavDS = new WavAudioDataSource( file );
+            WAVFileAudioSource wavDS = new WAVFileAudioSource( raw_wav_filepath );
             dataSource = new CachedAudioDataSource( wavDS, 44100 );
 
         }
@@ -505,6 +503,7 @@ public class Main_window
         {
             mainLayout = l.load();
             markerFile = MarkerFile.fromFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
+            //markerFile = new MarkerFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
             display_window_height = ( int )main_canvas.getHeight();
             display_window_width = ( int )main_canvas.getWidth() - window_left_pad;
             startRefresher();

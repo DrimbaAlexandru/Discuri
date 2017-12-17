@@ -1,7 +1,6 @@
-package WavFile.AudioDataCache;
+package AudioDataSource.ADCache;
 
 import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
 
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
@@ -18,15 +17,6 @@ public class AudioSamplesWindow
     private boolean modified;
 
     public AudioSamplesWindow( double _samples[][], int _first_sample_index, int _sample_number, int _channel_number )
-    {
-        samples = _samples;
-        first_sample_index = _first_sample_index;
-        sample_number = _sample_number;
-        channel_number = _channel_number;
-        modified = false;
-    }
-
-    public AudioSamplesWindow( double _samples[][], int _first_sample_index, int _sample_number, int _channel_number, boolean make_copy  )
     {
         samples = _samples;
         first_sample_index = _first_sample_index;

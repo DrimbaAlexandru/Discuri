@@ -1,8 +1,9 @@
-package AudioDataSource;
+package AudioDataSource.FileADS;
 
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
-import WavFile.AudioDataCache.AudioSamplesWindow;
+import AudioDataSource.ADCache.AudioSamplesWindow;
+import AudioDataSource.IAudioDataSource;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -20,9 +21,9 @@ public class AUFileAudioSource implements IAudioDataSource
     private int sample_rate;
     private int byte_depth;
     private int frame_size;
-    private ByteOrder bo = ByteOrder.BIG_ENDIAN;
+    private static ByteOrder bo = ByteOrder.BIG_ENDIAN;
 
-    private static final int magic_number =  0x2e736e64;
+    private static final int file_magic_number =  0x2e736e64;
 
     private static final int _8_bit_linear_PCM = 2;
     private static final int _16_bit_linear_PCM = 3;
@@ -31,15 +32,17 @@ public class AUFileAudioSource implements IAudioDataSource
     private int header_length;
     private int data_length;
     private RandomAccessFile file;
+    private String file_path;
 
-    private final int buffer_size = 1024 * 8; //must be a multiple of 8
-    private final byte buffer[] = new byte[ buffer_size ];
+    private static final int buffer_size = 1024 * 8; //must be a multiple of 8
+    private static final byte buffer[] = new byte[ buffer_size ];
     private ByteBuffer byteBuffer = ByteBuffer.wrap( buffer );
 
     public AUFileAudioSource( String path ) throws DataSourceException
     {
         try
         {
+            file_path = path;
             file = new RandomAccessFile( path, "rw" );
             readHeader();
         }
@@ -59,6 +62,7 @@ public class AUFileAudioSource implements IAudioDataSource
         header_length = 24;
         data_length = 0;
         frame_size = channel_number * byte_depth;
+        file_path = path;
         try
         {
             file = new RandomAccessFile( path, "rw" );
@@ -83,7 +87,7 @@ public class AUFileAudioSource implements IAudioDataSource
         byteBuffer.order( ByteOrder.BIG_ENDIAN );
         temp = byteBuffer.getInt( 0 );
 
-        if( temp == magic_number )
+        if( temp == file_magic_number )
         {
             bo = ByteOrder.BIG_ENDIAN;
         }
@@ -91,7 +95,7 @@ public class AUFileAudioSource implements IAudioDataSource
         {
             byteBuffer.order( ByteOrder.LITTLE_ENDIAN );
             temp = byteBuffer.getInt( 4 );
-            if( temp == magic_number )
+            if( temp == file_magic_number )
             {
                 bo = ByteOrder.LITTLE_ENDIAN;
             }
@@ -124,7 +128,7 @@ public class AUFileAudioSource implements IAudioDataSource
     private void writeHeader() throws DataSourceException
     {
         data_length = sample_number * frame_size;
-        byteBuffer.putInt( 0, magic_number );
+        byteBuffer.putInt( 0, file_magic_number );
         byteBuffer.putInt( 4, header_length );
         byteBuffer.putInt( 8, data_length );
         switch( byte_depth )
@@ -336,5 +340,10 @@ public class AUFileAudioSource implements IAudioDataSource
         {
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
+    }
+
+    public String getFile_path()
+    {
+        return file_path;
     }
 }

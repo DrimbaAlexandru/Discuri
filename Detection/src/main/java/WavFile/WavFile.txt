@@ -2,9 +2,9 @@ package WavFile;
 
 import WavFile.BasicWavFile.BasicWavFile;
 import WavFile.BasicWavFile.BasicWavFileException;
-import WavFile.AudioDataCache.AudioDataCache;
-import WavFile.AudioDataCache.WavCacheError;
-import WavFile.AudioDataCache.AudioSamplesWindow;
+import AudioDataSource.AudioDataCache.AudioDataCache;
+import AudioDataSource.AudioDataCache.WavCacheError;
+import AudioDataSource.AudioDataCache.AudioSamplesWindow;
 
 import java.io.File;
 import java.io.IOException;

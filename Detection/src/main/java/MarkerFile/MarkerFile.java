@@ -118,7 +118,7 @@ public class MarkerFile
         {
             try
             {
-                line = sc.next( "ch[01] " );
+                line = sc.findInLine( "ch[01] " );
                 fmi = sc.nextInt();
                 lmi = sc.nextInt();
                 if( line.charAt( 2 ) == '0' )
@@ -129,6 +129,7 @@ public class MarkerFile
                 {
                     mf.r_markings.put( fmi, new Marking( fmi, lmi ) );
                 }
+                line = sc.nextLine();
 
             }
             catch( Exception e )
