@@ -1,5 +1,6 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedAudioDataSource.AudioDataSourceVersion;
 
 /**
@@ -37,8 +38,11 @@ public class TestMain {
                 }
             }
 
-            win = new AudioSamplesWindow( buffer, 2205, 4410, 2 );
+            win = new AudioSamplesWindow( buffer, 2156, 4410, 2 );
             ver.replace_block( win, 4410 );
+
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\proj_files\\out.wav", 2, 44100, 2 );
+            wav.put_samples( ver.get_samples( 0, ver.get_sample_number() ) );
         }
         catch( DataSourceException e )
         {

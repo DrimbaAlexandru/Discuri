@@ -39,6 +39,13 @@ class FileToProjectMapping
     {
         return project_interval.l + " -> " + project_interval.r + " @" + file_name + ": " + file_interval.l + "->" + file_interval.r;
     }
+
+    public boolean follows( FileToProjectMapping other )
+    {
+        return ( ( file_name.equals( other.file_name ) )
+                 && ( project_interval.l == other.project_interval.r )
+                 && ( file_interval.l == other.file_interval.r ) );
+    }
 }
 
 class ProjectFilesManager
@@ -83,7 +90,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
     private int sample_number;
     private AUFileAudioSource fileAudioSource = null;
     private static final int max_samples_per_chunk = 1024 * 512;
-    private List< FileToProjectMapping > mapping = new LinkedList<>();
+    private ArrayList< FileToProjectMapping > mapping = new ArrayList<>();
 
     public AudioDataSourceVersion( int version, int sample_rate, int channel_number, int sample_number )
     {
@@ -106,7 +113,6 @@ public class AudioDataSourceVersion implements IAudioDataSource
     private void move_project_mapping( int first_project_sample_index, int amount )
     {
         int left_margin;
-        List< FileToProjectMapping > refs_to_add = new ArrayList<>();
         if( amount == 0 )
         {
             return;
@@ -120,16 +126,14 @@ public class AudioDataSourceVersion implements IAudioDataSource
             left_margin = first_project_sample_index;
         }
 
-        for( Iterator< FileToProjectMapping > it = mapping.iterator(); it.hasNext(); )
+        for( int i = 0; i < mapping.size(); i++ )
         {
-            FileToProjectMapping map = it.next();
+            FileToProjectMapping map = mapping.get( i );
             if( map.project_interval.l >= left_margin )
             {
-                refs_to_add.add( new FileToProjectMapping( map.file_name, map.project_interval.l + amount, map.file_interval.l + amount, map.get_length() ) );
-                it.remove();
+                mapping.set( i, new FileToProjectMapping( map.file_name, map.project_interval.l + amount, map.file_interval.l + amount, map.get_length() ) );
             }
         }
-        mapping.addAll( refs_to_add );
         sample_number += amount;
     }
 
@@ -179,8 +183,8 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
     private void split_map( int proj_sample_index )
     {
-        FileToProjectMapping map;
-        int left_length;
+        FileToProjectMapping map = null;
+        int left_length = 0;
         for( Iterator< FileToProjectMapping > iterator = mapping.iterator(); iterator.hasNext(); )
         {
             map = iterator.next();
@@ -192,13 +196,45 @@ public class AudioDataSourceVersion implements IAudioDataSource
                     break;
                 }
                 iterator.remove();
-                ProjectFilesManager.deassociate_file_from_version( map.file_name, version );
-                map( map.project_interval.l, left_length, map.file_interval.l, map.file_name );
-                map( proj_sample_index, map.get_length() - left_length, map.file_interval.l + left_length, map.file_name );
                 break;
             }
         }
+        if( left_length != 0 )
+        {
+            ProjectFilesManager.deassociate_file_from_version( map.file_name, version );
+            map( map.project_interval.l, left_length, map.file_interval.l, map.file_name );
+            map( proj_sample_index, map.get_length() - left_length, map.file_interval.l + left_length, map.file_name );
+        }
 
+    }
+
+    private void compact_mapping()
+    {
+        FileToProjectMapping map, next_map;
+        int i;
+        for( i = 0; i < mapping.size() - 1; i++ )
+        {
+            map = mapping.get( i );
+            next_map = mapping.get( i + 1 );
+            if( next_map.follows( map ) ) //Concatenate
+            {
+                mapping.set( i, new FileToProjectMapping( map.file_name, map.project_interval.l, map.file_interval.l, map.get_length() + next_map.get_length() ) );
+                mapping.remove( i + 1 );
+                i--;
+            }
+        }
+    }
+
+    private FileToProjectMapping get_mapping( int project_index )
+    {
+        for( FileToProjectMapping map : mapping )
+        {
+            if( map.project_interval.contains( project_index ) )
+            {
+                return map;
+            }
+        }
+        return null;
     }
 
     public void destroy()
@@ -227,7 +263,46 @@ public class AudioDataSourceVersion implements IAudioDataSource
     @Override
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
-        return null;
+        double buf[][] = null;
+        int i, j, k;
+        AUFileAudioSource AUfas = null;
+        for( i = 0; i < length; )
+        {
+            FileToProjectMapping map = get_mapping( i + first_sample_index );
+            int temp_len;
+            int file_first_sample_index;
+            AudioSamplesWindow win;
+
+            if( map == null )
+            {
+                throw new DataSourceException( "Sample index not mapped", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
+            }
+            if( AUfas == null || !AUfas.getFile_path().equals( map.file_name ) )
+            {
+                AUfas = new AUFileAudioSource( map.file_name );
+            }
+            temp_len = Math.min( length - i, map.get_length() );
+            file_first_sample_index = i + first_sample_index - map.project_interval.l + map.file_interval.l;
+            win = AUfas.get_samples( file_first_sample_index, temp_len );
+
+            if( temp_len == length )
+            {
+                return win;
+            }
+            if( buf == null )
+            {
+                buf = new double[ channel_number ][ length ];
+            }
+            for( k = 0; k < channel_number; k++ )
+            {
+                for( j = 0; j < temp_len; j++ )
+                {
+                    buf[ k ][ j + i ] = win.getSample( file_first_sample_index + j, k );
+                }
+            }
+            i += temp_len;
+        }
+        return new AudioSamplesWindow( buf, first_sample_index, length, channel_number );
     }
 
     @Override
@@ -277,6 +352,8 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
             index += temp_len;
         }
+
+        compact_mapping();
 
     }
 }
