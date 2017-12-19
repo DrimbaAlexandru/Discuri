@@ -1,7 +1,7 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.VersionedAudioDataSource.AudioDataSourceVersion;
+import AudioDataSource.VersionedADS.AudioDataSourceVersion;
 
 /**
  * Created by Alex on 08.09.2017.

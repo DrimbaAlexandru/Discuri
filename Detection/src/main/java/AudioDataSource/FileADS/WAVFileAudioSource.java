@@ -14,7 +14,7 @@ import java.nio.ByteOrder;
  * Created by Alex on 12.12.2017.
  */
 
-public class WAVFileAudioSource implements IAudioDataSource
+public class WAVFileAudioSource implements IFileAudioDataSource
 {
     private int channel_number;
     private int sample_number;

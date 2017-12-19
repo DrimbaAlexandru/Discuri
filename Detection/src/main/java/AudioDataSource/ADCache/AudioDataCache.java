@@ -21,7 +21,7 @@ public class AudioDataCache
                                                                        {
                                                                            return cw1.getFirst_sample_index() - cw2.getFirst_sample_index();
                                                                        } );
-    private LinkedList< AudioSamplesWindow > cache_acces = new LinkedList<>();
+    private LinkedList< AudioSamplesWindow > cache_access = new LinkedList<>();
 
     private boolean containedIn( int value, int minInclusive, int maxExclusive )
     {
@@ -131,14 +131,14 @@ public class AudioDataCache
                 }
             }
             ordered_caches.remove( left );
-            cache_acces.remove( left );
+            cache_access.remove( left );
             WavCachedWindow newWin = new WavCachedWindow( buffer, left.getFirst_sample_index(), temp_len, channels );
             if( left.isModified() )
             {
                 newWin.setModified();
             }
             ordered_caches.add( newWin );
-            cache_acces.add( newWin );
+            cache_access.add( newWin );
         }
 */
         //caches.put( caches.size(), new WavCachedWindow( samples, first_sample_index, samples_number, channels ) );
@@ -156,7 +156,7 @@ public class AudioDataCache
             }
             AudioSamplesWindow newWin = new AudioSamplesWindow( buffer, i - temp_len + win.getFirst_sample_index(), temp_len, win.getChannel_number() );
             ordered_caches.add( newWin );
-            cache_acces.add( newWin );
+            cache_access.add( newWin );
         }
 
         usedCacheSize += win.getChannel_number() * win.getSample_number();
@@ -172,15 +172,15 @@ public class AudioDataCache
         }
         if( result != null )
         {
-            cache_acces.remove( result );
-            cache_acces.add( result );
+            cache_access.remove( result );
+            cache_access.add( result );
         }
         return result;
     }
 
     public AudioSamplesWindow getOldestUsedCache()
     {
-        return cache_acces.getFirst();
+        return cache_access.getFirst();
     }
 
     public boolean freeOldestCache()
@@ -191,7 +191,7 @@ public class AudioDataCache
         else
         {
             ordered_caches.remove( win );
-            cache_acces.remove( win );
+            cache_access.remove( win );
             usedCacheSize -= win.getChannel_number() * win.getSample_number();
             return true;
         }

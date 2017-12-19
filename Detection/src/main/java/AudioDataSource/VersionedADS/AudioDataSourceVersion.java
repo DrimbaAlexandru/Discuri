@@ -1,16 +1,20 @@
-package AudioDataSource.VersionedAudioDataSource;
+package AudioDataSource.VersionedADS;
 
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.AUFileAudioSource;
+import AudioDataSource.FileADS.FileAudioSourceFactory;
+import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import Utils.Interval;
-import sun.security.x509.CertificateValidity;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
+import static java.nio.file.Files.deleteIfExists;
 
 /**
  * Created by Alex on 12.12.2017.
@@ -72,6 +76,14 @@ class ProjectFilesManager
         if( assocs.size() == 0 )
         {
             file_references.remove( file );
+            try
+            {
+                deleteIfExists( new File( file ).toPath() );
+            }
+            catch( IOException e )
+            {
+                e.printStackTrace();
+            }
             //TODO: Reomve file from Hard Disk
         }
     }
@@ -88,8 +100,8 @@ public class AudioDataSourceVersion implements IAudioDataSource
     private int channel_number;
     private int version;
     private int sample_number;
-    private AUFileAudioSource fileAudioSource = null;
-    private static final int max_samples_per_chunk = 1024 * 512;
+    private IFileAudioDataSource fileAudioSource = null;
+    private static final int max_samples_per_chunk = 1024 * 1024;
     private ArrayList< FileToProjectMapping > mapping = new ArrayList<>();
 
     public AudioDataSourceVersion( int version, int sample_rate, int channel_number, int sample_number )
@@ -98,6 +110,16 @@ public class AudioDataSourceVersion implements IAudioDataSource
         this.channel_number = channel_number;
         this.version = version;
         this.sample_rate = sample_rate;
+    }
+
+    public AudioDataSourceVersion( int version, String file ) throws DataSourceException
+    {
+        this.version = version;
+        fileAudioSource = FileAudioSourceFactory.fromFile( file );
+        sample_number = fileAudioSource.get_sample_number();
+        channel_number = fileAudioSource.get_channel_number();
+        sample_rate = fileAudioSource.get_sample_rate();
+        map( 0, sample_number, 0, file );
     }
 
     public AudioDataSourceVersion duplicate()
@@ -265,7 +287,6 @@ public class AudioDataSourceVersion implements IAudioDataSource
     {
         double buf[][] = null;
         int i, j, k;
-        AUFileAudioSource AUfas = null;
         for( i = 0; i < length; )
         {
             FileToProjectMapping map = get_mapping( i + first_sample_index );
@@ -277,13 +298,13 @@ public class AudioDataSourceVersion implements IAudioDataSource
             {
                 throw new DataSourceException( "Sample index not mapped", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
             }
-            if( AUfas == null || !AUfas.getFile_path().equals( map.file_name ) )
+            if( fileAudioSource == null || !fileAudioSource.getFile_path().equals( map.file_name ) )
             {
-                AUfas = new AUFileAudioSource( map.file_name );
+                fileAudioSource = FileAudioSourceFactory.fromFile( map.file_name );
             }
             temp_len = Math.min( length - i, map.get_length() );
             file_first_sample_index = i + first_sample_index - map.project_interval.l + map.file_interval.l;
-            win = AUfas.get_samples( file_first_sample_index, temp_len );
+            win = fileAudioSource.get_samples( file_first_sample_index, temp_len );
 
             if( temp_len == length )
             {
@@ -334,7 +355,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         {
             if( fileAudioSource == null || fileAudioSource.get_sample_number() >= max_samples_per_chunk )
             {
-                fileAudioSource = new AUFileAudioSource( ProjectFilesManager.gimme_a_new_files_name(), samples.getChannel_number(), sample_rate, 2 );
+                fileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.getChannel_number(), sample_rate, 2 );
             }
             temp_len = Math.min( samples.getFirst_sample_index() + samples.getSample_number() - index, max_samples_per_chunk - fileAudioSource.get_sample_number() );
 

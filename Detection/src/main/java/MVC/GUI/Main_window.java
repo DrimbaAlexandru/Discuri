@@ -1,7 +1,8 @@
 package MVC.GUI;
 
-import AudioDataSource.CachedAudioDataSource;
+import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
 import SignalProcessing.LiniarPrediction.BurgLP;
@@ -177,8 +178,7 @@ public class Main_window
 
         try
         {
-            WAVFileAudioSource wavDS = new WAVFileAudioSource( raw_wav_filepath );
-            dataSource = new CachedAudioDataSource( wavDS, 44100 );
+            dataSource = new CachedAudioDataSource( FileAudioSourceFactory.fromFile( raw_wav_filepath ), 44100 );
 
         }
         catch( Exception e )
