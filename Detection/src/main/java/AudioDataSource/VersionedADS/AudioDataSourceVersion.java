@@ -2,7 +2,6 @@ package AudioDataSource.VersionedADS;
 
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
-import AudioDataSource.FileADS.AUFileAudioSource;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
@@ -327,39 +326,33 @@ public class AudioDataSourceVersion implements IAudioDataSource
     }
 
     @Override
-    public AudioSamplesWindow get_resized_samples( int first_sample_index, int length, int resized_length ) throws DataSourceException
-    {
-        throw new DataSourceException( DataSourceExceptionCause.METHOD_NOT_SUPPORTED );
-    }
-
-    @Override
     public void put_samples( AudioSamplesWindow new_samples ) throws DataSourceException
     {
-        throw new DataSourceException( DataSourceExceptionCause.METHOD_NOT_SUPPORTED );
+        replace_block( new_samples, new_samples.get_length() );
     }
 
     public void replace_block( AudioSamplesWindow samples, int replaced_length ) throws DataSourceException
     {
-        if( samples.getChannel_number() != channel_number )
+        if( samples.get_channel_number() != channel_number )
         {
             throw new DataSourceException( "Project and window channel numbers do not match", CHANNEL_NOT_VALID );
         }
 
-        demap( samples.getFirst_sample_index(), replaced_length );
-        move_project_mapping( samples.getFirst_sample_index(), samples.getSample_number() - replaced_length );
+        demap( samples.get_first_sample_index(), replaced_length );
+        move_project_mapping( samples.get_first_sample_index(), samples.get_length() - replaced_length );
 
-        int index = samples.getFirst_sample_index();
+        int index = samples.get_first_sample_index();
         int temp_len;
 
-        while( index < samples.getFirst_sample_index() + samples.getSample_number() )
+        while( index < samples.get_first_sample_index() + samples.get_length() )
         {
             if( fileAudioSource == null || fileAudioSource.get_sample_number() >= max_samples_per_chunk )
             {
-                fileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.getChannel_number(), sample_rate, 2 );
+                fileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 2 );
             }
-            temp_len = Math.min( samples.getFirst_sample_index() + samples.getSample_number() - index, max_samples_per_chunk - fileAudioSource.get_sample_number() );
+            temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, max_samples_per_chunk - fileAudioSource.get_sample_number() );
 
-            double buf[][] = new double[ samples.getChannel_number() ][ temp_len ];
+            double buf[][] = new double[ samples.get_channel_number() ][ temp_len ];
             for( int i = 0; i < temp_len; i++ )
             {
                 for( int k = 0; k < channel_number; k++ )

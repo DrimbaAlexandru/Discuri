@@ -1,6 +1,4 @@
-package AudioDataSource.VersionedAudioDataSource;
-
-import AudioDataSource.IAudioDataSource;
+package AudioDataSource.VersionedADS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +8,7 @@ import java.util.List;
  */
 public class VersionedAudioDataSource
 {
-    private List<AudioDataSourceVersion> versions = new ArrayList<>();
+    private List< AudioDataSourceVersion > versions = new ArrayList<>();
     private int current_version = 0;
 
     public AudioDataSourceVersion get_current_version()

@@ -1,6 +1,7 @@
 package MVC.GUI;
 
 import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.ADCache.d_CADS;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.WAVFileAudioSource;
@@ -80,7 +81,7 @@ public class Main_window
 
     private String raw_wav_filepath = "";
 
-    private CachedAudioDataSource dataSource = null;
+    private d_CADS dataSource = null;
     private MarkerFile markerFile;
     private int sample_number;
     private int channel_number;
@@ -178,7 +179,7 @@ public class Main_window
 
         try
         {
-            dataSource = new CachedAudioDataSource( FileAudioSourceFactory.fromFile( raw_wav_filepath ), 44100 );
+            dataSource = new d_CADS( FileAudioSourceFactory.fromFile( raw_wav_filepath ), 44100, 1024 );
 
         }
         catch( Exception e )

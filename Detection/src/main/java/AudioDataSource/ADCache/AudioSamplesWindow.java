@@ -1,6 +1,7 @@
 package AudioDataSource.ADCache;
 
 import AudioDataSource.Exceptions.DataSourceException;
+import Utils.Interval;
 
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
@@ -11,30 +12,28 @@ import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CAC
 public class AudioSamplesWindow
 {
     private double samples[][]; /* Access: samples[channel][index] */
-    private int sample_number;
+    private Interval interval;
     private int channel_number;
-    private int first_sample_index;
     private boolean modified;
 
-    public AudioSamplesWindow( double _samples[][], int _first_sample_index, int _sample_number, int _channel_number )
+    public AudioSamplesWindow( double _samples[][], int first_sample_index, int length, int _channel_number )
     {
         samples = _samples;
-        first_sample_index = _first_sample_index;
-        sample_number = _sample_number;
+        interval = new Interval( first_sample_index, length );
         channel_number = _channel_number;
         modified = false;
     }
 
     public boolean containsSample( int sample_index )
     {
-        return !( ( sample_index < first_sample_index ) || ( sample_index >= first_sample_index + sample_number ) );
+        return interval.contains( sample_index );
     }
 
     public double getSample( int sample_index, int channel ) throws DataSourceException
     {
         try
         {
-            return samples[ channel ][ ( sample_index - first_sample_index ) ];
+            return samples[ channel ][ ( sample_index - interval.l ) ];
         }
         catch( ArrayIndexOutOfBoundsException e )
         {
@@ -55,7 +54,7 @@ public class AudioSamplesWindow
     {
         try
         {
-            samples[ channel ][ ( sample_index - first_sample_index ) ] = newValue;
+            samples[ channel ][ ( sample_index - interval.l ) ] = newValue;
             modified = true;
         }
         catch( ArrayIndexOutOfBoundsException e )
@@ -72,20 +71,22 @@ public class AudioSamplesWindow
         }
     }
 
+    /*
     public double[][] getSamples()
     {
         return samples;
     }
+    */
 
-    public int getFirst_sample_index() {
-        return first_sample_index;
+    public int get_first_sample_index() {
+        return interval.l;
     }
 
-    public int getSample_number() {
-        return sample_number;
+    public int get_length() {
+        return interval.get_length();
     }
 
-    public int getChannel_number() {
+    public int get_channel_number() {
         return channel_number;
     }
 
@@ -103,4 +104,8 @@ public class AudioSamplesWindow
         modified = false;
     }
 
+    public Interval getInterval()
+    {
+        return interval;
+    }
 }

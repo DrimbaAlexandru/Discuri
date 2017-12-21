@@ -1,34 +1,45 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.VersionedADS.AudioDataSourceVersion;
+import AudioDataSource.ADCache.d_CADS;
 
 /**
  * Created by Alex on 08.09.2017.
  */
 public class TestMain {
-
-    public static void main(String args[])
+    public static void main( String[] args )
     {
-        AudioDataSourceVersion ver = new AudioDataSourceVersion( 0, 44100, 2, 0 );
-        double buffer[][] = new double[ 2 ][ 4410 ];
+        double sample = 0.999999999999;
+        long s = ( long )( sample * ( ( long )Integer.MAX_VALUE + ( long )1 ) );
+        System.out.println( s );
+    }
 
-        for( int i = 0; i < buffer[ 0 ].length; i++ )
-        {
-            for( int k = 0; k < buffer.length; k++ )
-            {
-                buffer[ k ][ i ] = Math.sin( Math.PI * i / 49 );
-            }
-        }
-
-        AudioSamplesWindow win;
+    public static void main2(String args[])
+    {
         try
         {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\proj_files\\out.wav", 2, 44100, 2 );
+            AudioSamplesWindow win;
+            double buffer[][] = new double[ 2 ][ 4410 ];
+
+            d_CADS cached = new d_CADS( wav, 4410, 1024 );
+
+            for( int i = 0; i < buffer[ 0 ].length; i++ )
+            {
+                for( int k = 0; k < buffer.length; k++ )
+                {
+                    buffer[ k ][ i ] = Math.sin( Math.PI * i / 49 );
+                }
+            }
+
             win = new AudioSamplesWindow( buffer, 0, 4410, 2 );
-            ver.replace_block( win, 0 );
+            cached.put_samples( win );
 
             win = new AudioSamplesWindow( buffer, 4410, 4410, 2 );
-            ver.replace_block( win, 0 );
+            cached.put_samples( win );
+
+            win = new AudioSamplesWindow( buffer, 8820, 4410, 2 );
+            cached.put_samples( win );
 
             for( int i = 0; i < buffer[ 0 ].length; i++ )
             {
@@ -38,16 +49,17 @@ public class TestMain {
                 }
             }
 
-            win = new AudioSamplesWindow( buffer, 2156, 4410, 2 );
-            ver.replace_block( win, 4410 );
+            win = new AudioSamplesWindow( buffer, 0 + 4410/2, 4410, 2 );
+            cached.put_samples( win );
+            win = new AudioSamplesWindow( buffer, 4410 + 4410/2, 4410, 2 );
+            cached.put_samples( win );
 
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\proj_files\\out.wav", 2, 44100, 2 );
-            wav.put_samples( ver.get_samples( 0, ver.get_sample_number() ) );
+            cached.flushAll();
         }
         catch( DataSourceException e )
         {
-            System.err.println( e.getMessage() );
             e.printStackTrace();
+
         }
     }
 }

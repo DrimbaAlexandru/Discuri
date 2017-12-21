@@ -40,4 +40,9 @@ public class Interval
         return ( obj instanceof Interval ) && ( ( ( Interval )obj ).l == l ) && ( ( ( Interval )obj ).r == r );
     }
 
+    public int get_length()
+    {
+        return r - l;
+    }
+
 }

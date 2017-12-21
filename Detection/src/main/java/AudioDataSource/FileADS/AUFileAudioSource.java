@@ -3,7 +3,6 @@ package AudioDataSource.FileADS;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.IAudioDataSource;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -225,9 +224,9 @@ public class AUFileAudioSource implements IFileAudioDataSource
             case 1:
                 return ( ( double )byteBuffer.get( buffer_offset ) ) / Byte.MAX_VALUE;
             case 2:
-                return ( ( double )byteBuffer.getShort( buffer_offset ) ) / Short.MAX_VALUE;
+                return ( ( double )byteBuffer.getShort( buffer_offset ) ) / ( Short.MAX_VALUE + 1 );
             case 4:
-                return ( ( double )byteBuffer.getInt( buffer_offset ) ) / Integer.MAX_VALUE;
+                return ( ( double )byteBuffer.getInt( buffer_offset ) ) / ( ( long )( Integer.MAX_VALUE ) + 1 );
         }
         return 0;
     }
@@ -261,7 +260,7 @@ public class AUFileAudioSource implements IFileAudioDataSource
                 }
                 else
                 {
-                    byteBuffer.putShort( buffer_offset, ( short )( sample * Short.MAX_VALUE ) );
+                    byteBuffer.putShort( buffer_offset, ( short )( sample * ( Short.MAX_VALUE + 1 ) ) );
                 }
                 break;
             case 4:
@@ -275,16 +274,10 @@ public class AUFileAudioSource implements IFileAudioDataSource
                 }
                 else
                 {
-                    byteBuffer.putInt( buffer_offset, ( int )( sample * Integer.MAX_VALUE ) );
+                    byteBuffer.putInt( buffer_offset, ( int )( sample * ( ( long )Integer.MAX_VALUE + 1 ) ) );
                 }
                 break;
         }
-    }
-
-    @Override
-    public AudioSamplesWindow get_resized_samples( int first_sample_index, int length, int resized_length ) throws DataSourceException
-    {
-        throw new DataSourceException( "This data source does not support the get_resized_samples() method", DataSourceExceptionCause.METHOD_NOT_SUPPORTED );
     }
 
     @Override
@@ -294,13 +287,13 @@ public class AUFileAudioSource implements IFileAudioDataSource
         int buffer_position = 0;
         try
         {
-            file.seek( win.getFirst_sample_index() * frame_size + header_length );
+            file.seek( win.get_first_sample_index() * frame_size + header_length );
         }
         catch( IOException e )
         {
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
-        for( i = win.getFirst_sample_index(); i < win.getFirst_sample_index() + win.getSample_number(); i++ )
+        for( i = win.get_first_sample_index(); i < win.get_first_sample_index() + win.get_length(); i++ )
         {
             for( k = 0; k < channel_number; k++ )
             {
@@ -313,7 +306,7 @@ public class AUFileAudioSource implements IFileAudioDataSource
                 buffer_position += byte_depth;
             }
 
-            if( buffer_position > ( buffer_size - byte_depth * channel_number ) || ( i == win.getFirst_sample_index() + win.getSample_number() - 1 ) )
+            if( buffer_position > ( buffer_size - byte_depth * channel_number ) || ( i == win.get_first_sample_index() + win.get_length() - 1 ) )
             {
                 try
                 {
@@ -326,7 +319,7 @@ public class AUFileAudioSource implements IFileAudioDataSource
                 }
             }
         }
-        sample_number = Math.max( sample_number, win.getFirst_sample_index() + win.getSample_number() );
+        sample_number = Math.max( sample_number, win.get_first_sample_index() + win.get_length() );
         writeHeader();
     }
 
