@@ -1,11 +1,11 @@
 package MVC.GUI;
 
 import AudioDataSource.ADCache.CachedAudioDataSource;
-import AudioDataSource.ADCache.d_CADS;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
-import AudioDataSource.FileADS.WAVFileAudioSource;
+import AudioDataSource.FileADS.IFileAudioDataSource;
 import MarkerFile.MarkerFile;
+import ProjectStatics.ProjectStatics;
 import SignalProcessing.LiniarPrediction.BurgLP;
 import SignalProcessing.LiniarPrediction.LinearPrediction;
 import SignalProcessing.LiniarPrediction.NotEnoughSamplesException;
@@ -26,6 +26,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 
@@ -42,8 +43,6 @@ public class Main_window
     --------------------------------*/
     private Pane mainLayout = null;
     private Scene localScene;
-    @FXML
-    private Button btn_open_wav, btn_load_mark, btn_save_mark;
     @FXML
     private Button btn_prev_frame, btn_prev_sample, btn_next_frame, btn_next_sample;
     @FXML
@@ -62,6 +61,10 @@ public class Main_window
     private Label sel_len_indicator;
     @FXML
     private ScrollBar time_scroll;
+    @FXML
+    private MenuItem menu_open_file, menu_export, menu_load_marker, menu_save_marker;
+    @FXML
+    private Menu menu_effects;
 
     /*--------------------------------
     Position, selection and audio data variables
@@ -81,8 +84,7 @@ public class Main_window
 
     private String raw_wav_filepath = "";
 
-    private d_CADS dataSource = null;
-    private MarkerFile markerFile;
+    private CachedAudioDataSource dataSource = null;
     private int sample_number;
     private int channel_number;
 
@@ -104,6 +106,16 @@ public class Main_window
     /*************************************************
     Private Methods
     *************************************************/
+
+    private void showDialog( Alert.AlertType type, String message )
+    {
+        Alert alert = new Alert( type );
+        alert.setTitle( type.name() );
+        alert.setHeaderText( null );
+        alert.setContentText( message );
+        alert.showAndWait();
+    }
+
     /*----------------------------------------
     Method name: set_first_sample_index
     Description: Set the value of the first sample index
@@ -141,7 +153,7 @@ public class Main_window
 
     private void refresh_view()
     {
-        if( inv_select || inv_samples)
+        if( inv_select || inv_samples )
         {
             drawSamples();
             refreshSelection();
@@ -179,12 +191,14 @@ public class Main_window
 
         try
         {
-            dataSource = new d_CADS( FileAudioSourceFactory.fromFile( raw_wav_filepath ), 44100, 1024 );
-
+            ProjectStatics.loadAudioFile( raw_wav_filepath );
+            dataSource = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(), 44100, 2048 );
+            window_size = Math.min( window_size, dataSource.get_sample_number() );
         }
         catch( Exception e )
         {
             e.printStackTrace();
+            showDialog( Alert.AlertType.ERROR, "File load failed. " + e.getMessage() );
             return;
         }
 
@@ -195,7 +209,7 @@ public class Main_window
         inv_samples = true;
         update_samples_window = true;
 
-        sample_number = ( int )dataSource.get_sample_number();
+        sample_number = dataSource.get_sample_number();
         channel_number = dataSource.get_channel_number();
 
         current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
@@ -322,11 +336,11 @@ public class Main_window
                                        } );
         localScene.setOnKeyReleased( e ->
                                      {
-                                         if( e.getCode()== KeyCode.I && e.isControlDown() )
+                                         if( e.getCode() == KeyCode.I && e.isControlDown() )
                                          {
                                              interpolate_selection();
                                          }
-                                         if( e.getCode()== KeyCode.M && e.isControlDown() )
+                                         if( e.getCode() == KeyCode.M && e.isControlDown() )
                                          {
                                              mark_selection();
                                          }
@@ -413,7 +427,7 @@ public class Main_window
         for( i = 0; i < display_window_size - 1; i++ )
         {
             /* Draw L channel */
-            if( markerFile.isMarked( first_sample_index + i, 0 ) )
+            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( first_sample_index + i, 0 ) )
             {
                 gc.setStroke( Color.RED );
             }
@@ -427,7 +441,7 @@ public class Main_window
                            ( 1 + Math.min( Math.max( -l_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
 
             /* Draw R channel */
-            if( markerFile.isMarked( first_sample_index + i, 1 ) )
+            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( first_sample_index + i, 1 ) )
             {
                 gc.setStroke( Color.RED );
             }
@@ -503,23 +517,45 @@ public class Main_window
         try
         {
             mainLayout = l.load();
-            markerFile = MarkerFile.fromFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
+            //markerFile = MarkerFile.fromFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
             //markerFile = new MarkerFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
             display_window_height = ( int )main_canvas.getHeight();
             display_window_width = ( int )main_canvas.getWidth() - window_left_pad;
             startRefresher();
-            btn_open_wav.setOnMouseClicked( e ->
-                                            {
-                                                loadWAV();
-                                            } );
+
+            menu_open_file.setOnAction( e ->
+                                        {
+                                            loadWAV();
+                                        } );
+            menu_load_marker.setOnAction( e->
+                                          {
+                                              FileChooser fc = new FileChooser();
+
+                                              fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
+                                              File f = fc.showOpenDialog( localScene.getWindow() );
+                                              String path;
+                                              if( f != null )
+                                              {
+                                                  path = f.getAbsolutePath();
+                                              }
+                                              else
+                                              {
+                                                  return;
+                                              }
+                                              try
+                                              {
+                                                  ProjectStatics.loadMarkerFile( path );
+                                              }
+                                              catch( FileNotFoundException | ParseException e1 )
+                                              {
+                                                  showDialog( Alert.AlertType.ERROR, e1.getMessage() );
+                                              }
+
+                                          });
         }
         catch( IOException e )
         {
             e.printStackTrace();
-        }
-        catch( ParseException e )
-        {
-            System.err.println( e.getMessage() );
         }
     } /* Main_window */
 
@@ -555,14 +591,6 @@ public class Main_window
                                               Thread.sleep( 100 );
                                           }
                                           catch( InterruptedException e1 )
-                                          {
-                                              e1.printStackTrace();
-                                          }
-                                          try
-                                          {
-                                              markerFile.writeMarkingsToFile();
-                                          }
-                                          catch( IOException e1 )
                                           {
                                               e1.printStackTrace();
                                           }
@@ -670,8 +698,11 @@ public class Main_window
 
     private void mark_selection()
     {
-        markerFile.addMark( selection_start_index, selection_end_index, 0 );
-        markerFile.addMark( selection_start_index, selection_end_index, 1 );
+        if( ProjectStatics.getMarkerFile() != null )
+        {
+            ProjectStatics.getMarkerFile().addMark( selection_start_index, selection_end_index, 0 );
+            ProjectStatics.getMarkerFile().addMark( selection_start_index, selection_end_index, 1 );
+        }
         inv_samples = true;
     }
 }

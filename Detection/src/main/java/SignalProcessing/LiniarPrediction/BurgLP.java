@@ -46,6 +46,5 @@ public class BurgLP implements LinearPrediction
             center[ i ] = left_extrapolated_samples[ i ] + right_extrapolated_samples[ i ];
         }
 
-
     }
 }

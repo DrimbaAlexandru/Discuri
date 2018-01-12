@@ -1,7 +1,7 @@
 package Tests;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.ADCache.d_CADS;
+import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 
@@ -19,7 +19,7 @@ public class CachedADS_Test
         {
             String temp_file_path = "D:\\test.wav";
             WAVFileAudioSource wavADS = new WAVFileAudioSource( temp_file_path, 2, 44100, 2 );
-            d_CADS cache = new d_CADS( wavADS, 8096, 1024 );
+            CachedAudioDataSource cache = new CachedAudioDataSource( wavADS, 4096, 1024 );
             double buffer[][] = new double[ 2 ][ 2048 ];
             AudioSamplesWindow win;
             int i, k;
@@ -75,14 +75,47 @@ public class CachedADS_Test
             assert wavADS.get_samples( 4095, 1 ).getSample( 4095, 0 ) == 0.5;
             assert wavADS.get_samples( 4095, 1 ).getSample( 4095, 1 ) == 0.25;
 
+            assert cache.get_channel_number() == 2;
+            assert cache.get_sample_rate() == 44100;
+            assert cache.get_sample_number() == 4096;
+
+            /* Test case #1: Get 4096 samples from the ADS.
+             */
+
+            win = cache.get_samples( 0, 4096 );
+
+            assert win.get_first_sample_index() == 0;
+            assert win.get_channel_number() == 2;
+            assert !win.isModified();
+            assert win.containsSample( 0 );
+            assert win.containsSample( 4095 );
+            assert !win.containsSample( -1 );
+            assert !win.containsSample( 4096 );
+
+            assert win.getSample( 0, 0 ) == -0.5;
+            assert win.getSample( 0, 1 ) == -0.25;
+            assert win.getSample( 1023, 0 ) == -0.5;
+            assert win.getSample( 1023, 1 ) == -0.25;
+
+            assert win.getSample( 1024, 0 ) == min_16_bit_val;
+            assert win.getSample( 1024, 1 ) == max_16_bit_val;
+            assert win.getSample( 3071, 0 ) == min_16_bit_val;
+            assert win.getSample( 3071, 1 ) == max_16_bit_val;
+
+            assert win.getSample( 3072, 0 ) == 0.5;
+            assert win.getSample( 3072, 1 ) == 0.25;
+            assert win.getSample( 4095, 0 ) == 0.5;
+            assert win.getSample( 4095, 1 ) == 0.25;
+
+            assert cache.getCache().getCache_access().size() == 4;
+            assert cache.getCache().getCache_access().get( 0 ).get_first_sample_index() == 1024 * 3;
+            assert cache.getCache().getCache_access().get( 1 ).get_first_sample_index() == 1024 * 2;
+            assert cache.getCache().getCache_access().get( 2 ).get_first_sample_index() == 1024;
+            assert cache.getCache().getCache_access().get( 3 ).get_first_sample_index() == 0;
         }
         catch( DataSourceException e )
         {
             e.printStackTrace();
-            switch( e.getDSEcause() )
-            {
-
-            }
             assert false;
         }
     }

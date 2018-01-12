@@ -1,5 +1,7 @@
 package AudioDataSource.VersionedADS;
 
+import AudioDataSource.Exceptions.DataSourceException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,10 +18,18 @@ public class VersionedAudioDataSource
         return versions.get( current_version );
     }
 
-    public VersionedAudioDataSource( AudioDataSourceVersion first )
+    public VersionedAudioDataSource( String path ) throws DataSourceException
     {
-        versions.add( first );
-        current_version++;
+        AudioDataSourceVersion adsv = new AudioDataSourceVersion( 0, path );
+        versions.add( adsv );
+        current_version = 0;
+    }
+
+    public VersionedAudioDataSource( int sample_rate, int channel_number, int sample_number ) throws DataSourceException
+    {
+        AudioDataSourceVersion adsv = new AudioDataSourceVersion( 0, sample_rate, channel_number, sample_number );
+        versions.add( adsv );
+        current_version = 0;
     }
 
     public void undo()
@@ -49,5 +59,21 @@ public class VersionedAudioDataSource
         current_version++;
         versions.add( current_version, ver );
         return ver;
+    }
+
+    public void dispose()
+    {
+        current_version = versions.size() - 1;
+        while( versions.size() > 1 )
+        {
+            versions.get( current_version ).destroy();
+            versions.remove( versions.get( current_version ) );
+
+        }
+    }
+
+    public int get_number_of_versions()
+    {
+        return current_version;
     }
 }

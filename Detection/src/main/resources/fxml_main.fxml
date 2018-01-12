@@ -4,13 +4,16 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollBar?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.Pane?>
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <ChoiceBox fx:id="chc_sample_type" layoutX="521.0" layoutY="36.0" prefWidth="150.0" />
+      <ChoiceBox id="choice_channels" fx:id="chc_sample_type" layoutX="521.0" layoutY="36.0" prefWidth="157.0" />
       <Button fx:id="btn_prev_sample" layoutX="70.0" layoutY="36.0" mnemonicParsing="false" text="&lt;" />
       <Button fx:id="btn_next_sample" layoutX="97.0" layoutY="36.0" mnemonicParsing="false" text="&gt;" />
       <ScrollBar fx:id="time_scroll" blockIncrement="1.0" layoutX="40.0" layoutY="414.0" max="0.0" prefHeight="14.0" prefWidth="720.0" visibleAmount="1.0" />
@@ -18,10 +21,6 @@
       <Button fx:id="btn_zoom_out" layoutX="391.0" layoutY="36.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="32.0" text="-" />
       <Button fx:id="btn_prev_frame" layoutX="28.0" layoutY="36.0" mnemonicParsing="false" text="&lt;&lt;" />
       <Button fx:id="btn_next_frame" layoutX="137.0" layoutY="36.0" mnemonicParsing="false" text="&gt;&gt;" />
-      <Button fx:id="btn_open_wav" layoutX="3.0" layoutY="2.0" mnemonicParsing="false" text="Open WAV" />
-      <Button fx:id="btn_load_mark" layoutX="95.0" layoutY="2.0" mnemonicParsing="false" text="Load marker file" />
-      <Button fx:id="btn_save_mark" layoutX="200.0" layoutY="2.0" mnemonicParsing="false" text="Save marker file" />
-      <Button fx:id="btn_mark_sample" layoutX="679.0" layoutY="36.0" mnemonicParsing="false" text="Mark sample" />
       <Button fx:id="btn_expand_select" layoutX="257.0" layoutY="36.0" mnemonicParsing="false" text="Zoom out" />
       <Button fx:id="btn_constrict_select" layoutX="189.0" layoutY="36.0" mnemonicParsing="false" text="Zoom in" />
       <Canvas fx:id="main_canvas" height="325.0" layoutX="15.0" layoutY="81.0" width="745.0" />
@@ -31,5 +30,24 @@
       <Label alignment="CENTER_RIGHT" layoutX="25.0" layoutY="460.0" prefHeight="17.0" prefWidth="60.0" text="Sel. length:" />
       <Label fx:id="sel_len_indicator" layoutX="183.0" layoutY="460.0" text="samples" />
       <Spinner fx:id="sel_len_spinner" editable="true" layoutX="93.0" layoutY="459.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="84.0" />
+      <MenuBar layoutX="-1.0" layoutY="2.0" prefHeight="25.0" prefWidth="775.0">
+        <menus>
+          <Menu id="menu_file" mnemonicParsing="false" text="File">
+            <items>
+                  <MenuItem fx:id="menu_open_file" mnemonicParsing="false" text="Open file..." />
+                  <MenuItem fx:id="menu_export" mnemonicParsing="false" text="Export project" />
+                  <MenuItem fx:id="menu_load_marker" mnemonicParsing="false" text="Load marker file" />
+                  <MenuItem fx:id="menu_save_marker" mnemonicParsing="false" text="Save marker file" />
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu id="menu_edit" mnemonicParsing="false" text="Edit">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu id="menu_effects" fx:id="menu_effects" mnemonicParsing="false" text="Effects" />
+        </menus>
+      </MenuBar>
    </children>
 </Pane>

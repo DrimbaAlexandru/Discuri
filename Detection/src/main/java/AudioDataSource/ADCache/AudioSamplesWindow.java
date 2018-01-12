@@ -1,7 +1,10 @@
 package AudioDataSource.ADCache;
 
 import AudioDataSource.Exceptions.DataSourceException;
+import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
+
+import java.util.function.Function;
 
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
@@ -107,5 +110,14 @@ public class AudioSamplesWindow
     public Interval getInterval()
     {
         return interval;
+    }
+
+    public void applyWindow( Function< Double, Double > function )
+    {
+        for( int ch = 0; ch < get_channel_number(); ch++ )
+        {
+
+            Windowing.apply( samples[ ch ], get_length(), function );
+        }
     }
 }

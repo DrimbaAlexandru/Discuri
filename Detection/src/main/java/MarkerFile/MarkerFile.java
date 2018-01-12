@@ -1,5 +1,6 @@
 package MarkerFile;
 
+import Utils.Interval;
 import com.sun.deploy.util.OrderedHashSet;
 
 import java.io.*;
@@ -84,7 +85,6 @@ public class MarkerFile
             map.put( tba.first_marked_sample, tba );
         }
 
-
     }
 
     public void writeMarkingsToFile( OutputStreamWriter o ) throws IOException
@@ -141,6 +141,36 @@ public class MarkerFile
         return mf;
     }
 
+    public Marking getNextMark( int current_index )
+    {
+        Marking l_m = null, r_m = null;
+        Map.Entry< Integer, Marking > entry;
+        entry = l_markings.ceilingEntry( current_index );
+        if( entry != null )
+        {
+            l_m = entry.getValue();
+        }
+        entry = r_markings.ceilingEntry( current_index );
+        if( entry != null )
+        {
+            r_m = entry.getValue();
+        }
+        if( l_m == null )
+        {
+            return r_m;
+        }
+        else
+        {
+            if( r_m != null )
+            {
+                return l_m.first_marked_sample < r_m.first_marked_sample ? l_m : r_m;
+            }
+            else
+            {
+                return l_m;
+            }
+        }
+    }
     public boolean isMarked( int sample, int ch )
     {
         Map.Entry< Integer, Marking > entry = ( ch == 0 ) ? l_markings.floorEntry( sample ) : r_markings.floorEntry( sample );

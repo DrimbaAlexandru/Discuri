@@ -1,7 +1,10 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.ADCache.d_CADS;
+import AudioDataSource.ADCache.CachedAudioDataSource;
+import SignalProcessing.Effects.FIR_Filter;
+import SignalProcessing.FIR.FIR;
+import Utils.Interval;
 
 /**
  * Created by Alex on 08.09.2017.
@@ -9,9 +12,22 @@ import AudioDataSource.ADCache.d_CADS;
 public class TestMain {
     public static void main( String[] args )
     {
-        double sample = 0.999999999999;
-        long s = ( long )( sample * ( ( long )Integer.MAX_VALUE + ( long )1 ) );
-        System.out.println( s );
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\temp.wav", 2, 44100, 2 );
+            wav.put_samples( new AudioSamplesWindow( new double[][]{ { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 } }, 0, 10, 2 ) );
+            FIR_Filter effect = new FIR_Filter();
+            FIR fir = new FIR( new double[]{ 0.2, 0, 0, 0, 0, 0.4 }, 6 );
+            effect.setFilter( fir );
+            effect.apply( wav, new Interval( 0, 10 ) );
+            wav.close();
+
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+
     }
 
     public static void main2(String args[])
@@ -22,7 +38,7 @@ public class TestMain {
             AudioSamplesWindow win;
             double buffer[][] = new double[ 2 ][ 4410 ];
 
-            d_CADS cached = new d_CADS( wav, 4410, 1024 );
+            CachedAudioDataSource cached = new CachedAudioDataSource( wav, 4410, 1024 );
 
             for( int i = 0; i < buffer[ 0 ].length; i++ )
             {

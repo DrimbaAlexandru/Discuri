@@ -370,4 +370,9 @@ public class AudioDataSourceVersion implements IAudioDataSource
         compact_mapping();
 
     }
+
+    public int getVersion()
+    {
+        return version;
+    }
 }

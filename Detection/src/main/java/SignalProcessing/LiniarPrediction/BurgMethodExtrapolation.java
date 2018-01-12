@@ -9,6 +9,7 @@ public class BurgMethodExtrapolation
     private double x[];
     private double f[];
     private double b[];
+    private double olda[];
     private int k;
     private int coeffs;
     private int N;
@@ -21,9 +22,10 @@ public class BurgMethodExtrapolation
         this.N = N;
         this.coeffs = coeffs;
         a = new double[ coeffs + 2 ];
+        olda = new double[ coeffs + 2 ];
         x = new double[ N + 1 ];
         f = new double[ N + 1 ];
-        b = new double[ N + 1];
+        b = new double[ N + 1 ];
         for( i = 1; i <= coeffs; i++ )
         {
             a[ i ] = 0;
@@ -88,7 +90,7 @@ public class BurgMethodExtrapolation
 
     private void update_A( double niu )
     {
-        double olda[] = new double[ coeffs + 2 ];
+
         int i;
         for( i = 0; i < coeffs + 2; i++ )
         {
@@ -173,8 +175,15 @@ public class BurgMethodExtrapolation
         }
     }
 
-    public double[] getA()
+    public double[] get_coeffs()
     {
-        return a;
+        double[] k = new double[ coeffs ];
+        int i;
+        for( i = 1; i <= coeffs; i++ )
+        {
+            k[ i - 1 ] = a[ i ];
+        }
+        k[ coeffs - 1 ] = 0;
+        return k;
     }
 }

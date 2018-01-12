@@ -6,6 +6,8 @@ package Utils;
 public class Interval
 {
     public int l;
+    /** left is inclusive, right is exclusive
+     */
     public int r;
 
     public Interval( int start, int len )

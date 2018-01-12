@@ -1,5 +1,6 @@
 package AudioDataSource.ADCache;
 
+import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 
 import java.util.*;
@@ -13,23 +14,18 @@ import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_ALREADY
  */
 public class AudioDataCache
 {
-    private long maxCacheSize = 44100 * 2;
-    private long usedCacheSize = 0;
-    private int maxCachePageSize = 32768;
+    private int maxCacheSize = 44100 * 2;
+    private int usedCacheSize = 0;
 
     private TreeSet< AudioSamplesWindow > ordered_caches = new TreeSet<>( ( cw1, cw2 ) ->
-                                                                       {
-                                                                           return cw1.get_first_sample_index() - cw2.get_first_sample_index();
-                                                                       } );
+                                                                          {
+                                                                              return cw1.get_first_sample_index() - cw2.get_first_sample_index();
+                                                                          } );
     private LinkedList< AudioSamplesWindow > cache_access = new LinkedList<>();
 
-    private boolean containedIn( int value, int minInclusive, int maxExclusive )
+    public AudioDataCache( int _max_cache_size )
     {
-        return ( ( value >= minInclusive ) && ( value < maxExclusive ) );
-    }
-
-    public AudioDataCache()
-    {
+        maxCacheSize = ( _max_cache_size == 0 ) ? maxCacheSize : _max_cache_size;
     }
 
     public void showCacheStatus()
@@ -45,11 +41,6 @@ public class AudioDataCache
         System.out.println( "-------" );
     }
 
-    public AudioDataCache( long _maxCacheSize )
-    {
-        maxCacheSize = _maxCacheSize;
-    }
-
     public boolean containsSample( int sample_index )
     {
         AudioSamplesWindow win = ordered_caches.floor( new AudioSamplesWindow( null, sample_index, 1, 1 ) );
@@ -63,9 +54,8 @@ public class AudioDataCache
 
     public void newCache( AudioSamplesWindow win ) throws DataSourceException
     {
-        showCacheStatus();
+        //showCacheStatus();
         AudioSamplesWindow left, right;
-        int i;
 
         if( win.get_length() * win.get_channel_number() > maxCacheSize )
         {
@@ -80,84 +70,18 @@ public class AudioDataCache
         left = ordered_caches.floor( new AudioSamplesWindow( null, win.get_first_sample_index(), 0, 0 ) );
         right = ordered_caches.ceiling( new AudioSamplesWindow( null, win.get_first_sample_index(), 0, 0 ) );
 
-        if( ( left != null )
-              && ( containedIn( win.get_first_sample_index(), left.get_first_sample_index(), left.get_first_sample_index() + left.get_length() )
-                   || containedIn( win.get_first_sample_index() + win.get_length() - 1, left.get_first_sample_index(), left.get_first_sample_index() + left.get_length() )
-                   || containedIn( left.get_first_sample_index(), win.get_first_sample_index(), win.get_first_sample_index() + win.get_length() ) ) )
+        if( ( left != null ) && ( left.getInterval().getIntersection( win.getInterval() ) ) != null )
         {
-            throw new DataSourceException( "Current interval overlaps with cache. Tried to add cache interval " +
-                                                     win.get_first_sample_index() + " to " + ( win.get_first_sample_index() + win.get_length() ) +
-                                                     ". Window from " + left.get_first_sample_index() + " to "
-                                                     + ( left.get_first_sample_index() + left.get_length() ) + " already contains it" ,
-                                           SAMPLE_ALREADY_CACHED );
+            throw new DataSourceException( "Current interval overlaps with cache. Tried to add cache interval " + win.get_first_sample_index() + " to " + ( win.get_first_sample_index() + win.get_length() ) + ". Window from " + left.get_first_sample_index() + " to " + ( left.get_first_sample_index() + left.get_length() ) + " already contains it", SAMPLE_ALREADY_CACHED );
         }
 
-        if( ( right != null )
-              && ( containedIn( win.get_first_sample_index(), right.get_first_sample_index(), right.get_first_sample_index() + right.get_length() )
-                   || containedIn( win.get_first_sample_index() + win.get_length() - 1, right.get_first_sample_index(), right.get_first_sample_index() + right.get_length() )
-                   || containedIn( right.get_first_sample_index(), win.get_first_sample_index(), win.get_first_sample_index() + win.get_length() ) ) )
+        if( ( right != null ) && ( right.getInterval().getIntersection( win.getInterval() ) ) != null )
         {
-            throw new DataSourceException( "Current interval overlaps with cache. Tried to add cache interval " +
-                                                     win.get_first_sample_index() + " to " + ( win.get_first_sample_index() + win.get_length() ) +
-                                                     ". Window from " + right.get_first_sample_index() + " to "
-                                                     + ( right.get_first_sample_index() + right.get_length() ) + " already contains it" ,
-                                           SAMPLE_ALREADY_CACHED );
+            throw new DataSourceException( "Current interval overlaps with cache. Tried to add cache interval " + win.get_first_sample_index() + " to " + ( win.get_first_sample_index() + win.get_length() ) + ". Window from " + right.get_first_sample_index() + " to " + ( right.get_first_sample_index() + right.get_length() ) + " already contains it", SAMPLE_ALREADY_CACHED );
         }
 
-        i = 0;/*
-        if( ( left != null )
-              && ( left.get_length() * left.get_channel_number() < maxCachePageSize )
-              && ( left.get_first_sample_index() + left.get_length() == first_sample_index )
-              && ( maxCachePageSize / channels - left.get_length() < samples_number % ( maxCachePageSize / channels ) ) )
-        {
-            int temp_len = left.get_length() + samples_number;
-            temp_len = ( temp_len * channels > maxCachePageSize ) ? maxCachePageSize / channels : temp_len;
-            double buffer[][] = new double[ temp_len ][ channels ];
-            for( int j = 0; j < temp_len; j++ )
-            {
-                if( j < left.get_length() )
-                {
-                    for( int c = 0; c < channels; c++ )
-                    {
-                        buffer[ j ][ c ] = left.getSample( left.get_first_sample_index() + j, c );
-                    }
-                }
-                else
-                {
-                    for( int c = 0; c < channels; c++ )
-                    {
-                        buffer[ j ][ c ] = samples[ i++ ][ c ];
-                    }
-                }
-            }
-            ordered_caches.remove( left );
-            cache_access.remove( left );
-            WavCachedWindow newWin = new WavCachedWindow( buffer, left.get_first_sample_index(), temp_len, channels );
-            if( left.isModified() )
-            {
-                newWin.setModified();
-            }
-            ordered_caches.add( newWin );
-            cache_access.add( newWin );
-        }
-*/
-        //caches.put( caches.size(), new WavCachedWindow( samples, first_sample_index, samples_number, channels ) );
-        while( i < win.get_length() )
-        {
-            int temp_len = ( ( win.get_length() - i ) * win.get_channel_number() > maxCachePageSize ) ? maxCachePageSize / win.get_channel_number() : win.get_length() - i;
-            double buffer[][] = new double[ win.get_channel_number() ][ temp_len ];
-            for( int j = 0; j < temp_len; j++ )
-            {
-                for( int c = 0; c < win.get_channel_number(); c++ )
-                {
-                    buffer[ c ][ j ] = win.getSample( i + win.get_first_sample_index(), c );
-                }
-                i++;
-            }
-            AudioSamplesWindow newWin = new AudioSamplesWindow( buffer, i - temp_len + win.get_first_sample_index(), temp_len, win.get_channel_number() );
-            ordered_caches.add( newWin );
-            cache_access.add( newWin );
-        }
+        ordered_caches.add( win );
+        cache_access.addFirst( win );
 
         usedCacheSize += win.get_channel_number() * win.get_length();
     }
@@ -173,14 +97,14 @@ public class AudioDataCache
         if( result != null )
         {
             cache_access.remove( result );
-            cache_access.add( result );
+            cache_access.addFirst( result );
         }
         return result;
     }
 
     public AudioSamplesWindow getOldestUsedCache()
     {
-        return cache_access.getFirst();
+        return cache_access.getLast();
     }
 
     public boolean freeOldestCache()
@@ -241,4 +165,10 @@ public class AudioDataCache
     {
         return maxCacheSize;
     }
+
+    public LinkedList< AudioSamplesWindow > getCache_access()
+    {
+        return cache_access;
+    }
+
 }
