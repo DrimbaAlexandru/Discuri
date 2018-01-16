@@ -1,7 +1,7 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
+import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.ADCache.CachedAudioDataSource;
 import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.FIR.FIR;
 import Utils.Interval;

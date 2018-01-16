@@ -68,7 +68,7 @@ public class VersionedAudioDataSource
         {
             versions.get( current_version ).destroy();
             versions.remove( versions.get( current_version ) );
-
+            current_version--;
         }
     }
 

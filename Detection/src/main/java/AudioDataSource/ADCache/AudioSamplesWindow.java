@@ -74,12 +74,10 @@ public class AudioSamplesWindow
         }
     }
 
-    /*
     public double[][] getSamples()
     {
         return samples;
     }
-    */
 
     public int get_first_sample_index() {
         return interval.l;

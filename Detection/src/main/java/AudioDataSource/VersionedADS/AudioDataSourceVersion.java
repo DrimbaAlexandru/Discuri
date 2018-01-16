@@ -1,16 +1,19 @@
 package AudioDataSource.VersionedADS;
 
+import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
-import AudioDataSource.ADCache.AudioSamplesWindow;
 import Utils.Interval;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.TreeMap;
 
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static java.nio.file.Files.deleteIfExists;
@@ -301,7 +304,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
             {
                 fileAudioSource = FileAudioSourceFactory.fromFile( map.file_name );
             }
-            temp_len = Math.min( length - i, map.get_length() );
+            temp_len = Math.min( length - i, map.project_interval.r - i - first_sample_index );
             file_first_sample_index = i + first_sample_index - map.project_interval.l + map.file_interval.l;
             win = fileAudioSource.get_samples( file_first_sample_index, temp_len );
 

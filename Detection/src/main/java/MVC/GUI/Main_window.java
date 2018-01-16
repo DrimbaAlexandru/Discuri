@@ -1,15 +1,16 @@
 package MVC.GUI;
 
+import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.FileADS.FileAudioSourceFactory;
-import AudioDataSource.FileADS.IFileAudioDataSource;
-import MarkerFile.MarkerFile;
 import ProjectStatics.ProjectStatics;
+import SignalProcessing.Effects.IEffect;
+import SignalProcessing.Effects.Mark_selected;
+import SignalProcessing.Effects.Repair;
+import SignalProcessing.Effects.Repair_Marked;
 import SignalProcessing.LiniarPrediction.BurgLP;
 import SignalProcessing.LiniarPrediction.LinearPrediction;
-import SignalProcessing.LiniarPrediction.NotEnoughSamplesException;
-import AudioDataSource.ADCache.AudioSamplesWindow;
+import Utils.Interval;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,10 +26,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.text.ParseException;
+import java.util.Arrays;
 
 /**
  * Created by Alex on 27.03.2017.
@@ -197,7 +197,7 @@ public class Main_window
         }
         catch( Exception e )
         {
-            e.printStackTrace();
+            treatException( e );
             showDialog( Alert.AlertType.ERROR, "File load failed. " + e.getMessage() );
             return;
         }
@@ -338,11 +338,11 @@ public class Main_window
                                      {
                                          if( e.getCode() == KeyCode.I && e.isControlDown() )
                                          {
-                                             interpolate_selection();
+                                             onApplyRepairSelected( new Repair() );
                                          }
                                          if( e.getCode() == KeyCode.M && e.isControlDown() )
                                          {
-                                             mark_selection();
+                                             onApplyMarkSelected( new Mark_selected() );
                                          }
                                      } );
 
@@ -420,7 +420,7 @@ public class Main_window
         }
         catch( Exception e )
         {
-            e.printStackTrace();
+            treatException( e );
             return;
         }
 
@@ -514,6 +514,9 @@ public class Main_window
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
         l.setLocation( getClass().getClassLoader().getResource( "fxml_main.fxml" ) );
+        ProjectStatics.registerEffect( new Mark_selected() );
+        ProjectStatics.registerEffect( new Repair() );
+        ProjectStatics.registerEffect( new Repair_Marked() );
         try
         {
             mainLayout = l.load();
@@ -550,15 +553,116 @@ public class Main_window
                                               {
                                                   showDialog( Alert.AlertType.ERROR, e1.getMessage() );
                                               }
-
                                           });
+
+            menu_save_marker.setOnAction( ev->
+                                          {
+                                              FileChooser fc = new FileChooser();
+
+                                              fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
+                                              File f = fc.showSaveDialog( null );
+                                              if( f != null )
+                                              {
+                                                  try
+                                                  {
+                                                      ProjectStatics.getMarkerFile().writeMarkingsToFile( new FileWriter( f ) );
+                                                  }
+                                                  catch( IOException e )
+                                                  {
+                                                      treatException( e );
+                                                  }
+                                              }
+                                          });
+
+            for( IEffect eff : ProjectStatics.getEffectList() )
+            {
+                MenuItem mi = new MenuItem( eff.getName() );
+                menu_effects.getItems().add( mi );
+                if( eff.getClass().getCanonicalName().equals( Mark_selected.class.getCanonicalName() ) )
+                {
+                    final Mark_selected effect = ( Mark_selected )eff;
+                    mi.setOnAction( ev ->
+                                    {
+                                        System.out.println( effect.getName() );
+                                        onApplyMarkSelected( effect );
+                                    } );
+                    continue;
+                }
+                if( eff.getClass().getCanonicalName().equals( Repair.class.getCanonicalName() ) )
+                {
+                    final Repair effect = ( Repair )eff;
+                    mi.setOnAction( ev ->
+                                    {
+                                        System.out.println( effect.getName() );
+                                        onApplyRepairSelected( effect );
+                                    } );
+                    continue;
+                }
+                if( eff.getClass().getCanonicalName().equals( Repair_Marked.class.getCanonicalName() ) )
+                {
+                    final Repair_Marked effect = ( Repair_Marked )eff;
+                    mi.setOnAction( ev ->
+                                    {
+                                        System.out.println( effect.getName() );
+                                        onApplyRepairMarked( effect );
+                                    } );
+                    continue;
+                }
+
+            }
         }
         catch( IOException e )
         {
-            e.printStackTrace();
+            treatException( e );
         }
     } /* Main_window */
 
+    private void onApplyRepairMarked( Repair_Marked eff )
+    {
+        try
+        {
+            eff.apply( ProjectStatics.getVersionedADS().create_new(), new Interval( selection_start_index, selection_end_index - selection_start_index ) );
+            onDataSourceChanged();
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+    }
+
+    private void onApplyRepairSelected( Repair eff )
+    {
+        if( selection_end_index - selection_start_index > 0 )
+        {
+            try
+            {
+                eff.setAffected_channels( Arrays.asList( 0, 1 ) );
+                eff.apply( ProjectStatics.getVersionedADS().create_new(), new Interval( selection_start_index, selection_end_index - selection_start_index ) );
+                onDataSourceChanged();
+            }
+            catch( DataSourceException e )
+            {
+                treatException( e );
+            }
+        }
+    }
+
+    private void onApplyMarkSelected( Mark_selected eff )
+    {
+        if( selection_end_index - selection_start_index > 0 )
+        {
+            try
+            {
+                eff.setAffected_channels( Arrays.asList( 0, 1 ) );
+                eff.apply( ProjectStatics.getVersionedADS().create_new(), new Interval( selection_start_index, selection_end_index - selection_start_index ) );
+                onDataSourceChanged();
+            }
+            catch( DataSourceException e )
+            {
+                treatException( e );
+            }
+        }
+    }
 
     /*----------------------------------------
     Method name: run()
@@ -589,10 +693,11 @@ public class Main_window
                                           try
                                           {
                                               Thread.sleep( 100 );
+                                              ProjectStatics.getVersionedADS().dispose();
                                           }
                                           catch( InterruptedException e1 )
                                           {
-                                              e1.printStackTrace();
+                                              treatException( e1 );
                                           }
                                           //TBD: Show save/don't save dialog
                                       } );
@@ -682,28 +787,49 @@ public class Main_window
                         }
                     }
                 }
-                catch( NotEnoughSamplesException e )
+                catch( DataSourceException e )
                 {
-                    e.printStackTrace();
+                    treatException( e );
                 }
 
                 inv_samples = true;
             }
             catch( DataSourceException e )
             {
-                e.printStackTrace();
+                treatException( e );
             }
         }
     }
 
-    private void mark_selection()
+    private void onAppliedEffect()
     {
-        if( ProjectStatics.getMarkerFile() != null )
+        try
         {
-            ProjectStatics.getMarkerFile().addMark( selection_start_index, selection_end_index, 0 );
-            ProjectStatics.getMarkerFile().addMark( selection_start_index, selection_end_index, 1 );
+            dataSource.setDataSource( ProjectStatics.getVersionedADS().get_current_version() );
         }
-        inv_samples = true;
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+    }
+
+    private void treatException( Exception e )
+    {
+        e.printStackTrace();
+    }
+
+    private void onDataSourceChanged()
+    {
+        try
+        {
+            inv_samples = true;
+            update_samples_window = true;
+            dataSource.setDataSource( ProjectStatics.getVersionedADS().get_current_version() );
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
     }
 }
 

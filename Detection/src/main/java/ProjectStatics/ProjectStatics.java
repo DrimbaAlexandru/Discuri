@@ -72,4 +72,9 @@ public class ProjectStatics
     {
         effectList.add( effect );
     }
+
+    public static List< IEffect > getEffectList()
+    {
+        return effectList;
+    }
 }

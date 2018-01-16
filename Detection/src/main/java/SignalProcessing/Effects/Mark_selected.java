@@ -18,7 +18,6 @@ public class Mark_selected implements IEffect
     private List< Integer > affected_channels = new ArrayList<>();
 
     @Override
-
     public String getName()
     {
         return "Mark selected";

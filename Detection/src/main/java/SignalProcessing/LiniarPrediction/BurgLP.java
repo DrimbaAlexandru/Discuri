@@ -1,5 +1,7 @@
 package SignalProcessing.LiniarPrediction;
 
+import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.Windowing.Windowing;
 
 import java.util.function.Function;
@@ -10,13 +12,13 @@ import java.util.function.Function;
 public class BurgLP implements LinearPrediction
 {
 
-    public void extrapolate( double[] left, double[] center, double[] right, int l_length, int c_length, int r_length ) throws NotEnoughSamplesException
+    public void extrapolate( double[] left, double[] center, double[] right, int l_length, int c_length, int r_length ) throws DataSourceException
     {
         if( ( l_length <= 1 ) || ( r_length <= 1 ) || ( c_length > l_length ) || ( c_length > r_length ) )
         {
-            throw new NotEnoughSamplesException( "Tried to extrapolate " + c_length + " samples from " +
+            throw new DataSourceException( "Tried to extrapolate " + c_length + " samples from " +
                                                          l_length + " samples to the left and " +
-                                                         r_length + "samples to the right " );
+                                                         r_length + "samples to the right ", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
         final Function< Double, Double > left_window_function = Windowing.fade_in_window;

@@ -1,13 +1,11 @@
 package AudioDataSource.ADCache;
 
-import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 
-import java.util.*;
+import java.util.LinkedList;
+import java.util.TreeSet;
 
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.NOT_ENOUGH_FREE_SPACE;
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.NOT_ENOUGH_SPACE;
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_ALREADY_CACHED;
+import static AudioDataSource.Exceptions.DataSourceExceptionCause.*;
 
 /**
  * Created by Alex on 10.09.2017.

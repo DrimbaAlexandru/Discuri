@@ -3,7 +3,6 @@ package SignalProcessing.FIR;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
-import SignalProcessing.Windowing.Windowing;
 import Utils.Complex;
 
 /**

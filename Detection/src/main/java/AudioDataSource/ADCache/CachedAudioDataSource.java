@@ -272,7 +272,11 @@ public class CachedAudioDataSource implements IAudioDataSource
 
     public void setDataSource( IAudioDataSource dataSource ) throws DataSourceException
     {
-        invalidateCache();
-        this.dataSource = dataSource;
+        if( dataSource != this.dataSource )
+        {
+            invalidateCache();
+            this.dataSource = dataSource;
+        }
+
     }
 }
