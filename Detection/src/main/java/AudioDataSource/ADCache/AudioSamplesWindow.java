@@ -114,7 +114,6 @@ public class AudioSamplesWindow
     {
         for( int ch = 0; ch < get_channel_number(); ch++ )
         {
-
             Windowing.apply( samples[ ch ], get_length(), function );
         }
     }

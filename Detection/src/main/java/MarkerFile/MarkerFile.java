@@ -1,5 +1,7 @@
 package MarkerFile;
 
+import Utils.Interval;
+
 import java.io.*;
 import java.text.ParseException;
 import java.util.*;
@@ -138,36 +140,34 @@ public class MarkerFile
         return mf;
     }
 
-    public Marking getNextMark( int current_index )
+    public Interval getNextMark( int current_index, int channel )
     {
-        Marking l_m = null, r_m = null;
+        Marking mark = null;
         Map.Entry< Integer, Marking > entry;
-        entry = l_markings.ceilingEntry( current_index );
+        TreeMap< Integer, Marking > markings;
+        switch( channel )
+        {
+            case 0:
+                markings = l_markings;
+                break;
+            case 1:
+                markings = r_markings;
+                break;
+            default:
+                return null;
+        }
+
+        entry = markings.ceilingEntry( current_index );
         if( entry != null )
         {
-            l_m = entry.getValue();
-        }
-        entry = r_markings.ceilingEntry( current_index );
-        if( entry != null )
-        {
-            r_m = entry.getValue();
-        }
-        if( l_m == null )
-        {
-            return r_m;
+            return new Interval( entry.getValue().first_marked_sample, entry.getValue().last_marked_sample - entry.getValue().first_marked_sample + 1 );
         }
         else
         {
-            if( r_m != null )
-            {
-                return l_m.first_marked_sample < r_m.first_marked_sample ? l_m : r_m;
-            }
-            else
-            {
-                return l_m;
-            }
+            return null;
         }
     }
+
     public boolean isMarked( int sample, int ch )
     {
         Map.Entry< Integer, Marking > entry = ( ch == 0 ) ? l_markings.floorEntry( sample ) : r_markings.floorEntry( sample );

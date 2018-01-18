@@ -3,6 +3,9 @@ package MVC.GUI;
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.FileADS.WAVFileAudioSource;
+import AudioDataSource.IAudioDataSource;
+import AudioDataSource.Utils;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Effects.IEffect;
 import SignalProcessing.Effects.Mark_selected;
@@ -573,6 +576,27 @@ public class Main_window
                                                   }
                                               }
                                           });
+            menu_export.setOnAction( ev->{
+                FileChooser fc = new FileChooser();
+
+                fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
+                File f = fc.showSaveDialog( null );
+                if( f != null )
+                {
+                    try
+                    {
+                        if( ProjectStatics.getVersionedADS() != null )
+                        {
+                            IAudioDataSource ads = ProjectStatics.getVersionedADS().get_current_version();
+                            Utils.copyToADS( ads, new WAVFileAudioSource( f.getAbsolutePath(), ads.get_channel_number(), ads.get_sample_rate(), 2 ) );
+                        }
+                    }
+                    catch( DataSourceException e )
+                    {
+                        treatException( e );
+                    }
+                }
+            } );
 
             for( IEffect eff : ProjectStatics.getEffectList() )
             {
@@ -619,9 +643,15 @@ public class Main_window
 
     private void onApplyRepairMarked( Repair_Marked eff )
     {
+        Interval interval = new Interval( selection_start_index, selection_end_index - selection_start_index );
+        if( interval.get_length() == 0 )
+        {
+            interval.l = 0;
+            interval.r = dataSource.get_sample_number();
+        }
         try
         {
-            eff.apply( ProjectStatics.getVersionedADS().create_new(), new Interval( selection_start_index, selection_end_index - selection_start_index ) );
+            eff.apply( ProjectStatics.getVersionedADS().create_new(), interval );
             onDataSourceChanged();
         }
         catch( DataSourceException e )
@@ -693,7 +723,10 @@ public class Main_window
                                           try
                                           {
                                               Thread.sleep( 100 );
-                                              ProjectStatics.getVersionedADS().dispose();
+                                              if( ProjectStatics.getVersionedADS() != null )
+                                              {
+                                                  ProjectStatics.getVersionedADS().dispose();
+                                              }
                                           }
                                           catch( InterruptedException e1 )
                                           {

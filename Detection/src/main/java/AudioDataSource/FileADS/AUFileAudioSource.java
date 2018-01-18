@@ -323,6 +323,7 @@ public class AUFileAudioSource implements IFileAudioDataSource
         writeHeader();
     }
 
+    @Override
     public void close() throws DataSourceException
     {
         try

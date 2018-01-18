@@ -408,6 +408,7 @@ public class WAVFileAudioSource implements IFileAudioDataSource
         writeHeader();
     }
 
+    @Override
     public void close() throws DataSourceException
     {
         try

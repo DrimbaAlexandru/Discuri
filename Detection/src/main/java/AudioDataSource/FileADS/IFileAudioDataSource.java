@@ -1,5 +1,6 @@
 package AudioDataSource.FileADS;
 
+import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.IAudioDataSource;
 
 /**
@@ -7,5 +8,6 @@ import AudioDataSource.IAudioDataSource;
  */
 public interface IFileAudioDataSource extends IAudioDataSource
 {
-    public String getFile_path();
+    String getFile_path();
+    void close() throws DataSourceException;
 }

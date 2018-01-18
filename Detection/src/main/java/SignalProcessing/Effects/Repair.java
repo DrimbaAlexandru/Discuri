@@ -31,20 +31,17 @@ public class Repair implements IEffect
         int side_fetch_size = ( int )( interval.get_length() * fetch_size_ratio );
         AudioSamplesWindow left_win, right_win, center_win;
         LinearPrediction LP = new BurgLP();
-        double[][] newValues;
-        int k;
         if( side_fetch_size > interval.l || side_fetch_size > dataSource.get_sample_number() - interval.r )
         {
             throw new DataSourceException( "Not enough data to extrapolate from", DataSourceExceptionCause.INVALID_STATE );
         }
         left_win = dataSource.get_samples( interval.l - side_fetch_size, side_fetch_size );
         right_win = dataSource.get_samples( interval.r, side_fetch_size );
-        newValues = new double[ dataSource.get_channel_number() ][ interval.get_length() ];
-        for( k = 0; k < dataSource.get_channel_number(); k++ )
+        center_win = dataSource.get_samples( interval.l, interval.get_length() );
+        for( int k : affected_channels )
         {
-            LP.extrapolate( left_win.getSamples()[ k ], newValues[ k ], right_win.getSamples()[ k ], side_fetch_size, interval.get_length(), side_fetch_size );
+            LP.extrapolate( left_win.getSamples()[ k ], center_win.getSamples()[ k ], right_win.getSamples()[ k ], side_fetch_size, interval.get_length(), side_fetch_size );
         }
-        center_win = new AudioSamplesWindow( newValues, interval.l, interval.get_length(), dataSource.get_channel_number() );
         dataSource.put_samples( center_win );
     }
 

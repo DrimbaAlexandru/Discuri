@@ -3,7 +3,7 @@ package MarkerFile;
 /**
  * Created by Alex on 10.11.2017.
  */
- class Marking
+class Marking
 {
     public int first_marked_sample;
     public int last_marked_sample;
