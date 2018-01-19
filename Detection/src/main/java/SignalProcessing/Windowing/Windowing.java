@@ -23,6 +23,8 @@ public class Windowing
     public final static Function< Double, Double > exponential_window = ( x -> Math.exp( x - 1 ) );
     public final static Function< Double, Double > cos_sq_window = ( x -> Math.pow( Math.cos( x * Math.PI / 2 ), 2 ) );
     public final static Function< Double, Double > inv_cos_sq_window = ( x -> 1 - Math.pow( Math.cos( x * Math.PI / 2 ), 2 ) );
+    public final static Function< Double, Double > zero_window = ( x -> 0.0 );
+    public final static Function< Double, Double > one_window = ( x -> 1.0 );
 
 
 }

@@ -13,7 +13,7 @@
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <ChoiceBox id="choice_channels" fx:id="chc_sample_type" layoutX="521.0" layoutY="36.0" prefWidth="157.0" />
+      <ChoiceBox id="choice_channels" fx:id="chc_sample_type" layoutX="604.0" layoutY="36.0" prefWidth="157.0" />
       <Button fx:id="btn_prev_sample" layoutX="70.0" layoutY="36.0" mnemonicParsing="false" text="&lt;" />
       <Button fx:id="btn_next_sample" layoutX="97.0" layoutY="36.0" mnemonicParsing="false" text="&gt;" />
       <ScrollBar fx:id="time_scroll" blockIncrement="1.0" layoutX="40.0" layoutY="414.0" max="0.0" prefHeight="14.0" prefWidth="720.0" visibleAmount="1.0" />
@@ -49,5 +49,7 @@
           <Menu id="menu_effects" fx:id="menu_effects" mnemonicParsing="false" text="Effects" />
         </menus>
       </MenuBar>
+      <Button fx:id="btn_undo" layoutX="437.0" layoutY="36.0" mnemonicParsing="false" text="Undo" />
+      <Button fx:id="btn_redo" layoutX="493.0" layoutY="36.0" mnemonicParsing="false" text="Redo" />
    </children>
 </Pane>

@@ -21,8 +21,8 @@ public class BurgLP implements LinearPrediction
                                                          r_length + "samples to the right ", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
-        final Function< Double, Double > left_window_function = Windowing.fade_in_window;
-        final Function< Double, Double > right_window_function = Windowing.fade_out_window;
+        final Function< Double, Double > left_window_function = Windowing.one_window;
+        final Function< Double, Double > right_window_function = Windowing.one_window;
         final Function< Double, Double > left_component_window_function = Windowing.cos_sq_window;
         double LR_balance;
         int i;

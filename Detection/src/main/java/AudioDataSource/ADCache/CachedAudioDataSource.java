@@ -193,7 +193,7 @@ public class CachedAudioDataSource implements IAudioDataSource
                 {
                     for( j = 0; j < temp_length; j++ )
                     {
-                        win.putSample( j + i + new_samples.get_first_sample_index(), k, new_samples.getSample( i + new_samples.get_first_sample_index(), k ) );
+                        win.putSample( j + i + new_samples.get_first_sample_index(), k, new_samples.getSample( i + j + new_samples.get_first_sample_index(), k ) );
                     }
                 }
 

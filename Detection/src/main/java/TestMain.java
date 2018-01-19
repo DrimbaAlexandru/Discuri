@@ -2,9 +2,12 @@ import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
+import MarkerFile.MarkerFile;
 import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.FIR.FIR;
 import Utils.Interval;
+
+import java.io.IOException;
 
 /**
  * Created by Alex on 08.09.2017.
@@ -14,16 +17,42 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\temp.wav", 2, 44100, 2 );
-            wav.put_samples( new AudioSamplesWindow( new double[][]{ { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }, { 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5 } }, 0, 10, 2 ) );
-            FIR_Filter effect = new FIR_Filter();
-            FIR fir = new FIR( new double[]{ 0.2, 0, 0, 0, 0, 0.4 }, 6 );
-            effect.setFilter( fir );
-            effect.apply( wav, new Interval( 0, 10 ) );
-            wav.close();
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\mark3.wav" );
+            double threshold = 0.1f;
+            int side = 1;
+            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\shostakovich3.txt" );
+            if( wav.get_channel_number() != 1 )
+            {
+                throw new DataSourceException( "Not mono" );
+            }
+            AudioSamplesWindow win = wav.get_samples( 0, wav.get_sample_number() );
+            int i, j;
+            boolean mark;
+            for( i = side; i < wav.get_sample_number() - side; i++ )
+            {
+                if( i % 44100 == 0 )
+                {
+                    System.out.println( "Processed " + i / 44100 + " seconds" );
+                }
+                mark = false;
+                for( j = -side; j <= side; j++ )
+                {
+                    mark = mark || ( Math.abs( win.getSample( i + j, 0 ) ) >= threshold );
+                }
+                if( mark )
+                {
+                    mf.addMark( i, i, 0 );
+                    mf.addMark( i, i, 1 );
+                }
+            }
+            mf.writeMarkingsToFile();
 
         }
         catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+        catch( IOException e )
         {
             e.printStackTrace();
         }

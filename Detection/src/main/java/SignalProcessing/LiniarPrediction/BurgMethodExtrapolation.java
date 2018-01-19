@@ -145,7 +145,7 @@ public class BurgMethodExtrapolation
             {
                 if( n - i < 0 )
                 {
-                    buf[ n ] -= a[ i ] * x[ n + N - i ];
+                    buf[ n ] -= a[ i ] * x[ n + N - i + 1 ];
                 }
                 else
                 {

@@ -47,7 +47,7 @@ public class Main_window
     private Pane mainLayout = null;
     private Scene localScene;
     @FXML
-    private Button btn_prev_frame, btn_prev_sample, btn_next_frame, btn_next_sample;
+    private Button btn_prev_frame, btn_prev_sample, btn_next_frame, btn_next_sample, btn_redo, btn_undo;
     @FXML
     private Button btn_zoom_in, btn_zoom_out, btn_mark_sample, btn_expand_select, btn_constrict_select;
     @FXML
@@ -195,7 +195,7 @@ public class Main_window
         try
         {
             ProjectStatics.loadAudioFile( raw_wav_filepath );
-            dataSource = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(), 44100, 2048 );
+            dataSource = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(), 44100, 512 );
             window_size = Math.min( window_size, dataSource.get_sample_number() );
         }
         catch( Exception e )
@@ -587,8 +587,7 @@ public class Main_window
                     {
                         if( ProjectStatics.getVersionedADS() != null )
                         {
-                            IAudioDataSource ads = ProjectStatics.getVersionedADS().get_current_version();
-                            Utils.copyToADS( ads, new WAVFileAudioSource( f.getAbsolutePath(), ads.get_channel_number(), ads.get_sample_rate(), 2 ) );
+                            Utils.copyToADS( dataSource, new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 ) );
                         }
                     }
                     catch( DataSourceException e )
@@ -597,6 +596,17 @@ public class Main_window
                     }
                 }
             } );
+
+            btn_redo.setOnAction( ev ->
+                                  {
+                                      ProjectStatics.getVersionedADS().redo();
+                                      onDataSourceChanged();
+                                  } );
+            btn_undo.setOnAction( ev ->
+                                  {
+                                      ProjectStatics.getVersionedADS().undo();
+                                      onDataSourceChanged();
+                                  } );
 
             for( IEffect eff : ProjectStatics.getEffectList() )
             {
@@ -651,7 +661,8 @@ public class Main_window
         }
         try
         {
-            eff.apply( ProjectStatics.getVersionedADS().create_new(), interval );
+            dataSource.setDataSource( ProjectStatics.getVersionedADS().create_new() );
+            eff.apply( dataSource, interval );
             onDataSourceChanged();
         }
         catch( DataSourceException e )
@@ -667,7 +678,9 @@ public class Main_window
             try
             {
                 eff.setAffected_channels( Arrays.asList( 0, 1 ) );
-                eff.apply( ProjectStatics.getVersionedADS().create_new(), new Interval( selection_start_index, selection_end_index - selection_start_index ) );
+                eff.set_fetch_ratio( Math.max( 100 / ( selection_end_index - selection_start_index ), 16 ) );
+                dataSource.setDataSource( ProjectStatics.getVersionedADS().create_new() );
+                eff.apply( dataSource, new Interval( selection_start_index, selection_end_index - selection_start_index ) );
                 onDataSourceChanged();
             }
             catch( DataSourceException e )
@@ -870,6 +883,4 @@ public class Main_window
 * - Make get_compact_samples() use more values when computing min/max values; optimize to minimize reads.
 * - Implement get_compact_samples() branch for when sample_number is larger than the cache size.
 * - Add controls for: zoom factor, window size;
-* - Optimize cache by condensating togheter consecutive small windows
-* - Optimize getters by locking from getting flushed the cache windows that we need
  */

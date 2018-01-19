@@ -86,7 +86,6 @@ class ProjectFilesManager
             {
                 e.printStackTrace();
             }
-            //TODO: Reomve file from Hard Disk
         }
     }
 
@@ -271,6 +270,8 @@ public class AudioDataSourceVersion implements IAudioDataSource
             if( writeFileAudioSource != null )
             {
                 writeFileAudioSource.close();
+                writeFileAudioSource = null;
+                readFileAudioSource = null;
             }
         }
         catch( DataSourceException e )

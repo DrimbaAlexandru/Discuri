@@ -24,18 +24,25 @@ public class Repair_Marked implements IEffect
         int start = Math.max( 0, interval.l );
         int end = Math.min( dataSource.get_sample_number(), interval.r );
         Repair effect = new Repair();
-        effect.set_fetch_ratio( 16 );
         Interval i;
+        int second;
 
         for( int k = 0; k < dataSource.get_channel_number(); k++ )
         {
+            second = 0;
             effect.setAffected_channels( Arrays.asList( k ) );
             i = ProjectStatics.getMarkerFile().getNextMark( 0, k );
             while( i != null )
             {
                 if( i.l >= start && i.r < end )
                 {
+                    effect.set_fetch_ratio( Math.max( 512 / ( interval.get_length() ), 16 ) );
                     effect.apply( dataSource, i );
+                    if( i.l / dataSource.get_sample_rate() > second )
+                    {
+                        second = i.l / dataSource.get_sample_rate();
+                        System.out.println( "Processing at second " + second + " on channel " + k );
+                    }
                 }
                 i = ProjectStatics.getMarkerFile().getNextMark( i.r, k );
             }
