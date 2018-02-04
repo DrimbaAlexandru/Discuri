@@ -3,9 +3,8 @@ import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
-import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.FIR.FIR;
-import Utils.Interval;
+import SignalProcessing.FIR.IIR;
 
 import java.io.IOException;
 
@@ -13,7 +12,7 @@ import java.io.IOException;
  * Created by Alex on 08.09.2017.
  */
 public class TestMain {
-    public static void main( String[] args )
+    public static void main1( String[] args )
     {
         try
         {
@@ -105,6 +104,34 @@ public class TestMain {
         {
             e.printStackTrace();
 
+        }
+    }
+
+    public static void main( String args[] )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav", 1, 44100, 2 );
+            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
+
+            double[] b = { 1 };
+            int m = b.length;
+            double[] a = { 1, -1, -1 };
+            int p = a.length;
+            int i;
+            double[][] samples = { { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+            int n = samples[ 0 ].length;
+            AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, n, 1 );
+            cache.put_samples( win );
+            IIR iir = new IIR( b, m, a, p );
+            iir.apply( samples[ 0 ], n );
+            cache.put_samples( win );
+            cache.flushAll();
+            wav.close();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
         }
     }
 }

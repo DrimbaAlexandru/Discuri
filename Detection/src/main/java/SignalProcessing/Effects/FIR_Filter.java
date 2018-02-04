@@ -63,7 +63,7 @@ public class FIR_Filter implements IEffect
                 {
                     buffer[ j ] = 0;
                 }
-                filter.apply_FIR( buffer, N - filter_length + 1 );
+                filter.apply( buffer, N );
                 for( j = filter_length - 1; j < N; j++ )
                 {
                     win.putSample( j + win.get_first_sample_index() - data_start, k, buffer[ j ] );

@@ -4,6 +4,9 @@ import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Complex;
+import Utils.Interval;
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 
 /**
  * Created by Alex on 24.11.2017.
@@ -13,12 +16,13 @@ public class FIR
     private int tap_nr;
     private double[] b;
 
-    public void apply( double[] x, int N ) throws DataSourceException
+    public void apply_with_implicit_left_zero_padding( double[] x, int N ) throws DataSourceException
     {
-        if( x.length < N + tap_nr - 1 )
+        if( x.length < N )
         {
             throw new DataSourceException( "Supplied array does not have enough space to properly apply the filter", DataSourceExceptionCause.INVALID_PARAMETER );
         }
+
         int i, j, buf_idx = 0;
         double[] ybuf = new double[ tap_nr ];
 
@@ -27,12 +31,12 @@ public class FIR
             ybuf[ buf_idx ] = 0;
             for( j = 0; j <= i; j++ ) // b[j]
             {
-                ybuf[ buf_idx ] += b[ tap_nr - 1 - j ] * x[ i - j ];
+                ybuf[ buf_idx ] += b[ j ] * x[ i - j ];
             }
             buf_idx++;
         }
 
-        for( i = tap_nr; i < N + tap_nr - 1; i++ )
+        for( i = tap_nr; i < N; i++ )
         {
             if( buf_idx == tap_nr )
             {
@@ -40,14 +44,14 @@ public class FIR
             }
             x[ i - tap_nr ] = ybuf[ buf_idx ];
             ybuf[ buf_idx ] = 0;
-            for( j = Math.max( 0, i - N + 1 ); j < tap_nr; j++ ) // b[j]
+            for( j = 0; j < tap_nr; j++ ) // b[j]
             {
-                ybuf[ buf_idx ] += b[ tap_nr - 1 - j ] * x[ i - j ];
+                ybuf[ buf_idx ] += b[ j ] * x[ i - j ];
             }
             buf_idx++;
         }
 
-        for( i = N - 1; i < N + tap_nr - 1; i++ )
+        for( i = N - tap_nr; i < N; i++ )
         {
             if( buf_idx == tap_nr )
             {
@@ -58,39 +62,21 @@ public class FIR
         }
     }
 
-    public void apply_FIR( double[] x, int N ) throws DataSourceException
+    public void apply( double[] x, int N ) throws DataSourceException
     {
-        if( x.length < N + ( tap_nr - 1 ) * 2 )
+
+        if( x.length < N )
         {
             throw new DataSourceException( "Supplied array does not have the expected size to properly apply the filter", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
         int i, j;
         double newVal;
-        for( i = N + tap_nr - 2; i >= tap_nr - 1; i-- )
+
+        for( i = N - 1; i >= 0; i-- )
         {
             newVal = 0;
-            for( j = 0; j < tap_nr; j++ ) // b[j]
-            {
-                newVal += b[ j ] * x[ i - j ];
-            }
-            x[ i ] = newVal;
-        }
-    }
-
-    public void apply_IIR( double[] x, int N ) throws DataSourceException
-    {
-        if( x.length < N + ( tap_nr - 1 ) * 2 )
-        {
-            throw new DataSourceException( "Supplied array does not have the expected size to properly apply the filter", DataSourceExceptionCause.INVALID_PARAMETER );
-        }
-
-        int i, j;
-        double newVal;
-        for( i = tap_nr - 1; i <= N + tap_nr - 2; i++ )
-        {
-            newVal = 0;
-            for( j = 0; j < tap_nr; j++ )
+            for( j = 0; j < Math.min( i + 1, tap_nr ); j++ ) // b[j]
             {
                 newVal += b[ j ] * x[ i - j ];
             }
@@ -132,7 +118,7 @@ public class FIR
             filter[ i ] = frq[ i ].r();
         }
         filter[ NyqFreq * 2 ] = frq[ 0 ].r();
-        return new FIR( filter, NyqFreq * 2 +1);
+        return new FIR( filter, NyqFreq * 2 + 1 );
     }
 
     public int getTap_nr()

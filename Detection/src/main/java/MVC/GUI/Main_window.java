@@ -890,7 +890,7 @@ public class Main_window
             treatException( e );
         }
     }
-    
+
 }
 
 /* TODO:
