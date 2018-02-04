@@ -23,7 +23,7 @@ public class BurgLP implements LinearPrediction
 
         final Function< Double, Double > left_window_function = Windowing.one_window;
         final Function< Double, Double > right_window_function = Windowing.one_window;
-        final Function< Double, Double > left_component_window_function = Windowing.cos_sq_window;
+        final Function< Double, Double > left_component_window_function = Windowing.fade_out_window;
         double LR_balance;
         int i;
 

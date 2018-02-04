@@ -10,5 +10,5 @@ import Utils.Interval;
 public interface IEffect
 {
     String getName();
-    void apply( IAudioDataSource dataSource, Interval interval ) throws DataSourceException;
+    void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException;
 }

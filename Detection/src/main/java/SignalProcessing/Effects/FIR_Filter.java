@@ -23,7 +23,7 @@ public class FIR_Filter implements IEffect
     }
 
     @Override
-    public void apply( IAudioDataSource dataSource, Interval interval ) throws DataSourceException
+    public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         if( filter == null )
         {
@@ -69,7 +69,7 @@ public class FIR_Filter implements IEffect
                     win.putSample( j + win.get_first_sample_index() - data_start, k, buffer[ j ] );
                 }
             }
-            dataSource.put_samples( win );
+            dataDest.put_samples( win );
             i -= N - filter_length + 1;
         }
     }

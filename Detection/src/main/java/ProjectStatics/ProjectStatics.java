@@ -27,6 +27,8 @@ public class ProjectStatics
     private static MarkerFile markerFile = new MarkerFile( null );
     private static IEffect last_applied_effect = null;
     private static List< IEffect > effectList = new ArrayList<>();
+    private static int default_cache_size = 44100;
+    private static int default_cache_page_size = 2048;
 
     public static void loadAudioFile( String filePath ) throws DataSourceException
     {
@@ -76,5 +78,15 @@ public class ProjectStatics
     public static List< IEffect > getEffectList()
     {
         return effectList;
+    }
+
+    public static int getDefault_cache_page_size()
+    {
+        return default_cache_page_size;
+    }
+
+    public static int getDefault_cache_size()
+    {
+        return default_cache_size;
     }
 }

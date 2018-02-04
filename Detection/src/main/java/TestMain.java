@@ -17,10 +17,10 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\mark3.wav" );
-            double threshold = 0.1f;
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fp mark.wav" );
+            double threshold = 0.1;
             int side = 1;
-            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\shostakovich3.txt" );
+            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\fp mark 0.1.txt" );
             if( wav.get_channel_number() != 1 )
             {
                 throw new DataSourceException( "Not mono" );

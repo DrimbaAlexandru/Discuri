@@ -26,7 +26,7 @@ public class Repair implements IEffect
     }
 
     @Override
-    public void apply( IAudioDataSource dataSource, Interval interval ) throws DataSourceException
+    public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         int side_fetch_size = ( int )( interval.get_length() * fetch_size_ratio );
         AudioSamplesWindow left_win, right_win, center_win;
@@ -37,12 +37,12 @@ public class Repair implements IEffect
         }
         left_win = dataSource.get_samples( interval.l - side_fetch_size, side_fetch_size );
         right_win = dataSource.get_samples( interval.r, side_fetch_size );
-        center_win = dataSource.get_samples( interval.l, interval.get_length() );
+        center_win = dataDest.get_samples( interval.l, interval.get_length() );
         for( int k : affected_channels )
         {
             LP.extrapolate( left_win.getSamples()[ k ], center_win.getSamples()[ k ], right_win.getSamples()[ k ], side_fetch_size, interval.get_length(), side_fetch_size );
         }
-        dataSource.put_samples( center_win );
+        dataDest.put_samples( center_win );
     }
 
     public void set_fetch_ratio( float ratio )

@@ -7,10 +7,7 @@ import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.Utils;
 import ProjectStatics.ProjectStatics;
-import SignalProcessing.Effects.IEffect;
-import SignalProcessing.Effects.Mark_selected;
-import SignalProcessing.Effects.Repair;
-import SignalProcessing.Effects.Repair_Marked;
+import SignalProcessing.Effects.*;
 import SignalProcessing.LiniarPrediction.BurgLP;
 import SignalProcessing.LiniarPrediction.LinearPrediction;
 import Utils.Interval;
@@ -520,6 +517,8 @@ public class Main_window
         ProjectStatics.registerEffect( new Mark_selected() );
         ProjectStatics.registerEffect( new Repair() );
         ProjectStatics.registerEffect( new Repair_Marked() );
+        ProjectStatics.registerEffect( new Sample_Summer() );
+
         try
         {
             mainLayout = l.load();
@@ -642,6 +641,16 @@ public class Main_window
                                     } );
                     continue;
                 }
+                if( eff.getClass().getCanonicalName().equals( Sample_Summer.class.getCanonicalName() ) )
+                {
+                    final Sample_Summer effect = ( Sample_Summer )eff;
+                    mi.setOnAction( ev ->
+                                    {
+                                        System.out.println( effect.getName() );
+                                        onApplySampleSummer( effect );
+                                    } );
+                    continue;
+                }
 
             }
         }
@@ -651,60 +660,29 @@ public class Main_window
         }
     } /* Main_window */
 
+    private void onApplySampleSummer( Sample_Summer eff )
+    {
+        apply_effect( eff, false, true );
+    }
+
     private void onApplyRepairMarked( Repair_Marked eff )
     {
-        Interval interval = new Interval( selection_start_index, selection_end_index - selection_start_index );
-        if( interval.get_length() == 0 )
-        {
-            interval.l = 0;
-            interval.r = dataSource.get_sample_number();
-        }
-        try
-        {
-            dataSource.setDataSource( ProjectStatics.getVersionedADS().create_new() );
-            eff.apply( dataSource, interval );
-            onDataSourceChanged();
-        }
-        catch( DataSourceException e )
-        {
-            treatException( e );
-        }
+        eff.setMin_fetch_ratio( 32 );
+        eff.setMin_fetch_size( 512 );
+        apply_effect( eff, false, false );
     }
 
     private void onApplyRepairSelected( Repair eff )
     {
-        if( selection_end_index - selection_start_index > 0 )
-        {
-            try
-            {
-                eff.setAffected_channels( Arrays.asList( 0, 1 ) );
-                eff.set_fetch_ratio( Math.max( 100 / ( selection_end_index - selection_start_index ), 16 ) );
-                dataSource.setDataSource( ProjectStatics.getVersionedADS().create_new() );
-                eff.apply( dataSource, new Interval( selection_start_index, selection_end_index - selection_start_index ) );
-                onDataSourceChanged();
-            }
-            catch( DataSourceException e )
-            {
-                treatException( e );
-            }
-        }
+        eff.setAffected_channels( Arrays.asList( 0, 1 ) );
+        eff.set_fetch_ratio( Math.max( 512 / ( selection_end_index - selection_start_index ), 32 ) );
+        apply_effect( eff, false, true );
     }
 
     private void onApplyMarkSelected( Mark_selected eff )
     {
-        if( selection_end_index - selection_start_index > 0 )
-        {
-            try
-            {
-                eff.setAffected_channels( Arrays.asList( 0, 1 ) );
-                eff.apply( ProjectStatics.getVersionedADS().create_new(), new Interval( selection_start_index, selection_end_index - selection_start_index ) );
-                onDataSourceChanged();
-            }
-            catch( DataSourceException e )
-            {
-                treatException( e );
-            }
-        }
+        eff.setAffected_channels( Arrays.asList( 0, 1 ) );
+        apply_effect( eff, false, true );
     }
 
     /*----------------------------------------
@@ -790,6 +768,7 @@ public class Main_window
         th.start();
     }
 
+    /*
     private void interpolate_selection()
     {
         int ch, i, len = selection_end_index - selection_start_index;
@@ -846,12 +825,50 @@ public class Main_window
             }
         }
     }
+    */
 
-    private void onAppliedEffect()
+    private void treatException( Exception e )
     {
+        e.printStackTrace();
+    }
+
+    private void apply_effect( IEffect effect, boolean allow_zero_selection, boolean use_destination_as_source )
+    {
+        Interval interval = new Interval( selection_start_index, selection_end_index - selection_start_index );
+        if( interval.get_length() < 0 )
+        {
+            return;
+        }
+        if( interval.get_length() == 0 )
+        {
+            if( allow_zero_selection )
+            {
+                return;
+            }
+            else
+            {
+                interval.l = 0;
+                interval.r = dataSource.get_sample_number();
+            }
+        }
         try
         {
-            dataSource.setDataSource( ProjectStatics.getVersionedADS().get_current_version() );
+            dataSource.flushAll();
+            IAudioDataSource srcDS = null;
+            if( !use_destination_as_source )
+            {
+                srcDS = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(),
+                                                   ProjectStatics.getDefault_cache_size(),
+                                                   ProjectStatics.getDefault_cache_page_size() );
+            }
+            dataSource.setDataSource( ProjectStatics.getVersionedADS().create_new() );
+            if( use_destination_as_source )
+            {
+                srcDS = dataSource;
+            }
+            effect.apply( srcDS, dataSource, interval );
+            inv_samples = true;
+            update_samples_window = true;
         }
         catch( DataSourceException e )
         {
@@ -859,10 +876,6 @@ public class Main_window
         }
     }
 
-    private void treatException( Exception e )
-    {
-        e.printStackTrace();
-    }
 
     private void onDataSourceChanged()
     {
@@ -877,6 +890,7 @@ public class Main_window
             treatException( e );
         }
     }
+    
 }
 
 /* TODO:

@@ -24,7 +24,7 @@ public class Mark_selected implements IEffect
     }
 
     @Override
-    public void apply( IAudioDataSource dataSource, Interval interval ) throws DataSourceException
+    public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         MarkerFile mf = ProjectStatics.getMarkerFile();
         if( mf == null )

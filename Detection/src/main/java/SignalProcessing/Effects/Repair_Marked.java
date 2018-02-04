@@ -12,6 +12,8 @@ import java.util.Arrays;
  */
 public class Repair_Marked implements IEffect
 {
+    private int min_fetch_size = 512;
+    private float min_fetch_ratio = 32;
     @Override
     public String getName()
     {
@@ -19,7 +21,7 @@ public class Repair_Marked implements IEffect
     }
 
     @Override
-    public void apply( IAudioDataSource dataSource, Interval interval ) throws DataSourceException
+    public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         int start = Math.max( 0, interval.l );
         int end = Math.min( dataSource.get_sample_number(), interval.r );
@@ -36,8 +38,15 @@ public class Repair_Marked implements IEffect
             {
                 if( i.l >= start && i.r < end )
                 {
-                    effect.set_fetch_ratio( Math.max( 512 / ( interval.get_length() ), 16 ) );
-                    effect.apply( dataSource, i );
+                    effect.set_fetch_ratio( Math.max( min_fetch_size / ( interval.get_length() ), min_fetch_ratio ) );
+                    try
+                    {
+                        effect.apply( dataSource, dataDest, i );
+                    }
+                    catch( DataSourceException ex )
+                    {
+                        ex.printStackTrace();
+                    }
                     if( i.l / dataSource.get_sample_rate() > second )
                     {
                         second = i.l / dataSource.get_sample_rate();
@@ -47,5 +56,15 @@ public class Repair_Marked implements IEffect
                 i = ProjectStatics.getMarkerFile().getNextMark( i.r, k );
             }
         }
+    }
+
+    public void setMin_fetch_ratio( float min_fetch_ratio )
+    {
+        this.min_fetch_ratio = min_fetch_ratio;
+    }
+
+    public void setMin_fetch_size( int min_fetch_size )
+    {
+        this.min_fetch_size = min_fetch_size;
     }
 }
