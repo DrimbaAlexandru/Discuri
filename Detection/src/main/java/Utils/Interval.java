@@ -12,8 +12,20 @@ public class Interval
 
     public Interval( int start, int len )
     {
+        this( start, len, true );
+    }
+
+    public Interval( int start, int val2, boolean isVal2Length )
+    {
         l = start;
-        r = start + len;
+        if( isVal2Length )
+        {
+            r = start + val2;
+        }
+        else
+        {
+            r = val2;
+        }
     }
 
     public Interval getIntersection( Interval other )

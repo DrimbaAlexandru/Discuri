@@ -3,8 +3,11 @@ import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
-import SignalProcessing.FIR.FIR;
-import SignalProcessing.FIR.IIR;
+import SignalProcessing.Effects.FIR_Filter;
+import SignalProcessing.Effects.IIR_Filter;
+import SignalProcessing.Filters.FIR;
+import SignalProcessing.Filters.IIR;
+import Utils.Interval;
 
 import java.io.IOException;
 
@@ -114,18 +117,20 @@ public class TestMain {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav", 1, 44100, 2 );
             CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
 
-            double[] b = { 1 };
+            double[] b = { 2 };
             int m = b.length;
-            double[] a = { 1, -1, -1 };
+            double[] a = { 1, -1 };
             int p = a.length;
             int i;
-            double[][] samples = { { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+            double[][] samples = { { 0, 0, 0, 0, -0.1, -0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, -0.1, -0.1, 0, 0, 0, 0 } };
+            //double[][] samples = { { 1, 1, 1, 0, 0, 0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.4, 0.3, 0.2, 0.1, 0, 0, 0, 1, 1, 1 } };
             int n = samples[ 0 ].length;
             AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, n, 1 );
-            cache.put_samples( win );
-            IIR iir = new IIR( b, m, a, p );
-            iir.apply( samples[ 0 ], n );
-            cache.put_samples( win );
+            wav.put_samples( win );
+
+            IIR_Filter iir_filter=new IIR_Filter();
+            iir_filter.setFilter( new IIR( b, m, a, p ) );
+            iir_filter.apply( cache, cache, new Interval( 0, n, false ) );
             cache.flushAll();
             wav.close();
         }

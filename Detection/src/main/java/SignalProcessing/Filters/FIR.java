@@ -1,12 +1,10 @@
-package SignalProcessing.FIR;
+package SignalProcessing.Filters;
 
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Complex;
 import Utils.Interval;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 
 /**
  * Created by Alex on 24.11.2017.
@@ -15,7 +13,7 @@ public class FIR
 {
     private int tap_nr;
     private double[] b;
-
+/*
     public void apply_with_implicit_left_zero_padding( double[] x, int N ) throws DataSourceException
     {
         if( x.length < N )
@@ -61,11 +59,11 @@ public class FIR
             buf_idx++;
         }
     }
-
-    public void apply( double[] x, int N ) throws DataSourceException
+*/
+    public void apply( double[] x, Interval range ) throws DataSourceException
     {
 
-        if( x.length < N )
+        if( x.length > range.r || range.l < 0 )
         {
             throw new DataSourceException( "Supplied array does not have the expected size to properly apply the filter", DataSourceExceptionCause.INVALID_PARAMETER );
         }
@@ -73,7 +71,7 @@ public class FIR
         int i, j;
         double newVal;
 
-        for( i = N - 1; i >= 0; i-- )
+        for( i = range.r - 1; i >= range.l; i-- )
         {
             newVal = 0;
             for( j = 0; j < Math.min( i + 1, tap_nr ); j++ ) // b[j]
