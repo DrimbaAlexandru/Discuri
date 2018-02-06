@@ -1,6 +1,7 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.FileADS.AUFileAudioSource;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
 import SignalProcessing.Effects.FIR_Filter;
@@ -114,25 +115,28 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav", 1, 44100, 2 );
-            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
+            WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\eq test.wav" );
+            WAVFileAudioSource dst = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+            AUFileAudioSource tempFile = new AUFileAudioSource( "C:\\Users\\Alex\\Desktop\\temp.wav", 1, 44100, 2 );
+            CachedAudioDataSource cache = new CachedAudioDataSource( tempFile, 44100, 2048 );
 
-            double[] b = { 2 };
+            double[] b = { 2, 0, 0 };
             int m = b.length;
-            double[] a = { 1, -1 };
+            double[] a = { 1, -1, 0, 0 };
             int p = a.length;
             int i;
             double[][] samples = { { 0, 0, 0, 0, -0.1, -0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, -0.1, -0.1, 0, 0, 0, 0 } };
             //double[][] samples = { { 1, 1, 1, 0, 0, 0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.4, 0.3, 0.2, 0.1, 0, 0, 0, 1, 1, 1 } };
             int n = samples[ 0 ].length;
             AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, n, 1 );
-            wav.put_samples( win );
+            tempFile.put_samples( win );
 
-            IIR_Filter iir_filter=new IIR_Filter();
+            IIR_Filter iir_filter = new IIR_Filter();
             iir_filter.setFilter( new IIR( b, m, a, p ) );
+            iir_filter.setMax_chunk_size( 6 );
             iir_filter.apply( cache, cache, new Interval( 0, n, false ) );
             cache.flushAll();
-            wav.close();
+            dst.close();
         }
         catch( DataSourceException e )
         {

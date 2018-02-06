@@ -15,9 +15,8 @@ import Utils.Interval;
 public class IIR_Filter implements IEffect
 {
     private IIR filter = null;
-    private final static int max_chunk_size = 8;
+    private int max_chunk_size = 6;
     private final static double[] identity_FIR_coeffs = { 1 };
-    private final static double[] identity_IIR_coeffs = { 1 };
 
     @Override
     public String getName()
@@ -32,21 +31,29 @@ public class IIR_Filter implements IEffect
         {
             throw new DataSourceException( "No filter was set.", DataSourceExceptionCause.INVALID_STATE );
         }
-        if( filter.getFf_coeff_nr() >= max_chunk_size || filter.getFb_coeff_nr() >= max_chunk_size )
-        {
-            throw new DataSourceException( "Buffer is smaller or equal to filter length", DataSourceExceptionCause.INVALID_STATE );
-        }
 
         final int max_filter_len = Math.max( filter.getFb_coeff_nr() - 1, filter.getFf_coeff_nr() );
-        double[][] prev_left_samples = new double[ dataSource.get_channel_number() ][ max_filter_len ];
-        double[][] buffer = new double[ dataSource.get_channel_number() ][ max_filter_len ];
-        double xchg;
+
+        if( max_filter_len + filter.getFf_coeff_nr() > max_chunk_size )
+        {
+            throw new DataSourceException( "Chunk size must be at least the sum of the maximum filter size (FIR and IIR) and the FIR filter size", DataSourceExceptionCause.INVALID_STATE );
+        }
+
+        final boolean isInPlace = ( dataDest == dataSource );
+        int buf1_size = filter.getFf_coeff_nr();
+        int buf2_size = filter.getFb_coeff_nr() - 1;
+        double[][] prev_left_samples = null;
+        double[][] regression_buffer = new double[ dataSource.get_channel_number() ][ buf2_size ];
+        if( isInPlace )
+        {
+            prev_left_samples = new double[ dataSource.get_channel_number() ][ buf1_size ];
+        }
 
         int temp_len;
         int i, j, k;
         int first_needed_sample_index;
         int first_fetchable_sample_index;
-        int buf_len = 0;
+
         AudioSamplesWindow win;
         Interval applying_range = new Interval( 0, 0 );
 
@@ -69,16 +76,21 @@ public class IIR_Filter implements IEffect
 
         for( k = 0; k < dataSource.get_channel_number(); k++ )
         {
-            for( j = 0; j < max_filter_len; j++ )
+            if( isInPlace )
             {
-                prev_left_samples[ k ][ j ] = 0;
+                for( j = 0; j < buf1_size; j++ )
+                {
+                    prev_left_samples[ k ][ buf1_size - 1 - j ] = win.getSamples()[ k ][ temp_len - 1 - j ];
+                }
             }
-            for( j = 0; j < filter.getFf_coeff_nr(); j++ )
-            {
-                prev_left_samples[ k ][ max_filter_len - 1 - j ] = win.getSamples()[ k ][ temp_len - 1 - j ];
-            }
+
             filter.apply( win.getSamples()[ k ], applying_range, true );
             win.markModified();
+
+            for( j = 0; j < buf2_size; j++ )
+            {
+                regression_buffer[ k ][ buf2_size - 1 - j ] = win.getSamples()[ k ][ temp_len - 1 - j ];
+            }
         }
         dataDest.put_samples( win );
         i += applying_range.get_length();
@@ -99,30 +111,30 @@ public class IIR_Filter implements IEffect
 
             for( k = 0; k < dataSource.get_channel_number(); k++ )
             {
-                System.arraycopy( prev_left_samples[ k ], 0, buffer[ k ], 0, max_filter_len );
+                if( isInPlace )
+                {
+                    for( j = 0; j < buf1_size; j++ )
+                    {
+                        win.putSample( first_fetchable_sample_index + buf1_size - 1 - j, k, prev_left_samples[ k ][ buf1_size - 1 - j ] );
+                        prev_left_samples[ k ][ buf1_size - 1 - j ] = win.getSamples()[ k ][ temp_len - 1 - j ];
+                    }
+                }
 
-                for( j = 0; j < filter.getFf_coeff_nr(); j++ )
-                {
-                    prev_left_samples[ k ][ max_filter_len - 1 - j ] = win.getSamples()[ k ][ temp_len - 1 - j ];
-                }
-                buf_len = filter.getFf_coeff_nr() - ( first_fetchable_sample_index - first_needed_sample_index );
-                for( j = 0; j < buf_len; j++ )
-                {
-                    xchg = win.getSample( first_fetchable_sample_index + buf_len - 1 - j, k );
-                    win.putSample( first_fetchable_sample_index + buf_len - 1 - j, k, buffer[ k ][ max_filter_len - 1 - j ] );
-                    buffer[ k ][ max_filter_len - 1 - j ] = xchg;
-                }
                 FIR fir = new FIR( filter.getFf(), filter.getFf_coeff_nr() );
                 fir.apply( win.getSamples()[ k ], applying_range );
 
-                for( j = 0; j < buf_len; j++ )
+                for( j = 0; j < buf1_size; j++ )
                 {
-                    win.putSample( first_fetchable_sample_index + buf_len - 1 - j, k, buffer[ k ][ max_filter_len - 1 - j ] );
+                    win.putSample( first_fetchable_sample_index + buf1_size - 1 - j, k, regression_buffer[ k ][ buf1_size - 1 - j ] );
                 }
                 IIR iir = new IIR( identity_FIR_coeffs, 1, filter.getFb(), filter.getFb_coeff_nr() );
                 iir.apply( win.getSamples()[ k ], applying_range, true );
-
                 win.markModified();
+
+                for( j = 0; j < buf2_size; j++ )
+                {
+                    regression_buffer[ k ][ buf2_size - 1 - j ] = win.getSamples()[ k ][ temp_len - 1 - j ];
+                }
             }
             dataDest.put_samples( win );
             i += applying_range.get_length();
@@ -132,5 +144,10 @@ public class IIR_Filter implements IEffect
     public void setFilter( IIR filter )
     {
         this.filter = filter;
+    }
+
+    public void setMax_chunk_size( int max_chunk_size )
+    {
+        this.max_chunk_size = max_chunk_size;
     }
 }
