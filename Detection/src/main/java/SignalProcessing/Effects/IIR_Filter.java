@@ -15,7 +15,7 @@ import Utils.Interval;
 public class IIR_Filter implements IEffect
 {
     private IIR filter = null;
-    private int max_chunk_size = 6;
+    private int max_chunk_size = 1024;
     private final static double[] identity_FIR_coeffs = { 1 };
 
     @Override

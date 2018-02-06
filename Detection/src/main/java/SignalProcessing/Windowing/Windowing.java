@@ -9,10 +9,15 @@ public class Windowing
 {
     public static void apply( double[] samples, int len, Function< Double, Double > window_function )
     {
-        int i;
-        for( i = 0; i < len; i++ )
+        if( len == 0 )
         {
-            samples[ i ] *= window_function.apply( ( double )i / len );
+            return;
+        }
+        int i;
+        samples[ 0 ] *= window_function.apply( 0.0 );
+        for( i = 1; i < len; i++ )
+        {
+            samples[ i ] *= window_function.apply( ( double )i / ( len - 1 ) );
         }
     }
 
@@ -25,6 +30,7 @@ public class Windowing
     public final static Function< Double, Double > inv_cos_sq_window = ( x -> 1 - Math.pow( Math.cos( x * Math.PI / 2 ), 2 ) );
     public final static Function< Double, Double > zero_window = ( x -> 0.0 );
     public final static Function< Double, Double > one_window = ( x -> 1.0 );
+    public final static Function< Double, Double > Hann_window = ( x -> Math.pow( Math.sin( Math.PI * x ), 2 ) );
 
 
 }

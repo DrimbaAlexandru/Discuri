@@ -93,7 +93,7 @@ public class FIR
     public static FIR fromFreqResponse( double[] x, int NyqFreq, int k )
     {
         Complex frq[] = new Complex[ NyqFreq * 2 ];
-        double filter[] = new double[ NyqFreq * 2 + 1 ];
+        double filter[] = new double[ NyqFreq + 1 ];
         int i;
         for( i = 0; i <= NyqFreq; i++ )
         {
@@ -111,16 +111,21 @@ public class FIR
             frq[ i ] = new Complex( 0, 0 );
         }
         frq = Fourier.IFFT( frq, NyqFreq * 2 );
-        for( i = 0; i < NyqFreq * 2; i++ )
+        for( i = 0; i <= NyqFreq/2; i++ )
         {
-            filter[ i ] = frq[ i ].r();
+            filter[ i ] = frq[ i * 2 ].r();
+            filter[ NyqFreq - i ] = frq[ i * 2 ].r();
         }
-        filter[ NyqFreq * 2 ] = frq[ 0 ].r();
-        return new FIR( filter, NyqFreq * 2 + 1 );
+        return new FIR( filter, NyqFreq + 1 );
     }
 
     public int getTap_nr()
     {
         return tap_nr;
+    }
+
+    public double[] getB()
+    {
+        return b;
     }
 }

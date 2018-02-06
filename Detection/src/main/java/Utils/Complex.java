@@ -82,4 +82,10 @@ public class Complex
             return Math.atan( r / i );
         }
     }
+
+    @Override
+    public String toString()
+    {
+        return r + " + " + i + "i";
+    }
 }

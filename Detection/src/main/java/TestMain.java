@@ -8,6 +8,7 @@ import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.Effects.IIR_Filter;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
+import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
 import java.io.IOException;
@@ -117,25 +118,19 @@ public class TestMain {
         {
             WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\eq test.wav" );
             WAVFileAudioSource dst = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
-            AUFileAudioSource tempFile = new AUFileAudioSource( "C:\\Users\\Alex\\Desktop\\temp.wav", 1, 44100, 2 );
-            CachedAudioDataSource cache = new CachedAudioDataSource( tempFile, 44100, 2048 );
+            CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
+            CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
 
-            double[] b = { 2, 0, 0 };
-            int m = b.length;
-            double[] a = { 1, -1, 0, 0 };
-            int p = a.length;
-            int i;
-            double[][] samples = { { 0, 0, 0, 0, -0.1, -0.1, -0.1, -0.1, -0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, -0.1, -0.1, -0.1, -0.1, -0.1, 0, 0, 0, 0 } };
-            //double[][] samples = { { 1, 1, 1, 0, 0, 0, -0.1, -0.2, -0.3, -0.4, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.4, 0.3, 0.2, 0.1, 0, 0, 0, 1, 1, 1 } };
-            int n = samples[ 0 ].length;
-            AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, n, 1 );
-            tempFile.put_samples( win );
+            double[] x = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            FIR fir = FIR.fromFreqResponse( x, x.length - 1, 0 );
+            Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
+            Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( x.length - 1 ) );
 
-            IIR_Filter iir_filter = new IIR_Filter();
-            iir_filter.setFilter( new IIR( b, m, a, p ) );
-            iir_filter.setMax_chunk_size( 6 );
-            iir_filter.apply( cache, cache, new Interval( 0, n, false ) );
-            cache.flushAll();
+            FIR_Filter effect = new FIR_Filter();
+            effect.setFilter( fir );
+            effect.setMax_chunk_size( 44100 );
+            effect.apply( src_cache, dst_cache, new Interval( 0, src.get_sample_number() ) );
+            dst_cache.flushAll();
             dst.close();
         }
         catch( DataSourceException e )

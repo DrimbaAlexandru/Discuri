@@ -14,7 +14,7 @@ import Utils.Interval;
 public class FIR_Filter implements IEffect
 {
     private FIR filter = null;
-    private final static int max_chunk_size = ProjectStatics.getDefault_cache_page_size();
+    private int max_chunk_size = 1024;
 
     @Override
     public String getName()
@@ -35,7 +35,7 @@ public class FIR_Filter implements IEffect
         }
         int filter_length = filter.getTap_nr();
         int temp_len;
-        int i, j, k;
+        int i, k;
         int first_needed_sample_index;
         int first_fetchable_sample_index;
         AudioSamplesWindow win;
@@ -72,5 +72,10 @@ public class FIR_Filter implements IEffect
     public void setFilter( FIR filter )
     {
         this.filter = filter;
+    }
+
+    public void setMax_chunk_size( int max_chunk_size )
+    {
+        this.max_chunk_size = max_chunk_size;
     }
 }
