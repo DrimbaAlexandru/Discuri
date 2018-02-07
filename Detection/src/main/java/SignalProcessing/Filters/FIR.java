@@ -159,9 +159,9 @@ public class FIR
 
     public static FIR fromFreqResponse2( double[] x, int nr_of_frequencies, int sample_rate, int filter_length ) throws DataSourceException
     {
-        if( !Utils.Utils.is_power_of_two( nr_of_frequencies ) || nr_of_frequencies == 1 )
+        if( nr_of_frequencies == 1 )
         {
-            throw new DataSourceException( "Number of frequencies must be a power of two", DataSourceExceptionCause.INVALID_PARAMETER );
+            throw new DataSourceException( "Number of frequencies must be at least 2", DataSourceExceptionCause.INVALID_PARAMETER );
         }
         if( filter_length % 2 == 0 )
         {
@@ -180,8 +180,8 @@ public class FIR
         final Interpolator lin_interpolator = new LinearInterpolator();
 
         int i, copy_offset;
-        int interm_length = ( sample_rate + 1 ) / 2;
         int interm_filter_length = Utils.Utils.next_power_of_two( sample_rate - 1 );
+        int interm_length = interm_filter_length / 2;
         double[] interm_frq_resp = new double[ interm_length ];
         Complex frq[] = new Complex[ interm_filter_length ];
         double final_filter[] = new double[ filter_length ];
@@ -190,6 +190,7 @@ public class FIR
         lin_interpolator.resize( x, nr_of_frequencies + 1, interm_frq_resp, interm_length );
         //x[ 0 ] = 0;
         //interm_frq_resp[ 0 ] = 0;
+        Utils.Utils.log2lin( interm_frq_resp, interm_length, 2 );
 
         for( i = 0; i < interm_length; i++ )
         {

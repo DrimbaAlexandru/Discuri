@@ -124,8 +124,9 @@ public class TestMain {
             CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
             CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
 
-            double[] x = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 };
-            FIR fir = FIR.fromFreqResponse2( x, x.length - 1, src.get_sample_rate(), 127 );
+            double[] x = { 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0 };
+            Windowing.apply( x, x.length, ( v ) -> 1.0 / 6 );
+            FIR fir = FIR.fromFreqResponse2( x, x.length - 1, src.get_sample_rate(), 493 );
             Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
             Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
 

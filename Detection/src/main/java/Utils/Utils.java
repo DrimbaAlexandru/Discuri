@@ -37,4 +37,24 @@ public class Utils
         }
         return p == val;
     }
+
+    public static void log2lin( double[] x, int n, double base )
+    {
+        int i;
+        for( i = 0; i <n;i++)
+        {
+            x[ i ] = Math.pow( base, x[ i ] );
+        }
+    }
+
+    public static void lin2log( double[] x, int n, double base )
+    {
+        int i;
+        final double factor = Math.log( base );
+        for( i = 0; i <n;i++)
+        {
+            x[ i ] = Math.log( x[ i ] ) / factor;
+        }
+    }
+
 }
