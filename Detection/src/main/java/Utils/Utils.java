@@ -17,4 +17,24 @@ public class Utils
         }
         return true;
     }
+
+    public static int next_power_of_two( double val )
+    {
+        int p = 1;
+        while( p <= val )
+        {
+            p *= 2;
+        }
+        return p;
+    }
+
+    public static boolean is_power_of_two( double val )
+    {
+        int p = 1;
+        while( p < val )
+        {
+            p *= 2;
+        }
+        return p == val;
+    }
 }

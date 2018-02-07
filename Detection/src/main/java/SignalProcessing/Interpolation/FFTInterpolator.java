@@ -5,6 +5,9 @@ import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Complex;
 
+import static Utils.Utils.is_power_of_two;
+import static Utils.Utils.next_power_of_two;
+
 /**
  * Created by Alex on 06.02.2018.
  */
@@ -25,26 +28,6 @@ public class FFTInterpolator implements Interpolator
             LinearInterpolator linearInterpolator = new LinearInterpolator();
             linearInterpolator.resize( interm_buf, interm_len, out, m );
         }
-    }
-
-    private int next_power_of_two( double val )
-    {
-        int p = 1;
-        while( p <= val )
-        {
-            p *= 2;
-        }
-        return p;
-    }
-
-    private boolean is_power_of_two( double val )
-    {
-        int p = 1;
-        while( p < val )
-        {
-            p *= 2;
-        }
-        return p == val;
     }
 
     public void upsample( double[] in, int n, double[] out, int m ) throws DataSourceException

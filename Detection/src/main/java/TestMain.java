@@ -115,7 +115,7 @@ public class TestMain {
         }
     }
 
-    public static void main3( String args[] )
+    public static void main( String args[] )
     {
         try
         {
@@ -124,10 +124,12 @@ public class TestMain {
             CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
             CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
 
-            double[] x = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            FIR fir = FIR.fromFreqResponse( x, x.length - 1, 0 );
+            double[] x = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1 };
+            FIR fir = FIR.fromFreqResponse2( x, x.length - 1, src.get_sample_rate(), 127 );
             Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
-            Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( x.length - 1 ) );
+            Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
+
+            plot_in_matlab( x, x.length, fir.getB(), fir.getTap_nr() );
 
             FIR_Filter effect = new FIR_Filter();
             effect.setFilter( fir );
@@ -142,15 +144,15 @@ public class TestMain {
         }
     }
 
-    public static void main( String args[] )
+    public static void main4( String args[] )
     {
-        double[] in = { 0, 1, 0, -1, 0, 1, 0, -1 };
+        double[] in = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
         int n = in.length;
-        int m = ( n - 1 ) * 8 + 1;
+        int m = 31;
         double[] out = new double[ m ];
         int i;
 
-        Interpolator interpolator = new FFTInterpolator();
+        Interpolator interpolator = new LinearInterpolator();
         try
         {
             interpolator.resize( in, n, out, m );
@@ -160,6 +162,12 @@ public class TestMain {
             e.printStackTrace();
         }
 
+        plot_in_matlab( in, n, out, m );
+    }
+
+    private static void plot_in_matlab( double[] in, int n, double[] out, int m )
+    {
+        int i;
         System.out.print( "t1 = [ " );
         for( i = 0; i < n - 1; i++ )
         {
@@ -188,8 +196,7 @@ public class TestMain {
         }
         System.out.println( out[ m - 1 ] + " ];" );
 
-        System.out.println( "plot( t1, in, 'LineWidth', 4, ...\n t2, out, 'LineWidth', 4 );" );
+        System.out.println( "plot( t1, in, 'LineWidth', 1, ...\n t2, out, 'LineWidth', 1 );" );
         System.out.println( "legend( 'original signal', 'resized signal' );" );
     }
-
 }
