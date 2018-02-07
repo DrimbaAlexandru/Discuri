@@ -8,6 +8,9 @@ import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.Effects.IIR_Filter;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
+import SignalProcessing.Interpolation.FFTInterpolator;
+import SignalProcessing.Interpolation.Interpolator;
+import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
@@ -112,7 +115,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String args[] )
+    public static void main3( String args[] )
     {
         try
         {
@@ -138,4 +141,55 @@ public class TestMain {
             e.printStackTrace();
         }
     }
+
+    public static void main( String args[] )
+    {
+        double[] in = { 0, 1, 0, -1, 0, 1, 0, -1 };
+        int n = in.length;
+        int m = ( n - 1 ) * 8 + 1;
+        double[] out = new double[ m ];
+        int i;
+
+        Interpolator interpolator = new FFTInterpolator();
+        try
+        {
+            interpolator.resize( in, n, out, m );
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+
+        System.out.print( "t1 = [ " );
+        for( i = 0; i < n - 1; i++ )
+        {
+            System.out.print( ( double )i / ( n - 1 ) + ", " );
+        }
+        System.out.println( "1 ];" );
+
+        System.out.print( "t2 = [ " );
+        for( i = 0; i < m - 1; i++ )
+        {
+            System.out.print( ( double )i / ( m - 1 ) + ", " );
+        }
+        System.out.println( "1 ];" );
+
+        System.out.print( "in = [ " );
+        for( i = 0; i < n - 1; i++ )
+        {
+            System.out.print( in[ i ] + ", " );
+        }
+        System.out.println( in[ n - 1 ] + " ];" );
+
+        System.out.print( "out = [ " );
+        for( i = 0; i < m - 1; i++ )
+        {
+            System.out.print( out[ i ] + ", " );
+        }
+        System.out.println( out[ m - 1 ] + " ];" );
+
+        System.out.println( "plot( t1, in, 'LineWidth', 4, ...\n t2, out, 'LineWidth', 4 );" );
+        System.out.println( "legend( 'original signal', 'resized signal' );" );
+    }
+
 }

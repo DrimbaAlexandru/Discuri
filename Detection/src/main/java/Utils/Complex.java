@@ -39,6 +39,13 @@ public class Complex
         return this;
     }
 
+    public Complex sub( Complex other )
+    {
+        r -= other.r;
+        i -= other.i;
+        return this;
+    }
+
     public Complex mul( Complex other )
     {
         set( r * other.r - i * other.i, i * other.r + r * other.i );
