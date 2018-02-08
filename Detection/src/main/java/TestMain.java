@@ -128,7 +128,7 @@ public class TestMain {
             Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
             Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
 
-            plot_in_matlab( x, x.length, fir.getB(), fir.getTap_nr() );
+            plot_in_matlab( x, 0, x.length, fir.getB(), 0, fir.getTap_nr() );
 
             FIR_Filter effect = new FIR_Filter();
             effect.setFilter( fir );
@@ -161,7 +161,7 @@ public class TestMain {
             e.printStackTrace();
         }
 
-        plot_in_matlab( in, n, out, m );
+        plot_in_matlab( in, 0, n, out, 0, m );
     }
 
     public static void main( String[] args )
@@ -173,11 +173,12 @@ public class TestMain {
             CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
             CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
 
-            FIR fir = FIR.passCutFilter( 512, 5000, src.get_sample_rate(), 511, -12, -36 );
-            //Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
+            double[] FR = FIR.getRIAA_response( 512, src.get_sample_rate() );
+            FIR fir = FIR.fromFreqResponse( FR, FR.length - 1, src.get_sample_rate(), 2047 );
+            Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
             Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
 
-//            plot_in_matlab( new double[]{ 0, 0 }, 2, fir.getB(), fir.getTap_nr() );
+            plot_in_matlab( new double[]{ 0, 0 }, 0, 2, FR, 0, FR.length );
 
             FIR_Filter effect = new FIR_Filter();
             effect.setFilter( fir );

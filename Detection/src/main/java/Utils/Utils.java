@@ -57,7 +57,7 @@ public class Utils
         }
     }
 
-    public static void plot_in_matlab( double[] in, int n, double[] out, int m )
+    public static void plot_in_matlab( double[] in, int off1, int n, double[] out, int off2, int m )
     {
         int i;
         System.out.print( "t1 = [ " );
@@ -77,16 +77,16 @@ public class Utils
         System.out.print( "in = [ " );
         for( i = 0; i < n - 1; i++ )
         {
-            System.out.print( in[ i ] + ", " );
+            System.out.print( in[ i + off1 ] + ", " );
         }
-        System.out.println( in[ n - 1 ] + " ];" );
+        System.out.println( in[ off1 + n - 1 ] + " ];" );
 
         System.out.print( "out = [ " );
         for( i = 0; i < m - 1; i++ )
         {
-            System.out.print( out[ i ] + ", " );
+            System.out.print( out[ i + off2 ] + ", " );
         }
-        System.out.println( out[ m - 1 ] + " ];" );
+        System.out.println( out[ m - 1 + off2 ] + " ];" );
 
         System.out.println( "plot( t1, in, 'LineWidth', 1, ...\n t2, out, 'LineWidth', 1 );" );
         System.out.println( "legend( 'original signal', 'resized signal' );" );

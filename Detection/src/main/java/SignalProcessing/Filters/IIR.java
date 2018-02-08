@@ -22,7 +22,7 @@ public class IIR
         int i, j;
         double newVal;
 
-        if( x.length > range.r )
+        if( x.length < range.r )
         {
             throw new DataSourceException( "Supplied array does not have the expected size to properly apply the filter", DataSourceExceptionCause.INVALID_PARAMETER );
         }
