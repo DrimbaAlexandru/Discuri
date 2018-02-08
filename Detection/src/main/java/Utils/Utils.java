@@ -57,4 +57,38 @@ public class Utils
         }
     }
 
+    public static void plot_in_matlab( double[] in, int n, double[] out, int m )
+    {
+        int i;
+        System.out.print( "t1 = [ " );
+        for( i = 0; i < n - 1; i++ )
+        {
+            System.out.print( ( double )i / ( n - 1 ) + ", " );
+        }
+        System.out.println( "1 ];" );
+
+        System.out.print( "t2 = [ " );
+        for( i = 0; i < m - 1; i++ )
+        {
+            System.out.print( ( double )i / ( m - 1 ) + ", " );
+        }
+        System.out.println( "1 ];" );
+
+        System.out.print( "in = [ " );
+        for( i = 0; i < n - 1; i++ )
+        {
+            System.out.print( in[ i ] + ", " );
+        }
+        System.out.println( in[ n - 1 ] + " ];" );
+
+        System.out.print( "out = [ " );
+        for( i = 0; i < m - 1; i++ )
+        {
+            System.out.print( out[ i ] + ", " );
+        }
+        System.out.println( out[ m - 1 ] + " ];" );
+
+        System.out.println( "plot( t1, in, 'LineWidth', 1, ...\n t2, out, 'LineWidth', 1 );" );
+        System.out.println( "legend( 'original signal', 'resized signal' );" );
+    }
 }

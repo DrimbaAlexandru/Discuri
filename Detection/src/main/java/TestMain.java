@@ -1,20 +1,18 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.FileADS.AUFileAudioSource;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
 import SignalProcessing.Effects.FIR_Filter;
-import SignalProcessing.Effects.IIR_Filter;
 import SignalProcessing.Filters.FIR;
-import SignalProcessing.Filters.IIR;
-import SignalProcessing.Interpolation.FFTInterpolator;
 import SignalProcessing.Interpolation.Interpolator;
 import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
 import java.io.IOException;
+
+import static Utils.Utils.plot_in_matlab;
 
 /**
  * Created by Alex on 08.09.2017.
@@ -115,7 +113,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String args[] )
+    public static void main3( String args[] )
     {
         try
         {
@@ -126,7 +124,7 @@ public class TestMain {
 
             double[] x = { 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0 };
             Windowing.apply( x, x.length, ( v ) -> 1.0 / 6 );
-            FIR fir = FIR.fromFreqResponse2( x, x.length - 1, src.get_sample_rate(), 493 );
+            FIR fir = FIR.fromFreqResponse( x, x.length - 1, src.get_sample_rate(), 493 );
             Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
             Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
 
@@ -166,38 +164,32 @@ public class TestMain {
         plot_in_matlab( in, n, out, m );
     }
 
-    private static void plot_in_matlab( double[] in, int n, double[] out, int m )
+    public static void main( String[] args )
     {
-        int i;
-        System.out.print( "t1 = [ " );
-        for( i = 0; i < n - 1; i++ )
+        try
         {
-            System.out.print( ( double )i / ( n - 1 ) + ", " );
-        }
-        System.out.println( "1 ];" );
+            WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\eq test.wav" );
+            WAVFileAudioSource dst = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+            CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
+            CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
 
-        System.out.print( "t2 = [ " );
-        for( i = 0; i < m - 1; i++ )
+            FIR fir = FIR.passCutFilter( 512, 5000, src.get_sample_rate(), 511, -12, -36 );
+            //Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
+            Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
+
+//            plot_in_matlab( new double[]{ 0, 0 }, 2, fir.getB(), fir.getTap_nr() );
+
+            FIR_Filter effect = new FIR_Filter();
+            effect.setFilter( fir );
+            effect.setMax_chunk_size( 44100 );
+            effect.apply( src_cache, dst_cache, new Interval( 0, src.get_sample_number() ) );
+            dst_cache.flushAll();
+            dst.close();
+        }
+        catch( DataSourceException e )
         {
-            System.out.print( ( double )i / ( m - 1 ) + ", " );
+            e.printStackTrace();
         }
-        System.out.println( "1 ];" );
-
-        System.out.print( "in = [ " );
-        for( i = 0; i < n - 1; i++ )
-        {
-            System.out.print( in[ i ] + ", " );
-        }
-        System.out.println( in[ n - 1 ] + " ];" );
-
-        System.out.print( "out = [ " );
-        for( i = 0; i < m - 1; i++ )
-        {
-            System.out.print( out[ i ] + ", " );
-        }
-        System.out.println( out[ m - 1 ] + " ];" );
-
-        System.out.println( "plot( t1, in, 'LineWidth', 1, ...\n t2, out, 'LineWidth', 1 );" );
-        System.out.println( "legend( 'original signal', 'resized signal' );" );
     }
+
 }
