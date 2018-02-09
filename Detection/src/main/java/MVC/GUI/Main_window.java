@@ -518,6 +518,7 @@ public class Main_window
         ProjectStatics.registerEffect( new Repair() );
         ProjectStatics.registerEffect( new Repair_Marked() );
         ProjectStatics.registerEffect( new Sample_Summer() );
+        ProjectStatics.registerEffect( new Repair_in_high_pass() );
 
         try
         {
@@ -651,6 +652,16 @@ public class Main_window
                                     } );
                     continue;
                 }
+                if( eff.getClass().getCanonicalName().equals( Repair_in_high_pass.class.getCanonicalName() ) )
+                {
+                    final Repair_in_high_pass effect = ( Repair_in_high_pass )eff;
+                    mi.setOnAction( ev ->
+                                    {
+                                        System.out.println( effect.getName() );
+                                        onApplyRepair_in_high_pass( effect );
+                                    } );
+                    continue;
+                }
 
             }
         }
@@ -663,6 +674,11 @@ public class Main_window
     private void onApplySampleSummer( Sample_Summer eff )
     {
         apply_effect( eff, false, true );
+    }
+
+    private void onApplyRepair_in_high_pass( Repair_in_high_pass eff )
+    {
+        apply_effect( eff, false, false );
     }
 
     private void onApplyRepairMarked( Repair_Marked eff )

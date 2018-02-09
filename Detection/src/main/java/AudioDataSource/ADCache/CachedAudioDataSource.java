@@ -12,12 +12,14 @@ public class CachedAudioDataSource implements IAudioDataSource
     private AudioDataCache cache;
     private IAudioDataSource dataSource;
     private int max_cache_page_size;
+    private int sample_number = 0;
 
     public CachedAudioDataSource( IAudioDataSource dataSource, int max_cached_samples, int max_cache_page_size )
     {
         this.dataSource = dataSource;
         cache = new AudioDataCache( max_cached_samples * dataSource.get_channel_number() );
         this.max_cache_page_size = max_cache_page_size;
+        sample_number = dataSource.get_sample_number();
     }
 
     @Override
@@ -29,7 +31,7 @@ public class CachedAudioDataSource implements IAudioDataSource
     @Override
     public int get_sample_number()
     {
-        return dataSource.get_sample_number();
+        return sample_number;
     }
 
     @Override
@@ -48,7 +50,7 @@ public class CachedAudioDataSource implements IAudioDataSource
         AudioSamplesWindow win;
         int cacheLastSampleIndex;
 
-        length = Math.min( length, dataSource.get_sample_number() - first_sample_index );
+        length = Math.min( length, get_sample_number() - first_sample_index );
 
         for( i = 0; i < length; )
         {
@@ -56,7 +58,7 @@ public class CachedAudioDataSource implements IAudioDataSource
             if( win == null )
             {
                 cacheLastSampleIndex = cache.getNextCachedSampleIndex( i + first_sample_index );
-                cacheLastSampleIndex = ( cacheLastSampleIndex < 0 ) ? dataSource.get_sample_number() : cacheLastSampleIndex;
+                cacheLastSampleIndex = ( cacheLastSampleIndex < 0 ) ? get_sample_number() : cacheLastSampleIndex;
                 temp_length = Math.min( cacheLastSampleIndex - i - first_sample_index, length - i );
                 //temp_length = ( temp_length < 0 ) ? length - i : temp_length;
                 temp_length = ( temp_length > max_cache_page_size ) ? max_cache_page_size : temp_length;
@@ -200,6 +202,7 @@ public class CachedAudioDataSource implements IAudioDataSource
                 i += temp_length;
             }
         }
+        sample_number = Math.max( sample_number, new_samples.get_first_sample_index() + new_samples.get_length() );
     }
 
     private void flush( AudioSamplesWindow win ) throws DataSourceException
@@ -218,6 +221,7 @@ public class CachedAudioDataSource implements IAudioDataSource
                 win.markAsFlushed();
             }
         }
+        sample_number = dataSource.get_sample_number();
     }
 
     private void cache_samples( AudioSamplesWindow win ) throws DataSourceException
@@ -276,6 +280,7 @@ public class CachedAudioDataSource implements IAudioDataSource
         {
             invalidateCache();
             this.dataSource = dataSource;
+            sample_number = dataSource.get_sample_number();
         }
 
     }

@@ -3,6 +3,7 @@ import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
+import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Interpolation.Interpolator;
@@ -164,7 +165,7 @@ public class TestMain {
         plot_in_matlab( in, 0, n, out, 0, m );
     }
 
-    public static void main( String[] args )
+    public static void main5( String[] args )
     {
         try
         {
@@ -173,7 +174,7 @@ public class TestMain {
             CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
             CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
 
-            double[] FR = FIR.getRIAA_response( 512, src.get_sample_rate() );
+            double[] FR = FIR.get_RIAA_response( 512, src.get_sample_rate() );
             FIR fir = FIR.fromFreqResponse( FR, FR.length - 1, src.get_sample_rate(), 2047 );
             Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
             Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
@@ -193,4 +194,25 @@ public class TestMain {
         }
     }
 
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\sine_2.wav" );
+            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 1024 );
+
+            Equalizer effect = new Equalizer();
+            double[] coeffs = { 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0 };
+            FIR fir = new FIR( coeffs, coeffs.length );
+            effect.setFilter( fir );
+            effect.setMax_chunk_size( 20 );
+            effect.apply( cache, cache, new Interval( 13200, 13300, false ) );
+            cache.flushAll();
+            wav.close();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+    }
 }

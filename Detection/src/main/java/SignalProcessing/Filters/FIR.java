@@ -106,6 +106,11 @@ public class FIR
 
     public static FIR fromFreqResponse( double[] x, int nr_of_frequencies, int sample_rate, int filter_length ) throws DataSourceException
     {
+        return fromFreqResponse( x, nr_of_frequencies, sample_rate, filter_length, false );
+    }
+
+    public static FIR fromFreqResponse( double[] x, int nr_of_frequencies, int sample_rate, int filter_length, boolean remove_DC_offset ) throws DataSourceException
+    {
         if( nr_of_frequencies == 1 )
         {
             throw new DataSourceException( "Number of frequencies must be at least 2", DataSourceExceptionCause.INVALID_PARAMETER );
@@ -133,9 +138,16 @@ public class FIR
         Complex frq[] = new Complex[ interm_filter_length ];
         double final_filter[] = new double[ filter_length ];
 
+        //Utils.plot_in_matlab( new double[]{ 0, 0 }, 0, 2, x, 0, nr_of_frequencies + 1 );
+
         lin_interpolator.resize( x, nr_of_frequencies + 1, interm_frq_resp, interm_length );
 
         log2lin( interm_frq_resp, interm_length, 2 );
+
+        if( remove_DC_offset )
+        {
+            interm_frq_resp[ 0 ] = 0;
+        }
 
         for( i = 0; i < interm_length; i++ )
         {
@@ -148,7 +160,7 @@ public class FIR
                 frq[ i ] = new Complex( -interm_frq_resp[ i ], 0 );
             }
         }
-        for( i = interm_length; i <= interm_filter_length/2; i++ )
+        for( i = interm_length; i <= interm_filter_length / 2; i++ )
         {
             if( i % 2 == 0 )
             {
@@ -215,7 +227,7 @@ public class FIR
 
     }
 
-    public static double[] getRIAA_response( int nr_of_frequencies, int sample_rate ) throws DataSourceException
+    public static double[] get_RIAA_response( int nr_of_frequencies, int sample_rate ) throws DataSourceException
     {
         List< double[] > responses = new ArrayList<>();
         int i, j;
@@ -237,6 +249,40 @@ public class FIR
         for( j = 1; j < responses.size(); j++ )
         {
             source = responses.get( j );
+            for( i = 0; i <= nr_of_frequencies; i++ )
+            {
+                accumulator[ i ] += source[ i ];
+            }
+        }
+        for( i = 0; i <= nr_of_frequencies; i++ )
+        {
+            accumulator[ i ] += plus_20_dB;
+        }
+        return accumulator;
+    }
+
+    public static double[] get_inverse_RIAA_response( int nr_of_frequencies, int sample_rate ) throws DataSourceException
+    {
+        List< double[] > responses = new ArrayList<>();
+        int i, j;
+        double[] accumulator;
+        double[] source;
+        final double minus_20_dB = -20.0 / 6.0;
+
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 10, sample_rate, -48, 1.29 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 50, sample_rate, 0, 2.39 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 80, sample_rate, 0, 1.03 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 300, sample_rate, 0, -1.32 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 500, sample_rate, 0, -0.38 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 2500, sample_rate, 0, 1.49 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 5000, sample_rate, 0, 0.65 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 8000, sample_rate, 0, 0.85 ) );
+
+        accumulator = responses.get( 0 );
+
+        for( j = 1; j < responses.size(); j++ )
+        {
+            source = responses.get( j );
             for( i = 0; i < nr_of_frequencies; i++ )
             {
                 accumulator[ i ] += source[ i ];
@@ -244,7 +290,7 @@ public class FIR
         }
         for( i = 0; i < nr_of_frequencies; i++ )
         {
-            accumulator[ i ] += plus_20_dB;
+            accumulator[ i ] += minus_20_dB;
         }
         return accumulator;
     }
