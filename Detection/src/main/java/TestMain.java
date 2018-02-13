@@ -3,9 +3,11 @@ import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
-import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.FIR_Filter;
+import SignalProcessing.Effects.IIR_with_centered_FIR;
+import SignalProcessing.Filters.Equalizer_FIR;
 import SignalProcessing.Filters.FIR;
+import SignalProcessing.Filters.IIR;
 import SignalProcessing.Interpolation.Interpolator;
 import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
@@ -126,10 +128,10 @@ public class TestMain {
             double[] x = { 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0 };
             Windowing.apply( x, x.length, ( v ) -> 1.0 / 6 );
             FIR fir = FIR.fromFreqResponse( x, x.length - 1, src.get_sample_rate(), 493 );
-            Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
-            Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
+            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), Windowing.Hann_window );
+            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), ( v ) -> 1.0 / ( fir.getFf_coeff_nr() ) );
 
-            plot_in_matlab( x, 0, x.length, fir.getB(), 0, fir.getTap_nr() );
+            plot_in_matlab( x, 0, x.length, fir.getFf(), 0, fir.getFf_coeff_nr() );
 
             FIR_Filter effect = new FIR_Filter();
             effect.setFilter( fir );
@@ -176,8 +178,8 @@ public class TestMain {
 
             double[] FR = FIR.get_RIAA_response( 512, src.get_sample_rate() );
             FIR fir = FIR.fromFreqResponse( FR, FR.length - 1, src.get_sample_rate(), 2047 );
-            Windowing.apply( fir.getB(), fir.getTap_nr(), Windowing.Hann_window );
-            Windowing.apply( fir.getB(), fir.getTap_nr(), ( v ) -> 1.0 / ( fir.getTap_nr() ) );
+            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), Windowing.Hann_window );
+            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), ( v ) -> 1.0 / ( fir.getFf_coeff_nr() ) );
 
             plot_in_matlab( new double[]{ 0, 0 }, 0, 2, FR, 0, FR.length );
 
@@ -198,15 +200,20 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\sine_2.wav" );
-            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 1024 );
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav", 1, 44100, 2 );
+            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
 
-            Equalizer effect = new Equalizer();
-            double[] coeffs = { 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0 };
-            FIR fir = new FIR( coeffs, coeffs.length );
-            effect.setFilter( fir );
-            effect.setMax_chunk_size( 20 );
-            effect.apply( cache, cache, new Interval( 13200, 13300, false ) );
+            double[] fir = { 0.1, -0.2, 0.3, -0.4, 0.3, -0.2, 0.1 };
+            double[] iir = { 1, -1 };
+            double[][] samples = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+            AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, samples[ 0 ].length, samples.length );
+            cache.put_samples( win );
+
+            IIR_with_centered_FIR effect = new IIR_with_centered_FIR();
+            effect.setMax_chunk_size( 7 );
+            effect.setFilter( new IIR( fir, fir.length, iir, iir.length ) );
+            effect.apply( cache, cache, new Interval( 0, cache.get_sample_number() ) );
+
             cache.flushAll();
             wav.close();
         }

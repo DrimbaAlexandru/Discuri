@@ -9,71 +9,21 @@ import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Complex;
 import Utils.Interval;
-import Utils.Utils;
-import javafx.util.Pair;
 
-import javax.rmi.CORBA.Util;
 import java.util.ArrayList;
 import java.util.List;
 
 import static Utils.Utils.log2lin;
 import static Utils.Utils.next_power_of_two;
-import static Utils.Utils.plot_in_matlab;
 
 /**
  * Created by Alex on 24.11.2017.
  */
 public class FIR
 {
-    private int tap_nr;
-    private double[] b;
-/*
-    public void apply_with_implicit_left_zero_padding( double[] x, int N ) throws DataSourceException
-    {
-        if( x.length < N )
-        {
-            throw new DataSourceException( "Supplied array does not have enough space to properly apply the filter", DataSourceExceptionCause.INVALID_PARAMETER );
-        }
+    private int ff_coeff_nr;
+    private double[] ff;
 
-        int i, j, buf_idx = 0;
-        double[] ybuf = new double[ tap_nr ];
-
-        for( i = 0; i < tap_nr; i++ ) // y[i]
-        {
-            ybuf[ buf_idx ] = 0;
-            for( j = 0; j <= i; j++ ) // b[j]
-            {
-                ybuf[ buf_idx ] += b[ j ] * x[ i - j ];
-            }
-            buf_idx++;
-        }
-
-        for( i = tap_nr; i < N; i++ )
-        {
-            if( buf_idx == tap_nr )
-            {
-                buf_idx = 0;
-            }
-            x[ i - tap_nr ] = ybuf[ buf_idx ];
-            ybuf[ buf_idx ] = 0;
-            for( j = 0; j < tap_nr; j++ ) // b[j]
-            {
-                ybuf[ buf_idx ] += b[ j ] * x[ i - j ];
-            }
-            buf_idx++;
-        }
-
-        for( i = N - tap_nr; i < N; i++ )
-        {
-            if( buf_idx == tap_nr )
-            {
-                buf_idx = 0;
-            }
-            x[ i ] = ybuf[ buf_idx ];
-            buf_idx++;
-        }
-    }
-*/
     public void apply( double[] x, Interval range ) throws DataSourceException
     {
 
@@ -88,9 +38,9 @@ public class FIR
         for( i = range.r - 1; i >= range.l; i-- )
         {
             newVal = 0;
-            for( j = 0; j < Math.min( i + 1, tap_nr ); j++ ) // b[j]
+            for( j = 0; j < Math.min( i + 1, ff_coeff_nr ); j++ ) // ff[j]
             {
-                newVal += b[ j ] * x[ i - j ];
+                newVal += ff[ j ] * x[ i - j ];
             }
             x[ i ] = newVal;
         }
@@ -99,9 +49,9 @@ public class FIR
     public FIR( double coeffs[], int n )
     {
         int i;
-        b = new double[ n ];
-        tap_nr = n;
-        System.arraycopy( coeffs, 0, b, 0, n );
+        ff = new double[ n ];
+        ff_coeff_nr = n;
+        System.arraycopy( coeffs, 0, ff, 0, n );
     }
 
     public static FIR fromFreqResponse( double[] x, int nr_of_frequencies, int sample_rate, int filter_length ) throws DataSourceException
@@ -188,14 +138,14 @@ public class FIR
         return new FIR( final_filter, filter_length );
     }
 
-    public int getTap_nr()
+    public int getFf_coeff_nr()
     {
-        return tap_nr;
+        return ff_coeff_nr;
     }
 
-    public double[] getB()
+    public double[] getFf()
     {
-        return b;
+        return ff;
     }
 
     public static double[] pass_cut_freq_resp( int nr_of_frequencies, int cutoff_frequency, int sample_rate, double low_rolloff, double high_rolloff ) throws DataSourceException

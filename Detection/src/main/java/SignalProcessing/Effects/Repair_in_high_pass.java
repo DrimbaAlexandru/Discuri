@@ -50,13 +50,13 @@ public class Repair_in_high_pass implements IEffect
         FIR inverse_riaa_filter = FIR.fromFreqResponse( inverse_riaa_response, riaa_length, dataSource.get_sample_rate(), riaa_length );
         FIR low_pass_filter = FIR.fromFreqResponse( low_pass_resp, low_pass_length, dataSource.get_sample_rate(), low_pass_length );
 
-        Windowing.apply( inverse_riaa_filter.getB(), inverse_riaa_filter.getTap_nr(), ( v ) -> 1.0 / inverse_riaa_filter.getTap_nr() );
-        Windowing.apply( riaa_filter.getB(), riaa_filter.getTap_nr(), ( v ) -> 1.0 / riaa_filter.getTap_nr() );
-        Windowing.apply( low_pass_filter.getB(), low_pass_filter.getTap_nr(), ( v ) -> 1.0 / low_pass_filter.getTap_nr() );
+        Windowing.apply( inverse_riaa_filter.getFf(), inverse_riaa_filter.getFf_coeff_nr(), ( v ) -> 1.0 / inverse_riaa_filter.getFf_coeff_nr() );
+        Windowing.apply( riaa_filter.getFf(), riaa_filter.getFf_coeff_nr(), ( v ) -> 1.0 / riaa_filter.getFf_coeff_nr() );
+        Windowing.apply( low_pass_filter.getFf(), low_pass_filter.getFf_coeff_nr(), ( v ) -> 1.0 / low_pass_filter.getFf_coeff_nr() );
 
-        Windowing.apply( inverse_riaa_filter.getB(), inverse_riaa_filter.getTap_nr(), window );
-        Windowing.apply( riaa_filter.getB(), riaa_filter.getTap_nr(), window );
-        Windowing.apply( low_pass_filter.getB(), low_pass_filter.getTap_nr(), window );
+        Windowing.apply( inverse_riaa_filter.getFf(), inverse_riaa_filter.getFf_coeff_nr(), window );
+        Windowing.apply( riaa_filter.getFf(), riaa_filter.getFf_coeff_nr(), window );
+        Windowing.apply( low_pass_filter.getFf(), low_pass_filter.getFf_coeff_nr(), window );
 
         AUFileAudioSource temp_file1, temp_file2;
         CachedAudioDataSource temp_cache1, temp_cache2;

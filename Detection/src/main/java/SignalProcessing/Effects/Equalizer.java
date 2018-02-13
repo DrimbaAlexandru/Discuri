@@ -24,7 +24,7 @@ public class Equalizer implements IEffect
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
-        if( filter.getTap_nr() % 2 == 0 )
+        if( filter.getFf_coeff_nr() % 2 == 0 )
         {
             throw new DataSourceException( "Equalization filter length must be an odd number", DataSourceExceptionCause.INVALID_PARAMETER );
         }
@@ -36,7 +36,7 @@ public class Equalizer implements IEffect
         {
             interval.r = dataSource.get_sample_number();
         }
-        Interval apply_interval = new Interval( interval.l + ( filter.getTap_nr() - 1 ) / 2, interval.get_length() );
+        Interval apply_interval = new Interval( interval.l + ( filter.getFf_coeff_nr() - 1 ) / 2, interval.get_length() );
         int zero_pad_right = Math.max( 0, apply_interval.r - dataSource.get_sample_number() );
         if( zero_pad_right > 0 )
         {
@@ -49,7 +49,7 @@ public class Equalizer implements IEffect
             }
             dataSource.put_samples( new AudioSamplesWindow( samples, dataSource.get_sample_number(), zero_pad_right, samples.length ) );
         }
-        AudioSamplesWindow last_samples = dataSource.get_samples( apply_interval.r - filter.getTap_nr() / 2, filter.getTap_nr() / 2 );
+        AudioSamplesWindow last_samples = dataSource.get_samples( apply_interval.r - filter.getFf_coeff_nr() / 2, filter.getFf_coeff_nr() / 2 );
 
         FIR_Filter effect1 = new FIR_Filter();
         effect1.setFilter( filter );
@@ -58,7 +58,7 @@ public class Equalizer implements IEffect
 
         Left_Shift effect2 = new Left_Shift();
         effect2.setMax_chunk_size( max_chunk_size );
-        effect2.setAmount( filter.getTap_nr() / 2 );
+        effect2.setAmount( filter.getFf_coeff_nr() / 2 );
         effect2.apply( dataDest, dataDest, apply_interval );
 
         dataDest.put_samples( last_samples );
