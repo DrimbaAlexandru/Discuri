@@ -3,6 +3,7 @@ import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
+import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.Effects.IIR_with_centered_FIR;
 import SignalProcessing.Filters.Equalizer_FIR;
@@ -202,21 +203,20 @@ public class TestMain {
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav", 1, 44100, 2 );
             CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
+            WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", 1, 44100, 2 );
 
-            double[] fir = { 0, 0, 0, 0.5, 0, 0, 0 };
-            double[] iir = { 1 };
-            double[][] samples = { { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } };
+            double[] fir = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            double[][] samples = { { -1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 } };
             AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, samples[ 0 ].length, samples.length );
             cache.put_samples( win );
 
-            IIR_with_centered_FIR effect = new IIR_with_centered_FIR();
-            effect.setMax_chunk_size( 10 );
-            effect.setFilter( new IIR( fir, fir.length, iir, iir.length ) );
-            effect.apply( cache, cache, new Interval( 6, samples[ 0 ].length, false ) );
-            effect.apply( cache, cache, new Interval( 1, 5, false ) );
+            Equalizer effect = new Equalizer();
+            effect.setMax_chunk_size( 11 );
+            effect.setFilter( new FIR( fir, fir.length ) );
+            effect.apply( cache, out, new Interval( 0, samples[ 0 ].length, false ) );
 
             cache.flushAll();
-            wav.close();
+            out.close();
         }
         catch( DataSourceException e )
         {

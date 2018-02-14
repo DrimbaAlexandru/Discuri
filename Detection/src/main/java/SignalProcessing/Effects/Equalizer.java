@@ -4,7 +4,9 @@ import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
+import SignalProcessing.Filters.Equalizer_FIR;
 import SignalProcessing.Filters.FIR;
+import SignalProcessing.Filters.IIR;
 import Utils.Interval;
 
 /**
@@ -12,8 +14,9 @@ import Utils.Interval;
  */
 public class Equalizer implements IEffect
 {
-    FIR filter = null;
+    private FIR fir_filter = null;
     private int max_chunk_size = 1024;
+    private final static double[] identity_FIR_coeffs = { 1 };
 
     @Override
     public String getName()
@@ -24,49 +27,134 @@ public class Equalizer implements IEffect
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
-        if( filter.getFf_coeff_nr() % 2 == 0 )
+        if( fir_filter == null )
         {
-            throw new DataSourceException( "Equalization filter length must be an odd number", DataSourceExceptionCause.INVALID_PARAMETER );
+            throw new DataSourceException( "No filter was set.", DataSourceExceptionCause.INVALID_STATE );
         }
-        if( interval.l < 0 )
+
+        final int buf_len = fir_filter.getFf_coeff_nr() / 2;
+
+        if( fir_filter.getFf_coeff_nr() > max_chunk_size )
         {
-            interval.l = 0;
+            throw new DataSourceException( "Chunk size must be at least the size of the filter", DataSourceExceptionCause.INVALID_STATE );
         }
-        if( interval.r > dataSource.get_sample_number() )
+
+        final boolean isInPlace = ( dataDest == dataSource );
+        double[][] prev_left_samples = null;
+        double[][] prev_processed_samples = new double[ dataSource.get_channel_number() ][ buf_len ];
+        final Equalizer_FIR equalizer_fir = new Equalizer_FIR( fir_filter );
+        if( isInPlace )
         {
-            interval.r = dataSource.get_sample_number();
+            prev_left_samples = new double[ dataSource.get_channel_number() ][ buf_len ];
         }
-        Interval apply_interval = new Interval( interval.l + ( filter.getFf_coeff_nr() - 1 ) / 2, interval.get_length() );
-        int zero_pad_right = Math.max( 0, apply_interval.r - dataSource.get_sample_number() );
-        if( zero_pad_right > 0 )
+
+        int temp_len;
+        int i, j, k;
+        int first_needed_sample_index;
+        int first_fetchable_sample_index;
+
+        AudioSamplesWindow win;
+        Interval applying_range = new Interval( 0, 0 );
+
+        interval.r = Math.min( dataSource.get_sample_number(), interval.r );
+        interval.l = Math.max( 0, interval.l );
+
+        i = interval.l;
+
+        first_needed_sample_index = i - buf_len;
+        first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
+        temp_len = Math.min( interval.r - first_fetchable_sample_index + fir_filter.getFf_coeff_nr() / 2, max_chunk_size );
+        win = dataSource.get_samples( first_fetchable_sample_index, temp_len );
+        temp_len = win.get_length();
+        applying_range.l = i - first_fetchable_sample_index;
+        if( i >= dataSource.get_sample_number() - 1 - fir_filter.getFf_coeff_nr() / 2 )
         {
-            double[] zeros = new double[ zero_pad_right ];
-            double[][] samples = new double[ dataSource.get_channel_number() ][];
-            int k;
-            for( k = 0; k < samples.length; k++ )
+            applying_range.r = applying_range.l + ( interval.r - i );
+        }
+        else
+        {
+            applying_range.r = temp_len - fir_filter.getFf_coeff_nr() / 2;
+        }
+        if( applying_range.get_length() <= 0 )
+        {
+            throw new DataSourceException( "Avoided infinite loop!", DataSourceExceptionCause.INVALID_STATE );
+        }
+
+        for( k = 0; k < dataSource.get_channel_number(); k++ )
+        {
+            if( isInPlace )
             {
-                samples[ k ] = zeros;
+                for( j = 0; j < buf_len; j++ )
+                {
+                    prev_left_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                }
             }
-            dataSource.put_samples( new AudioSamplesWindow( samples, dataSource.get_sample_number(), zero_pad_right, samples.length ) );
+            equalizer_fir.apply( win.getSamples()[ k ], applying_range );
+            win.markModified();
+
+            for( j = 0; j < buf_len; j++ )
+            {
+                prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+            }
         }
-        AudioSamplesWindow last_samples = dataSource.get_samples( apply_interval.r - filter.getFf_coeff_nr() / 2, filter.getFf_coeff_nr() / 2 );
+        dataDest.put_samples( win );
+        i += applying_range.get_length();
 
-        FIR_Filter effect1 = new FIR_Filter();
-        effect1.setFilter( filter );
-        effect1.setMax_chunk_size( max_chunk_size );
-        effect1.apply( dataSource, dataDest, apply_interval );
+        for( ; i < interval.r; )
+        {
+            first_needed_sample_index = i - buf_len;
+            first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
+            temp_len = Math.min( interval.r - first_fetchable_sample_index + fir_filter.getFf_coeff_nr() / 2, max_chunk_size );
+            win = dataSource.get_samples( first_fetchable_sample_index, temp_len );
+            temp_len = win.get_length();
+            applying_range.l = i - first_fetchable_sample_index;
+            if( i >= dataSource.get_sample_number() - 1 - fir_filter.getFf_coeff_nr() / 2 )
+            {
+                applying_range.r = applying_range.l + ( interval.r - i );
+            }
+            else
+            {
+                applying_range.r = temp_len - fir_filter.getFf_coeff_nr() / 2;
+            }
 
-        Left_Shift effect2 = new Left_Shift();
-        effect2.setMax_chunk_size( max_chunk_size );
-        effect2.setAmount( filter.getFf_coeff_nr() / 2 );
-        effect2.apply( dataDest, dataDest, apply_interval );
+            if( applying_range.get_length() <= 0 )
+            {
+                throw new DataSourceException( "Avoided infinite loop!", DataSourceExceptionCause.INVALID_STATE );
+            }
 
-        dataDest.put_samples( last_samples );
+            for( k = 0; k < dataSource.get_channel_number(); k++ )
+            {
+                if( isInPlace )
+                {
+                    for( j = 0; j < buf_len; j++ )
+                    {
+                        win.putSample( first_fetchable_sample_index + buf_len - 1 - j, k, prev_left_samples[ k ][ buf_len - 1 - j ] );
+                        prev_left_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                    }
+                }
+
+                equalizer_fir.apply( win.getSamples()[ k ], applying_range );
+
+                for( j = 0; j < buf_len; j++ )
+                {
+                    win.putSample( first_fetchable_sample_index + buf_len - 1 - j, k, prev_processed_samples[ k ][ buf_len - 1 - j ] );
+                }
+
+                win.markModified();
+
+                for( j = 0; j < buf_len; j++ )
+                {
+                    prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                }
+            }
+            dataDest.put_samples( win );
+            i += applying_range.get_length();
+        }
     }
 
     public void setFilter( FIR filter )
     {
-        this.filter = filter;
+        fir_filter = filter;
     }
 
     public void setMax_chunk_size( int max_chunk_size )
