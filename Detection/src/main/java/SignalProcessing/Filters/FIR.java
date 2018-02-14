@@ -133,7 +133,7 @@ public class FIR
         {
             final_filter[ i ] = frq[ copy_offset + i ].r();
         }
-        Windowing.apply( final_filter, filter_length, ( v ) -> 1.0 / ( ( double )interm_filter_length / 2 / ( filter_length ) ) );
+        Windowing.apply( final_filter, filter_length, ( v ) -> 1.0 / ( ( double )interm_filter_length / 2 ) );
 
         return new FIR( final_filter, filter_length );
     }
