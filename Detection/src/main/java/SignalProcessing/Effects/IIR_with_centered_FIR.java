@@ -66,11 +66,18 @@ public class IIR_with_centered_FIR implements IEffect
 
         first_needed_sample_index = i - max_filter_len;
         first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
-        temp_len = Math.min( interval.r - first_fetchable_sample_index, max_chunk_size );
+        temp_len = Math.min( interval.r - first_fetchable_sample_index + fir_filter.getFf_coeff_nr() / 2, max_chunk_size );
         win = dataSource.get_samples( first_fetchable_sample_index, temp_len );
         temp_len = win.get_length();
         applying_range.l = i - first_fetchable_sample_index;
-        applying_range.r = temp_len - fir_filter.getFf_coeff_nr() / 2;
+        if( i >= dataSource.get_sample_number() - 1 - fir_filter.getFf_coeff_nr() / 2 )
+        {
+            applying_range.r = applying_range.l + ( interval.r - i );
+        }
+        else
+        {
+            applying_range.r = temp_len - fir_filter.getFf_coeff_nr() / 2;
+        }
         if( applying_range.get_length() <= 0 )
         {
             throw new DataSourceException( "Avoided infinite loop!", DataSourceExceptionCause.INVALID_STATE );
@@ -101,11 +108,19 @@ public class IIR_with_centered_FIR implements IEffect
         {
             first_needed_sample_index = i - max_filter_len;
             first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
-            temp_len = Math.min( interval.r - first_fetchable_sample_index, max_chunk_size );
+            temp_len = Math.min( interval.r - first_fetchable_sample_index + fir_filter.getFf_coeff_nr() / 2, max_chunk_size );
             win = dataSource.get_samples( first_fetchable_sample_index, temp_len );
             temp_len = win.get_length();
             applying_range.l = i - first_fetchable_sample_index;
-            applying_range.r = temp_len - ( i >= dataSource.get_sample_number() - 1 - fir_filter.getFf_coeff_nr() / 2 ? 0 : fir_filter.getFf_coeff_nr() / 2 );
+            if( i >= dataSource.get_sample_number() - 1 - fir_filter.getFf_coeff_nr() / 2 )
+            {
+                applying_range.r = applying_range.l + ( interval.r - i );
+            }
+            else
+            {
+                applying_range.r = temp_len - fir_filter.getFf_coeff_nr() / 2;
+            }
+
             if( applying_range.get_length() <= 0 )
             {
                 throw new DataSourceException( "Avoided infinite loop!", DataSourceExceptionCause.INVALID_STATE );

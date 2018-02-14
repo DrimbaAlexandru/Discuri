@@ -203,16 +203,17 @@ public class TestMain {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav", 1, 44100, 2 );
             CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
 
-            double[] fir = { 0.1, -0.2, 0.3, -0.4, 0.3, -0.2, 0.1 };
-            double[] iir = { 1, -1 };
-            double[][] samples = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 } };
+            double[] fir = { 0, 0, 0, 0.5, 0, 0, 0 };
+            double[] iir = { 1 };
+            double[][] samples = { { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } };
             AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, samples[ 0 ].length, samples.length );
             cache.put_samples( win );
 
             IIR_with_centered_FIR effect = new IIR_with_centered_FIR();
-            effect.setMax_chunk_size( 7 );
+            effect.setMax_chunk_size( 10 );
             effect.setFilter( new IIR( fir, fir.length, iir, iir.length ) );
-            effect.apply( cache, cache, new Interval( 0, cache.get_sample_number() ) );
+            effect.apply( cache, cache, new Interval( 6, samples[ 0 ].length, false ) );
+            effect.apply( cache, cache, new Interval( 1, 5, false ) );
 
             cache.flushAll();
             wav.close();
