@@ -22,51 +22,6 @@ import static Utils.Utils.plot_in_matlab;
  * Created by Alex on 08.09.2017.
  */
 public class TestMain {
-    public static void main1( String[] args )
-    {
-        try
-        {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fp mark.wav" );
-            double threshold = 0.1;
-            int side = 1;
-            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\fp mark 0.1.txt" );
-            if( wav.get_channel_number() != 1 )
-            {
-                throw new DataSourceException( "Not mono" );
-            }
-            AudioSamplesWindow win = wav.get_samples( 0, wav.get_sample_number() );
-            int i, j;
-            boolean mark;
-            for( i = side; i < wav.get_sample_number() - side; i++ )
-            {
-                if( i % 44100 == 0 )
-                {
-                    System.out.println( "Processed " + i / 44100 + " seconds" );
-                }
-                mark = false;
-                for( j = -side; j <= side; j++ )
-                {
-                    mark = mark || ( Math.abs( win.getSample( i + j, 0 ) ) >= threshold );
-                }
-                if( mark )
-                {
-                    mf.addMark( i, i, 0 );
-                    mf.addMark( i, i, 1 );
-                }
-            }
-            mf.writeMarkingsToFile();
-
-        }
-        catch( DataSourceException e )
-        {
-            e.printStackTrace();
-        }
-        catch( IOException e )
-        {
-            e.printStackTrace();
-        }
-
-    }
 
     public static void main2(String args[])
     {

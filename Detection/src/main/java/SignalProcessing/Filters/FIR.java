@@ -219,7 +219,7 @@ public class FIR
         double[] source;
         final double minus_20_dB = -20.0 / 6.0;
 
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 10, sample_rate, -48, 1.29 ) );
+        responses.add( pass_cut_freq_resp( nr_of_frequencies, 10, sample_rate, 0, 1.29 ) );
         responses.add( pass_cut_freq_resp( nr_of_frequencies, 50, sample_rate, 0, 2.39 ) );
         responses.add( pass_cut_freq_resp( nr_of_frequencies, 80, sample_rate, 0, 1.03 ) );
         responses.add( pass_cut_freq_resp( nr_of_frequencies, 300, sample_rate, 0, -1.32 ) );

@@ -20,9 +20,10 @@ import java.util.function.Function;
  */
 public class Repair_in_high_pass implements IEffect
 {
+    final private int file_byte_depth = 4;
     final private int cutoff_frq = 2000;
-    final private double preamp = Math.pow( 2, -20.0 / 6 );
-    final private double postamp = Math.pow( 2, 20.0 / 6 );
+    final private double preamp = Math.pow( 2, -30.0 / 6 );
+    final private double postamp = Math.pow( 2, 30.0 / 6 );
     final private int chunk_size = 1024 * 1024;
     final private int riaa_length = 2047;
     final private int low_pass_length = 511;
@@ -61,11 +62,11 @@ public class Repair_in_high_pass implements IEffect
         AUFileAudioSource temp_file1, temp_file2, temp_file3;
         CachedAudioDataSource temp_cache1, temp_cache2, temp_cache3;
 
-        temp_file1 = new AUFileAudioSource( ProjectStatics.getTemp_folder() + "temp1.au", dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 );
+        temp_file1 = new AUFileAudioSource( ProjectStatics.getTemp_folder() + "temp1.au", dataSource.get_channel_number(), dataSource.get_sample_rate(), file_byte_depth );
         temp_cache1 = new CachedAudioDataSource( temp_file1, ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
-        temp_file2 = new AUFileAudioSource( ProjectStatics.getTemp_folder() + "temp2.au", dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 );
+        temp_file2 = new AUFileAudioSource( ProjectStatics.getTemp_folder() + "temp2.au", dataSource.get_channel_number(), dataSource.get_sample_rate(), file_byte_depth );
         temp_cache2 = new CachedAudioDataSource( temp_file2, ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
-        temp_file3 = new AUFileAudioSource( ProjectStatics.getTemp_folder() + "temp3.au", dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 );
+        temp_file3 = new AUFileAudioSource( ProjectStatics.getTemp_folder() + "temp3.au", dataSource.get_channel_number(), dataSource.get_sample_rate(), file_byte_depth );
         temp_cache3 = new CachedAudioDataSource( temp_file3, ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
 
         FIR_Filter fir_filter = new FIR_Filter();
