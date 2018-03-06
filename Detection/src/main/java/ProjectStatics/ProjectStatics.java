@@ -29,7 +29,7 @@ public class ProjectStatics
     private static List< IEffect > effectList = new ArrayList<>();
     private static int default_cache_size = 44100;
     private static int default_cache_page_size = 2048;
-    private static String temp_folder = "C:\\Users\\Alex\\Desktop\\";
+    private static String temp_folder = "D:\\";
 
     public static void loadAudioFile( String filePath ) throws DataSourceException
     {

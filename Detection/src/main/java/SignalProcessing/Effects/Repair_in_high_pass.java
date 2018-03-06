@@ -116,7 +116,7 @@ public class Repair_in_high_pass implements IEffect
             }
             for( k = 0; k < dataSource.get_channel_number(); k++ )
             {
-                for( j = win1.get_first_sample_index(); j < win1.get_last_sample_index(); j++ )
+                for( j = win1.get_first_sample_index(); j < win1.get_after_last_sample_index(); j++ )
                 {
                     win1.putSample( j, k, win1.getSample( j, k ) - win2.getSample( j, k ) );
                 }
@@ -147,7 +147,7 @@ public class Repair_in_high_pass implements IEffect
             }
             for( k = 0; k < dataSource.get_channel_number(); k++ )
             {
-                for( j = win1.get_first_sample_index(); j < win1.get_last_sample_index(); j++ )
+                for( j = win1.get_first_sample_index(); j < win1.get_after_last_sample_index(); j++ )
                 {
                     win1.putSample( j, k, win1.getSample( j, k ) + win2.getSample( j, k ) );
                 }

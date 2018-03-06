@@ -1,0 +1,3 @@
+DS ->(preamp+RIAA+integrare)-> temp1                      ->(substract from temp2)-> temp1 ->(high-pass repair)-> temp3 ->(combinare)->temp2->(derivare)->temp2->(RIAA+postamp)->DD
+                                    |                                                      \-> copiere in temp3         /  
+                                     ->(low-pass)-> temp2                                                              /

@@ -23,38 +23,48 @@ public class Equalizer_FIR
         {
             throw new DataSourceException( "Filter must have an odd number of taps", DataSourceExceptionCause.INVALID_STATE );
         }
-
-        int i, j, buf_pos;
-        double newVal;
-        double buffer[] = new double[ tap_nr / 2 ];
-        buf_pos = buffer.length - 1;
-
-        applying_range.l += tap_nr / 2;
-        applying_range.r += tap_nr / 2;
-
-        for( i = applying_range.r - 1; i >= applying_range.l - tap_nr / 2; i-- )
+        if( tap_nr > 1 )
         {
-            newVal = 0;
-            if( i >= applying_range.l )
+            int i, j, buf_pos;
+            double newVal;
+            double buffer[] = new double[ tap_nr / 2 ];
+            buf_pos = buffer.length - 1;
+
+            applying_range.l += tap_nr / 2;
+            applying_range.r += tap_nr / 2;
+
+            for( i = applying_range.r - 1; i >= applying_range.l - tap_nr / 2; i-- )
             {
-                for( j = Math.max( 0, i - x.length + 1 ); j < Math.min( i + 1, tap_nr ); j++ ) // b[j]
+                newVal = 0;
+                if( i >= applying_range.l )
                 {
-                    newVal += b[ j ] * x[ i - j ];
+                    for( j = Math.max( 0, i - x.length + 1 ); j < Math.min( i + 1, tap_nr ); j++ ) // b[j]
+                    {
+                        newVal += b[ j ] * x[ i - j ];
+                    }
+                }
+                if( i <= applying_range.r - 1 - tap_nr / 2 )
+                {
+                    x[ i ] = buffer[ buf_pos ];
+                }
+                if( i >= applying_range.l )
+                {
+                    buffer[ buf_pos ] = newVal;
+                }
+
+                buf_pos--;
+                if( buf_pos < 0 )
+                {
+                    buf_pos = buffer.length - 1;
                 }
             }
-            if( i <= applying_range.r - 1 - tap_nr / 2 )
+        }
+        else
+        {
+            int i;
+            for( i = applying_range.l; i < applying_range.r; i++ )
             {
-                x[ i ] = buffer[ buf_pos ];
-            }
-            if( i >= applying_range.l )
-            {
-                buffer[ buf_pos ] = newVal;
-            }
-
-            buf_pos--;
-            if( buf_pos < 0 )
-            {
-                buf_pos = buffer.length - 1;
+                x[ i ] *= b[ 0 ];
             }
         }
     }

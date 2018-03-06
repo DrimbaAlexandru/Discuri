@@ -83,7 +83,7 @@ public class AudioSamplesWindow
         return interval.l;
     }
 
-    public int get_last_sample_index()
+    public int get_after_last_sample_index()
     {
         return interval.r;
     }

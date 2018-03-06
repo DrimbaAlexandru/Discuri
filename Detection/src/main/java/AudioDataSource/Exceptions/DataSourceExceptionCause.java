@@ -17,6 +17,7 @@ public enum DataSourceExceptionCause
     BAD_FILE_FORMAT,
     INVALID_PARAMETER,
     INVALID_STATE,
-    WARNING
+    WARNING,
+    STUB_METHOD
 
 }

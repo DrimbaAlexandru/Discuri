@@ -14,13 +14,13 @@ public class MarkerFileGenerator
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\handel mark 1.wav" );
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\salesbury mark 1.wav" );
             double threshold = 0.006;
-            int side = 7;
+            int side = 3;
             int mark_start = -1;
             int i, j;
             boolean mark;
-            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\handel mark s7 0.006.txt" );
+            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\salesbury mark s3 0.006.txt" );
             AudioSamplesWindow win;
 
             if( wav.get_channel_number() != 1 )

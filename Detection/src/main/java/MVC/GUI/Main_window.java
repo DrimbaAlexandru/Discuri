@@ -482,20 +482,20 @@ public class Main_window
         final int milliseconds = ( selection_start_index % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate();
         time_scroll.setValue( selection_start_index );
         position_indicator.setText( "samples / " + ( sample_number ) +
-                                            " ( " + String.format( "%02d", seconds / 360 ) +
+                                            " ( " + String.format( "%02d", seconds / 3600 ) +
                                             ":" + String.format( "%02d", seconds / 60 % 60 ) +
                                             ":" + String.format( "%02d", seconds % 60 ) +
                                             "." + String.format( "%03d", milliseconds ) +
                                             " / " + String.format( "%02d", ( sample_number / dataSource.get_sample_rate() ) / 3600 ) +
                                             ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() / 60 % 60 ) +
                                             ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() % 60 ) +
-                                            "." + String.format( "%02d", ( sample_number % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
+                                            "." + String.format( "%03d", ( sample_number % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
         current_sample_spinner.getValueFactory().setValue( selection_start_index );
         sel_len_indicator.setText( "samples ( "+
                                            String.format( "%02d", sel_len / dataSource.get_sample_rate() / 3600 ) +
                                            ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() / 60 % 60 ) +
                                            ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() % 60 ) +
-                                           "." + String.format( "%02d", ( sel_len % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
+                                           "." + String.format( "%03d", ( sel_len % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
         sel_len_spinner.getValueFactory().setValue( sel_len );
         time_scroll.setBlockIncrement( window_size );
         time_scroll.setValue( first_sample_index );

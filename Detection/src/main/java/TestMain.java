@@ -6,6 +6,7 @@ import MarkerFile.MarkerFile;
 import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.Effects.IIR_with_centered_FIR;
+import SignalProcessing.Effects.Repair_in_memory;
 import SignalProcessing.Filters.Equalizer_FIR;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
@@ -152,7 +153,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main6( String[] args )
     {
         try
         {
@@ -169,6 +170,28 @@ public class TestMain {
             effect.setMax_chunk_size( 11 );
             effect.setFilter( new FIR( fir, fir.length ) );
             effect.apply( cache, out, new Interval( 0, samples[ 0 ].length, false ) );
+
+            cache.flushAll();
+            out.close();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\in.wav");
+            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
+            WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
+
+            Repair_in_memory effect = new Repair_in_memory();
+            effect.setWork_on_position_domain( true );
+            effect.setWork_on_high_pass( false );
+            effect.apply( cache, out, new Interval( 0, wav.get_sample_number() ) );
 
             cache.flushAll();
             out.close();
