@@ -31,10 +31,11 @@ public class Repair_in_memory implements IEffect
     final private int max_repair_size = 256;
     final private int fetch_ratio = 10;
     //TODO change formula
-    final private int cache_size = Math.max( max_repair_size * ( fetch_ratio * 2 + 1 ), Math.max( high_pass_length, riaa_length ) ) + 1024;
+    //final private int cache_size = Math.max( max_repair_size * ( fetch_ratio * 2 + 1 ), Math.max( high_pass_length, riaa_length ) ) + 1024;
+    final private int cache_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + Math.max( high_pass_length, riaa_length ) + 577;
 
-    private boolean work_on_position_domain = true;
-    private boolean work_on_high_pass = true;
+    private boolean work_on_position_domain = false;
+    private boolean work_on_high_pass = false;
 
     public void setWork_on_position_domain( boolean work_on_position_domain )
     {
@@ -69,6 +70,7 @@ public class Repair_in_memory implements IEffect
         final IIR integrated_riia_filter = new IIR( inverse_riaa_filter.getFf(), inverse_riaa_filter.getFf_coeff_nr(), integration_coeffs, integration_coeffs.length );
         final IIR integration_filter = new IIR( new double[]{ 1 }, 1, integration_coeffs, integration_coeffs.length );
 
+        Windowing.apply( inverse_riaa_filter.getFf(), inverse_riaa_filter.getFf_coeff_nr(), ( v ) -> preamp );
         Windowing.apply( integrated_riia_filter.getFf(), integrated_riia_filter.getFf_coeff_nr(), ( v ) -> preamp );
         Windowing.apply( riaa_filter.getFf(), riaa_filter.getFf_coeff_nr(), ( v ) -> postamp );
 
@@ -90,17 +92,13 @@ public class Repair_in_memory implements IEffect
         IIR_with_centered_FIR iir_with_centered_fir = new IIR_with_centered_FIR();
         Repair repair = new Repair();
 
-        repair.set_fetch_ratio( fetch_ratio );
-
         /*
             Indexes and other shit
         */
         int i, k;
         int second;
-        AudioSamplesWindow win;
-        final int side_length = Math.max( ( work_on_high_pass ) ? high_pass_length / 2 : 0, ( work_on_position_domain ) ? Math.max( riaa_length / 2, high_pass_length / 2 ) : 0 );
-
-        Interval required_interval;
+        //side length e numarul de sample-uri necesar la dreapta si la stanga selectiei pentru repair, necesare la high-pass si riaa
+        final int side_length = Math.max( ( work_on_high_pass ) ? high_pass_length / 2 : 0, ( work_on_position_domain ) ? riaa_length / 2 : 0 );
 
         /*
             Work
@@ -128,7 +126,7 @@ public class Repair_in_memory implements IEffect
             repair_intervals.add( new Interval( 210, 230, false ) ); // requires [110,330)
             repair_intervals.add( new Interval( 1005, 1015, false ) ); // requires [905,1115)
             repair_intervals.add( new Interval( 2000, 2010, false ) ); // requires [1900,2110)
-            repair_intervals.add( new Interval( 6400, 6410, false ) ); // requires [1900,2110)
+            repair_intervals.add( new Interval( 8000, 8010, false ) ); // requires [7900,8110)
             repair_intervals.add( new Interval( 20000, 20050, false ) ); // requires [19500,20550)
 
             repair_intervals.sort( ( i1, i2 ) ->
@@ -144,10 +142,15 @@ public class Repair_in_memory implements IEffect
             {
                 try
                 {
+                    Interval overall_required_interval;
+                    Interval prediction_required_interval;
+
                     repair.set_fetch_ratio( fetch_ratio );
-                    required_interval = new Interval( repair_interval.l - fetch_ratio * repair_interval.get_length() - side_length, repair_interval.r + fetch_ratio * repair_interval.get_length() + side_length, false );
-                    required_interval.limit( 0, dataSource.get_sample_number() );
-                    if( required_interval.l < 0 || required_interval.r > dataSource.get_sample_number() )
+                    prediction_required_interval = new Interval( repair_interval.l - fetch_ratio * repair_interval.get_length(), repair_interval.r + fetch_ratio * repair_interval.get_length(), false );
+                    overall_required_interval = new Interval( prediction_required_interval.l - side_length, prediction_required_interval.r + side_length, false );
+                    overall_required_interval.limit( 0, dataSource.get_sample_number() );
+
+                    if( prediction_required_interval.l < 0 || prediction_required_interval.r > dataSource.get_sample_number() )
                     {
                         throw new DataSourceException( "Not enough samples for linear prediction", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
                     }
@@ -157,17 +160,17 @@ public class Repair_in_memory implements IEffect
                     }
 
                     //Complete the buffer
-                    if( !workADS.getInterval().includes( required_interval ) )
+                    if( !workADS.getInterval().includes( overall_required_interval ) )
                     {
                         int shift_amount;
-                        Interval appended_interval;
-                        Interval processed_interval = workADS.getInterval();
+                        Interval append_interval;
+                        Interval cached_interval = workADS.getInterval();
 
-                        shift_amount = required_interval.l - processed_interval.l;
-                        if( shift_amount >= processed_interval.get_length() ) // All data in buffer must be calculated
+                        shift_amount = overall_required_interval.l - cached_interval.l;
+                        if( shift_amount >= cached_interval.get_length() ) // All data in buffer must be calculated
                         {
-                            appended_interval = new Interval( required_interval.l, cache_size );
-                            appended_interval.limit( 0, dataSource.get_sample_number() );
+                            append_interval = new Interval( overall_required_interval.l, cache_size );
+                            append_interval.limit( 0, dataSource.get_sample_number() );
 
                             if( work_on_position_domain )
                             {
@@ -176,41 +179,41 @@ public class Repair_in_memory implements IEffect
                                 iir_with_centered_fir.setFilter( integrated_riia_filter );
 
                                 SingleBlockADS iriaa_result = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), 0, new Interval( 0, 0 ) );
-                                iir_with_centered_fir.apply( dataSource, iriaa_result, appended_interval );
-                                if( !iriaa_result.getInterval().includes( appended_interval ) )
+                                iir_with_centered_fir.apply( dataSource, iriaa_result, append_interval );
+                                if( !iriaa_result.getInterval().includes( append_interval ) )
                                 {
                                     throw new DataSourceException( "Assertion error" );
                                 }
 
-                                src_offset = appended_interval.l - iriaa_result.getInterval().l;
+                                src_offset = append_interval.l - iriaa_result.getInterval().l;
                                 for( int k2 = 0; k2 < dataSource.get_channel_number(); k2++ )
                                 {
-                                    for( i = 0; i < appended_interval.get_length(); i++ )
+                                    for( i = 0; i < append_interval.get_length(); i++ )
                                     {
-                                        work_samples[ k ][ i ] = iriaa_result.getBuffer()[ k ][ i + src_offset ];
+                                        work_samples[ k2 ][ i ] = iriaa_result.getBuffer()[ k2 ][ i + src_offset ];
                                     }
                                 }
-                                workADS.setInterval( appended_interval );
+                                workADS.setInterval( append_interval );
                             }
                             else
                             {
-                                win = dataSource.get_samples( appended_interval.l, appended_interval.get_length() );
+                                AudioSamplesWindow win = dataSource.get_samples( append_interval.l, append_interval.get_length() );
                                 for( int k2 = 0; k2 < dataSource.get_channel_number(); k2++ )
                                 {
                                     for( i = 0; i < win.getInterval().get_length(); i++ )
                                     {
-                                        work_samples[ k ][ i ] = win.getSamples()[ k ][ i ];
+                                        work_samples[ k2 ][ i ] = win.getSamples()[ k2 ][ i ];
                                     }
                                 }
-                                workADS.setInterval( win.getInterval() ); // could be replaced with put_samples call in work_ads ?
+                                workADS.setInterval( win.getInterval() );
                             }
                         }
                         else // we can use previously calculated samples
                         {
                             int k2, offset, src_offset;
 
-                            appended_interval = new Interval( processed_interval.r, cache_size - processed_interval.get_length() + shift_amount );
-                            appended_interval.limit( 0, dataSource.get_sample_number() );
+                            append_interval = new Interval( cached_interval.r, cache_size - cached_interval.get_length() + shift_amount );
+                            append_interval.limit( 0, dataSource.get_sample_number() );
 
                             //Shift the buffer
                             Interval shifted_interval = workADS.getInterval();
@@ -231,38 +234,38 @@ public class Repair_in_memory implements IEffect
                                 equalizer.setFilter( inverse_riaa_filter );
 
                                 SingleBlockADS iriaa_result = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), 0, new Interval( 0, 0 ) );
-                                equalizer.apply( dataSource, iriaa_result, appended_interval );
-                                if( !iriaa_result.getInterval().includes( appended_interval ) )
+                                equalizer.apply( dataSource, iriaa_result, append_interval );
+                                if( !iriaa_result.getInterval().includes( append_interval ) )
                                 {
                                     throw new DataSourceException( "Assertion error" );
                                 }
 
-                                src_offset = appended_interval.l - iriaa_result.getInterval().l;
+                                src_offset = append_interval.l - iriaa_result.getInterval().l;
                                 for( k2 = 0; k2 < dataSource.get_channel_number(); k2++ )
                                 {
-                                    for( i = 0; i < appended_interval.get_length(); i++ )
+                                    for( i = 0; i < append_interval.get_length(); i++ )
                                     {
-                                        work_samples[ k ][ i + offset ] = iriaa_result.getBuffer()[ k ][ i + src_offset ];
+                                        work_samples[ k2 ][ i + offset ] = iriaa_result.getBuffer()[ k2 ][ i + src_offset ];
                                     }
                                 }
-                                shifted_interval.r += appended_interval.get_length();
+                                shifted_interval.r += append_interval.get_length();
                                 workADS.setInterval( shifted_interval );
 
                                 iir_with_centered_fir.setMax_chunk_size( cache_size + riaa_length );
                                 iir_with_centered_fir.setFilter( integration_filter );
-                                iir_with_centered_fir.apply( workADS, workADS, new Interval( processed_interval.r, appended_interval.get_length() ) );
+                                iir_with_centered_fir.apply( workADS, workADS, append_interval );
                             }
                             else
                             {
-                                win = dataSource.get_samples( appended_interval.l, appended_interval.get_length() );
+                                AudioSamplesWindow win = dataSource.get_samples( append_interval.l, append_interval.get_length() );
                                 for( k2 = 0; k2 < dataSource.get_channel_number(); k2++ )
                                 {
                                     for( i = 0; i < win.getInterval().get_length(); i++ )
                                     {
-                                        work_samples[ k ][ i + offset ] = win.getSamples()[ k ][ i ];
+                                        work_samples[ k2 ][ i + offset ] = win.getSamples()[ k2 ][ i ];
                                     }
                                 }
-                                shifted_interval.r += appended_interval.get_length();
+                                shifted_interval.r += append_interval.get_length();
                                 workADS.setInterval( shifted_interval );
                             }
                         }
@@ -270,10 +273,16 @@ public class Repair_in_memory implements IEffect
 
                     //Prepare the destination buffer for repaired samples
                     SingleBlockADS repair_dest = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), 0, new Interval( 0, 0 ) );
-                    int repair_dest_side_len = work_on_position_domain ? riaa_length / 2 + 1 : 0;
+                    int repair_dest_side_len = work_on_position_domain ? riaa_length / 2 : 0;
                     Interval repair_dest_interval = new Interval( repair_interval.l - repair_dest_side_len, repair_interval.r + repair_dest_side_len, false );
+                    Interval repair_dest_fetch = new Interval( repair_dest_interval.l, repair_dest_interval.get_length() );
+                    if( work_on_position_domain )
+                    {
+                        repair_dest_fetch.l -= 1;
+                    }
+                    repair_dest_fetch.limit( 0, dataSource.get_sample_number() );
                     repair_dest_interval.limit( 0, dataSource.get_sample_number() );
-                    repair_dest.put_samples( workADS.get_samples( repair_dest_interval.l, repair_dest_interval.get_length() ) );
+                    repair_dest.put_samples( workADS.get_samples( repair_dest_fetch.l, repair_dest_fetch.get_length() ) );
 
                     //Predict the new samples
                     if( work_on_high_pass )
@@ -282,26 +291,26 @@ public class Repair_in_memory implements IEffect
 
                         equalizer.setMax_chunk_size( cache_size + high_pass_length );
                         equalizer.setFilter( high_pass_filter );
-                        equalizer.apply( workADS, high_pass, repair_dest_interval );
+                        equalizer.apply( workADS, high_pass, prediction_required_interval );
 
                         AudioSamplesWindow residue_win = workADS.get_samples( repair_interval.l, repair_interval.get_length() );
                         AudioSamplesWindow high_pass_win = high_pass.get_samples( repair_interval.l, repair_interval.get_length() );
-                        for( k = 0; k < dataSource.get_channel_number(); k++ )
+                        for( int k2 = 0; k2 < dataSource.get_channel_number(); k2++ )
                         {
                             for( i = repair_interval.l; i < repair_interval.r; i++ )
                             {
-                                residue_win.putSample( i, k, residue_win.getSample( i, k ) - high_pass_win.getSample( i, k ) );
+                                residue_win.putSample( i, k2, residue_win.getSample( i, k2 ) - high_pass_win.getSample( i, k2 ) );
                             }
                         }
 
                         repair.apply( high_pass, high_pass, repair_interval );
                         high_pass_win = high_pass.get_samples( repair_interval.l, repair_interval.get_length() );
 
-                        for( k = 0; k < dataSource.get_channel_number(); k++ )
+                        for( int k2 = 0; k2 < dataSource.get_channel_number(); k2++ )
                         {
                             for( i = repair_interval.l; i < repair_interval.r; i++ )
                             {
-                                residue_win.putSample( i, k, residue_win.getSample( i, k ) + high_pass_win.getSample( i, k ) );
+                                residue_win.putSample( i, k2, residue_win.getSample( i, k2 ) + high_pass_win.getSample( i, k2 ) );
                             }
                         }
                         repair_dest.put_samples( residue_win );

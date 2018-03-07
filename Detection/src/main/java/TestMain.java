@@ -185,14 +185,14 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\in.wav");
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\in2.wav");
             CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
             WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
 
             //Utils.copyToADS( wav, out );
             Repair_in_memory effect = new Repair_in_memory();
-            effect.setWork_on_position_domain( false );
-            effect.setWork_on_high_pass( false );
+            effect.setWork_on_position_domain( true );
+            effect.setWork_on_high_pass( true );
             effect.apply( cache, out, new Interval( 0, wav.get_sample_number() ) );
 
             cache.flushAll();

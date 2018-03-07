@@ -85,7 +85,7 @@ public class IIR_with_centered_FIR implements IEffect
 
         for( k = 0; k < dataSource.get_channel_number(); k++ )
         {
-            if( isInPlace )
+            if( isInPlace && i + applying_range.get_length() < interval.r )
             {
                 for( j = 0; j < buf1_size; j++ )
                 {
@@ -96,10 +96,14 @@ public class IIR_with_centered_FIR implements IEffect
             iir_filter.apply( win.getSamples()[ k ], applying_range, true );
             win.markModified();
 
-            for( j = 0; j < buf2_size; j++ )
+            if( i + applying_range.get_length() < interval.r )
             {
-                regression_buffer[ k ][ buf2_size - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                for( j = 0; j < buf2_size; j++ )
+                {
+                    regression_buffer[ k ][ buf2_size - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                }
             }
+
         }
         dataDest.put_samples( win );
         i += applying_range.get_length();

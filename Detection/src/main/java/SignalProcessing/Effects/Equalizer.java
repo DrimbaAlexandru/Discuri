@@ -82,7 +82,7 @@ public class Equalizer implements IEffect
 
         for( k = 0; k < dataSource.get_channel_number(); k++ )
         {
-            if( isInPlace )
+            if( isInPlace && i + applying_range.get_length() < interval.r )
             {
                 for( j = 0; j < buf_len; j++ )
                 {
@@ -91,10 +91,12 @@ public class Equalizer implements IEffect
             }
             equalizer_fir.apply( win.getSamples()[ k ], applying_range );
             win.markModified();
-
-            for( j = 0; j < buf_len; j++ )
+            if( i + applying_range.get_length() < interval.r )
             {
-                prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                for( j = 0; j < buf_len; j++ )
+                {
+                    prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                }
             }
         }
         dataDest.put_samples( win );
