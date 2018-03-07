@@ -519,6 +519,7 @@ public class Main_window
         ProjectStatics.registerEffect( new Repair_Marked() );
         ProjectStatics.registerEffect( new Sample_Summer() );
         ProjectStatics.registerEffect( new Repair_in_high_pass() );
+        ProjectStatics.registerEffect( new Repair_in_memory() );
 
         try
         {
@@ -662,6 +663,18 @@ public class Main_window
                                     } );
                     continue;
                 }
+                if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
+                {
+                    final Repair_in_memory effect = ( Repair_in_memory )eff;
+                    effect.setWork_on_high_pass( false );
+                    effect.setWork_on_position_domain( false );
+                    mi.setOnAction( ev ->
+                                    {
+                                        System.out.println( effect.getName() );
+                                        onApplyRepair_in_memory( effect );
+                                    } );
+                    continue;
+                }
 
             }
         }
@@ -677,6 +690,11 @@ public class Main_window
     }
 
     private void onApplyRepair_in_high_pass( Repair_in_high_pass eff )
+    {
+        apply_effect( eff, false, false );
+    }
+
+    private void onApplyRepair_in_memory(Repair_in_memory eff)
     {
         apply_effect( eff, false, false );
     }
@@ -850,6 +868,10 @@ public class Main_window
 
     private void apply_effect( IEffect effect, boolean allow_zero_selection, boolean use_destination_as_source )
     {
+        if( dataSource == null )
+        {
+            return;
+        }
         Interval interval = new Interval( selection_start_index, selection_end_index - selection_start_index );
         if( interval.get_length() < 0 )
         {

@@ -1,22 +1,50 @@
 package MarkerFile;
 
+import Utils.Interval;
+
 /**
  * Created by Alex on 10.11.2017.
  */
-class Marking
+public class Marking
 {
-    public int first_marked_sample;
-    public int last_marked_sample;
+    private int fms;
+    private int lms;
+    private int channel;
 
-    public Marking( int fs, int ls )
+    public Marking( int first_sample, int last_sample, int channel )
     {
-        first_marked_sample = fs;
-        last_marked_sample = ls;
+        this.channel = channel;
+        fms = first_sample;
+        lms = last_sample;
     }
 
-    @Override
-    public String toString()
+    public void set_first_marked_sample( int fms )
     {
-        return first_marked_sample + "->" + last_marked_sample;
+        this.fms = fms;
+    }
+
+    public void set_last_marked_sample( int lms )
+    {
+        this.lms = lms;
+    }
+
+    public Interval getInterval()
+    {
+        return new Interval( fms, lms + 1, false );
+    }
+
+    public int get_first_marked_sample()
+    {
+        return fms;
+    }
+
+    public int get_last_marked_sample()
+    {
+        return lms;
+    }
+
+    public int getChannel()
+    {
+        return channel;
     }
 }
