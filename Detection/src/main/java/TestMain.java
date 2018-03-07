@@ -2,6 +2,7 @@ import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
+import AudioDataSource.Utils;
 import MarkerFile.MarkerFile;
 import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.FIR_Filter;
@@ -188,8 +189,9 @@ public class TestMain {
             CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
             WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
 
+            //Utils.copyToADS( wav, out );
             Repair_in_memory effect = new Repair_in_memory();
-            effect.setWork_on_position_domain( true );
+            effect.setWork_on_position_domain( false );
             effect.setWork_on_high_pass( false );
             effect.apply( cache, out, new Interval( 0, wav.get_sample_number() ) );
 
