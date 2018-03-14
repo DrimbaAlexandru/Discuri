@@ -6,7 +6,7 @@ import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.AUFileAudioSource;
 import AudioDataSource.IAudioDataSource;
-import AudioDataSource.Utils;
+import AudioDataSource.ADS_Utils;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
@@ -127,7 +127,7 @@ public class Repair_in_high_pass implements IEffect
         System.out.println( "Finished phase 4b" );
 
         //Reparare in high-pass
-        Utils.copyToADS( temp_cache1, temp_cache3 );
+        ADS_Utils.copyToADS( temp_cache1, temp_cache3 );
         Repair_Marked repair_marked = new Repair_Marked();
         repair_marked.apply( temp_cache1, temp_cache3, interval );
         System.out.println( "Finished phase 5" );

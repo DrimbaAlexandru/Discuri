@@ -2,14 +2,13 @@ package MVC.GUI;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.Cached_ADS_Manager;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.IAudioDataSource;
-import AudioDataSource.Utils;
+import AudioDataSource.ADS_Utils;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Effects.*;
-import SignalProcessing.LiniarPrediction.BurgLP;
-import SignalProcessing.LiniarPrediction.LinearPrediction;
 import Utils.Interval;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -588,7 +587,7 @@ public class Main_window
                     {
                         if( ProjectStatics.getVersionedADS() != null )
                         {
-                            Utils.copyToADS( dataSource, new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 ) );
+                            ADS_Utils.copyToADS( dataSource, new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 ) );
                         }
                     }
                     catch( DataSourceException e )
@@ -752,8 +751,9 @@ public class Main_window
                                               {
                                                   ProjectStatics.getVersionedADS().dispose();
                                               }
+                                              Cached_ADS_Manager.flush_all_caches();
                                           }
-                                          catch( InterruptedException e1 )
+                                          catch( DataSourceException | InterruptedException e1 )
                                           {
                                               treatException( e1 );
                                           }

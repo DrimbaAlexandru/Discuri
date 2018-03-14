@@ -18,6 +18,7 @@ public enum DataSourceExceptionCause
     INVALID_PARAMETER,
     INVALID_STATE,
     WARNING,
-    STUB_METHOD
+    STUB_METHOD,
+    THIS_SHOULD_NEVER_HAPPEN
 
 }

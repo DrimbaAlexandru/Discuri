@@ -1,22 +1,19 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.ADS_Utils;
+import AudioDataSource.Cached_ADS_Manager;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.Utils;
-import MarkerFile.MarkerFile;
+import AudioDataSource.VersionedADS.VersionedAudioDataSource;
+import ProjectStatics.ProjectStatics;
 import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.FIR_Filter;
-import SignalProcessing.Effects.IIR_with_centered_FIR;
 import SignalProcessing.Effects.Repair_in_memory;
-import SignalProcessing.Filters.Equalizer_FIR;
 import SignalProcessing.Filters.FIR;
-import SignalProcessing.Filters.IIR;
 import SignalProcessing.Interpolation.Interpolator;
 import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
-
-import java.io.IOException;
 
 import static Utils.Utils.plot_in_matlab;
 
@@ -181,7 +178,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main7( String[] args )
     {
         try
         {
@@ -197,6 +194,38 @@ public class TestMain {
 
             cache.flushAll();
             out.close();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\in2.wav");
+            VersionedAudioDataSource vads = new VersionedAudioDataSource( wav.getFile_path() );
+            CachedAudioDataSource cache = new CachedAudioDataSource( vads.get_current_version(), ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
+            AudioSamplesWindow win;
+            int i;
+            for( i = 0; i < cache.get_sample_number(); )
+            {
+                win = cache.get_samples( i, 1 );
+                win.putSample( win.get_first_sample_index(), 0, 1 );
+                cache.put_samples( win );
+                i += 2048 * 4;
+            }
+            double[][] append = new double[ 1 ][ 44100 ];
+            cache.put_samples( new AudioSamplesWindow( append, cache.get_sample_number(), 44100, 1 ) );
+
+            WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
+
+            ADS_Utils.copyToADS( cache, out );
+
+            Cached_ADS_Manager.flush_all_caches();
+
         }
         catch( DataSourceException e )
         {

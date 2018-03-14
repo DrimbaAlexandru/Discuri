@@ -5,7 +5,6 @@ import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.MemoryADS.SingleBlockADS;
-import AudioDataSource.Utils;
 import MarkerFile.Marking;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Filters.FIR;
@@ -13,7 +12,6 @@ import SignalProcessing.Filters.IIR;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;

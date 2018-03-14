@@ -1,6 +1,8 @@
 package AudioDataSource.VersionedADS;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
+import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.Cached_ADS_Manager;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
@@ -17,6 +19,7 @@ import java.util.TreeMap;
 
 import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static java.nio.file.Files.deleteIfExists;
+import static java.nio.file.Files.write;
 
 /**
  * Created by Alex on 12.12.2017.
@@ -74,7 +77,11 @@ class ProjectFilesManager
         {
             return;
         }
-        assocs.remove( Integer.valueOf( version ) );
+        if( version != 0 )
+        {
+            assocs.remove( Integer.valueOf( version ) );
+        }
+
         if( assocs.size() == 0 )
         {
             file_references.remove( file );
@@ -101,8 +108,12 @@ public class AudioDataSourceVersion implements IAudioDataSource
     private int channel_number;
     private int version;
     private int sample_number;
-    private IFileAudioDataSource readFileAudioSource = null;
-    private IFileAudioDataSource writeFileAudioSource = null;
+
+    private CachedAudioDataSource read_cache = null;
+    private CachedAudioDataSource write_cache = null;
+    private String read_file_path = null;
+    private String write_file_path = null;
+
     private static final int max_samples_per_chunk = 1024 * 1024;
     private ArrayList< FileToProjectMapping > mapping = new ArrayList<>();
 
@@ -117,18 +128,23 @@ public class AudioDataSourceVersion implements IAudioDataSource
     public AudioDataSourceVersion( int version, String file ) throws DataSourceException
     {
         this.version = version;
-        readFileAudioSource = FileAudioSourceFactory.fromFile( file );
-        sample_number = readFileAudioSource.get_sample_number();
-        channel_number = readFileAudioSource.get_channel_number();
-        sample_rate = readFileAudioSource.get_sample_rate();
+        read_cache = Cached_ADS_Manager.get_cache( file );
+        read_file_path = file;
+        sample_number = read_cache.get_sample_number();
+        channel_number = read_cache.get_channel_number();
+        sample_rate = read_cache.get_sample_rate();
         map( 0, sample_number, 0, file );
     }
 
     public AudioDataSourceVersion duplicate()
     {
         AudioDataSourceVersion other = new AudioDataSourceVersion( version + 1, sample_rate, channel_number, sample_number );
-        other.writeFileAudioSource = writeFileAudioSource;
-        other.readFileAudioSource = readFileAudioSource;
+        other.read_cache = read_cache;
+        other.read_file_path = read_file_path;
+        other.write_file_path = write_file_path;
+        other.write_cache = write_cache;
+        Cached_ADS_Manager.mark_use( read_file_path );
+        Cached_ADS_Manager.mark_use( write_file_path );
         for( FileToProjectMapping m : mapping )
         {
             other.mapping.add( m );
@@ -263,15 +279,21 @@ public class AudioDataSourceVersion implements IAudioDataSource
         return null;
     }
 
-    public void destroy()
+    public void dispose()
     {
         try
         {
-            if( writeFileAudioSource != null )
+            if( read_cache != null )
             {
-                writeFileAudioSource.close();
-                writeFileAudioSource = null;
-                readFileAudioSource = null;
+                Cached_ADS_Manager.release_use( read_file_path );
+                read_cache = null;
+                read_file_path = null;
+            }
+            if( write_cache != null )
+            {
+                Cached_ADS_Manager.release_use( write_file_path );
+                write_cache = null;
+                write_file_path = null;
             }
         }
         catch( DataSourceException e )
@@ -315,17 +337,16 @@ public class AudioDataSourceVersion implements IAudioDataSource
             {
                 throw new DataSourceException( "Sample index not mapped", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
             }
-            if( writeFileAudioSource != null && writeFileAudioSource.getFile_path().equals( map.file_name ) )
+
+            if( read_cache == null || !read_file_path.equals( map.file_name ) )
             {
-                readFileAudioSource = writeFileAudioSource;
-            }
-            if( readFileAudioSource == null || !readFileAudioSource.getFile_path().equals( map.file_name ) )
-            {
-                readFileAudioSource = FileAudioSourceFactory.fromFile( map.file_name );
+                Cached_ADS_Manager.release_use( read_file_path );
+                read_file_path = map.file_name;
+                read_cache = Cached_ADS_Manager.get_cache( read_file_path );
             }
             temp_len = Math.min( length - i, map.project_interval.r - i - first_sample_index );
             file_first_sample_index = i + first_sample_index - map.project_interval.l + map.file_interval.l;
-            win = readFileAudioSource.get_samples( file_first_sample_index, temp_len );
+            win = read_cache.get_samples( file_first_sample_index, temp_len );
 
             if( temp_len == length )
             {
@@ -345,6 +366,10 @@ public class AudioDataSourceVersion implements IAudioDataSource
                 }
             }
             i += temp_len;
+        }
+        if( buf == null )
+        {
+            buf = new double[ channel_number ][ length ];
         }
         return new AudioSamplesWindow( buf, first_sample_index, length, channel_number );
     }
@@ -370,11 +395,16 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
         while( index < samples.get_first_sample_index() + samples.get_length() )
         {
-            if( writeFileAudioSource == null || writeFileAudioSource.get_sample_number() >= max_samples_per_chunk )
+            if( write_cache == null || write_cache.get_sample_number() >= max_samples_per_chunk )
             {
-                writeFileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 2 );
+                IFileAudioDataSource rwFileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 2 );
+                rwFileAudioSource.close();
+
+                Cached_ADS_Manager.release_use( write_file_path );
+                write_file_path = rwFileAudioSource.getFile_path();
+                write_cache = Cached_ADS_Manager.get_cache( write_file_path );
             }
-            temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, max_samples_per_chunk - writeFileAudioSource.get_sample_number() );
+            temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, max_samples_per_chunk - write_cache.get_sample_number() );
 
             double buf[][] = new double[ samples.get_channel_number() ][ temp_len ];
             for( int i = 0; i < temp_len; i++ )
@@ -384,9 +414,9 @@ public class AudioDataSourceVersion implements IAudioDataSource
                     buf[ k ][ i ] = samples.getSample( i + index, k );
                 }
             }
-            AudioSamplesWindow win = new AudioSamplesWindow( buf, writeFileAudioSource.get_sample_number(), temp_len, channel_number );
-            writeFileAudioSource.put_samples( win );
-            map( index, temp_len, writeFileAudioSource.get_sample_number() - temp_len, writeFileAudioSource.getFile_path() );
+            AudioSamplesWindow win = new AudioSamplesWindow( buf, write_cache.get_sample_number(), temp_len, channel_number );
+            write_cache.put_samples( win );
+            map( index, temp_len, write_cache.get_sample_number() - temp_len, write_file_path );
 
             index += temp_len;
         }
