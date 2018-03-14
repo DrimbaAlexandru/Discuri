@@ -203,33 +203,39 @@ public class TestMain {
 
     public static void main( String[] args )
     {
+        long start_time, end_time;
+        start_time = System.currentTimeMillis();
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\in2.wav");
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\1 minute shit.wav");
             VersionedAudioDataSource vads = new VersionedAudioDataSource( wav.getFile_path() );
-            CachedAudioDataSource cache = new CachedAudioDataSource( vads.get_current_version(), ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
+            CachedAudioDataSource cache = new CachedAudioDataSource( vads.create_new(), ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
             AudioSamplesWindow win;
             int i;
             for( i = 0; i < cache.get_sample_number(); )
             {
                 win = cache.get_samples( i, 1 );
-                win.putSample( win.get_first_sample_index(), 0, 1 );
+                //win.putSample( win.get_first_sample_index(), 0, 1 );
                 cache.put_samples( win );
-                i += 2048 * 4;
+                i += 2048;
             }
-            double[][] append = new double[ 1 ][ 44100 ];
-            cache.put_samples( new AudioSamplesWindow( append, cache.get_sample_number(), 44100, 1 ) );
+            double[][] append = new double[ 1 ][ 441000 ];
+            cache.put_samples( new AudioSamplesWindow( append, cache.get_sample_number(), append[0].length, append.length ) );
 
             WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
 
             ADS_Utils.copyToADS( cache, out );
 
-            Cached_ADS_Manager.flush_all_caches();
+            //Cached_ADS_Manager.flush_all_caches();
+
+            vads.dispose();
 
         }
         catch( DataSourceException e )
         {
             e.printStackTrace();
         }
+        end_time = System.currentTimeMillis();
+        System.out.println( "Duration: " + ( end_time - start_time ) + " ms" );
     }
 }

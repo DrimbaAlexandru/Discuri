@@ -67,7 +67,10 @@ class ProjectFilesManager
     public static void associate_file_with_version( String file, int version )
     {
         file_references.putIfAbsent( file, new ArrayList<>() );
-        file_references.get( file ).add( version );
+        if( !file_references.get( file ).contains( version ) )
+        {
+            file_references.get( file ).add( version );
+        }
     }
 
     public static void deassociate_file_from_version( String file, int version )
@@ -279,7 +282,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         return null;
     }
 
-    public void dispose()
+    public void close()
     {
         try
         {

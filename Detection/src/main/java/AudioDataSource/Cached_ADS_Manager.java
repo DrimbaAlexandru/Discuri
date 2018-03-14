@@ -60,6 +60,7 @@ public class Cached_ADS_Manager
             if( pair.getRight() <= 0 )
             {
                 pair.getLeft().flushAll();
+                pair.getLeft().close();
                 map.remove( filePath );
             }
         }

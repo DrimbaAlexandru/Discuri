@@ -96,6 +96,12 @@ public class SingleBlockADS implements IAudioDataSource
         }
     }
 
+    @Override
+    public void close() throws DataSourceException
+    {
+
+    }
+
     public double[][] getBuffer()
     {
         return buffer;

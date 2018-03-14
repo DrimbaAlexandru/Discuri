@@ -250,6 +250,12 @@ public class CachedAudioDataSource implements IAudioDataSource
 
     }
 
+    @Override
+    public void close() throws DataSourceException
+    {
+        dataSource.close();
+    }
+
     private void flush( AudioSamplesWindow win ) throws DataSourceException
     {
         dataSource.put_samples( win );

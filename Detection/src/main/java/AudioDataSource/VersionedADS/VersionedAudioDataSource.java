@@ -52,7 +52,7 @@ public class VersionedAudioDataSource
     {
         while( versions.size() > current_version + 1 )
         {
-            versions.get( current_version + 1 ).dispose();
+            versions.get( current_version + 1 ).close();
             versions.remove( versions.get( current_version + 1 ) );
         }
         AudioDataSourceVersion ver = versions.get( current_version ).duplicate();
@@ -66,7 +66,7 @@ public class VersionedAudioDataSource
         current_version = versions.size() - 1;
         while( versions.size() > 1 )
         {
-            versions.get( current_version ).dispose();
+            versions.get( current_version ).close();
             versions.remove( versions.get( current_version ) );
             current_version--;
         }

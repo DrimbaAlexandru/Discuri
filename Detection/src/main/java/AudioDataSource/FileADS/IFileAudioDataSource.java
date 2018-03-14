@@ -9,5 +9,4 @@ import AudioDataSource.IAudioDataSource;
 public interface IFileAudioDataSource extends IAudioDataSource
 {
     String getFile_path();
-    void close() throws DataSourceException;
 }
