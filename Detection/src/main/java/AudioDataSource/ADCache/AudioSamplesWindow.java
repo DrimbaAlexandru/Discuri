@@ -33,6 +33,11 @@ public class AudioSamplesWindow
         return interval.contains( sample_index );
     }
 
+    public boolean fitsSample( int sample_index )
+    {
+        return new Interval( interval.l, get_capacity() ).contains( sample_index );
+    }
+
     public double getSample( int sample_index, int channel ) throws DataSourceException
     {
         try

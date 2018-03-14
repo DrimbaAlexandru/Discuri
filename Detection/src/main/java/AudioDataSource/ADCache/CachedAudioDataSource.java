@@ -40,7 +40,7 @@ public class CachedAudioDataSource implements IAudioDataSource
         return dataSource.get_sample_rate();
     }
 
-    private AudioSamplesWindow cache_samples( int first_sample_index, int length, boolean build_window, boolean force_cache_out_of_bounds ) throws DataSourceException
+    private AudioSamplesWindow cache_samples( int first_sample_index, int length, boolean build_window ) throws DataSourceException
     {
         double samples[][] = null;
         if( build_window )
@@ -53,10 +53,7 @@ public class CachedAudioDataSource implements IAudioDataSource
         AudioSamplesWindow win;
         int cacheLastSampleIndex;
 
-        if( !force_cache_out_of_bounds )
-        {
-            length = Math.min( length, get_sample_number() - first_sample_index );
-        }
+        length = Math.min( length, get_sample_number() - first_sample_index );
 
         for( i = 0; i < length; )
         {
@@ -82,7 +79,6 @@ public class CachedAudioDataSource implements IAudioDataSource
                         }
                     }
                     win = new AudioSamplesWindow( newbuffer, win.get_first_sample_index(), win.get_length(), win.get_channel_number() );
-                    temp_length = win.get_capacity();
                 }
                 cache_samples( win );
 
@@ -127,7 +123,7 @@ public class CachedAudioDataSource implements IAudioDataSource
     @Override
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
-        return cache_samples( first_sample_index, length, true, false );
+        return cache_samples( first_sample_index, length, true );
     }
 
     public AudioSamplesWindow get_resized_samples( int first_sample_index, int length, int resized_length ) throws DataSourceException
@@ -204,12 +200,31 @@ public class CachedAudioDataSource implements IAudioDataSource
             win = cache.getCacheWindow( i + new_samples.get_first_sample_index() );
             if( win == null )
             {
-                cache_samples( i + new_samples.get_first_sample_index(), 1, false, true );
+                cache_samples( i + new_samples.get_first_sample_index(), 1, false );
             }
             win = cache.getCacheWindow( i + new_samples.get_first_sample_index() );
             if( win == null )
             {
-                throw new DataSourceException( "This should never happen", DataSourceExceptionCause.THIS_SHOULD_NEVER_HAPPEN );
+                if( i + new_samples.get_first_sample_index() == get_sample_number() )
+                {
+                    double samples[][] = new double[ new_samples.get_channel_number() ][ max_cache_page_size ];
+                    temp_length = Math.min( max_cache_page_size, new_samples.get_length() - i );
+                    for( k = 0; k < get_channel_number(); k++ )
+                    {
+                        for( j = 0; j < temp_length; j++ )
+                        {
+                            samples[ k ][ j ] = new_samples.getSample( i + j + new_samples.get_first_sample_index(), k );
+                        }
+                    }
+                    win = new AudioSamplesWindow( samples, new_samples.get_first_sample_index() + i, temp_length, new_samples.get_channel_number() );
+                    win.markModified();
+                    cache_samples( win );
+                    i += temp_length;
+                }
+                else
+                {
+                    throw new DataSourceException( "This should never happen", DataSourceExceptionCause.THIS_SHOULD_NEVER_HAPPEN );
+                }
             }
             else
             {
@@ -230,7 +245,7 @@ public class CachedAudioDataSource implements IAudioDataSource
 
                 i += temp_length;
             }
-            sample_number = Math.max( sample_number, new_samples.get_first_sample_index() + new_samples.get_length() );
+            sample_number = Math.max( sample_number, new_samples.get_first_sample_index() + i );
         }
 
     }

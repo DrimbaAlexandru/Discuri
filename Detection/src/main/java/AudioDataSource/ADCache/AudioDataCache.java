@@ -88,7 +88,7 @@ public class AudioDataCache
     {
         AudioSamplesWindow result;
         result = ordered_caches.floor( new AudioSamplesWindow( null, sample_index, 0, 0 ) );
-        if( result != null && !result.containsSample( sample_index ) )
+        if( result != null && !result.fitsSample( sample_index ) )
         {
             result = null;
         }
