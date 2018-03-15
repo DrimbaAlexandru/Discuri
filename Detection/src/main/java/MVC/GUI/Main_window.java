@@ -587,7 +587,9 @@ public class Main_window
                     {
                         if( ProjectStatics.getVersionedADS() != null )
                         {
-                            ADS_Utils.copyToADS( dataSource, new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 ) );
+                            WAVFileAudioSource dest = new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 );
+                            ADS_Utils.copyToADS( dataSource, dest );
+                            dest.close();
                         }
                     }
                     catch( DataSourceException e )
@@ -665,7 +667,7 @@ public class Main_window
                 if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
                 {
                     final Repair_in_memory effect = ( Repair_in_memory )eff;
-                    effect.setWork_on_high_pass( false );
+                    effect.setWork_on_high_pass( true );
                     effect.setWork_on_position_domain( false );
                     mi.setOnAction( ev ->
                                     {
@@ -674,7 +676,6 @@ public class Main_window
                                     } );
                     continue;
                 }
-
             }
         }
         catch( IOException e )
@@ -693,7 +694,7 @@ public class Main_window
         apply_effect( eff, false, false );
     }
 
-    private void onApplyRepair_in_memory(Repair_in_memory eff)
+    private void onApplyRepair_in_memory( Repair_in_memory eff )
     {
         apply_effect( eff, false, false );
     }
