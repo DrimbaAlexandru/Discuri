@@ -1,0 +1,40 @@
+NN results:
+chopin + shostakovich, ~74000 markings, 2000Hz highpass
+
+( 129, 64, 16, 1 ), 1000 iter max -> 85% precision
+( 129, 64, 16, 1 ), 500 iter max -> 86% precision
+( 129, 64, 32, 1 ), 500 iter max, relu act fun -> 86% precision
+( 129, 64, 32, 1 ), 500 iter max, logistic act fun -> 79% precision
+( 129, 64, 32, 1 ), 500 iter max, tanh act fun -> 84% precision
+( 129, 64, 32, 1 ), 500 iter max, identity act fun -> 59% precision
+
+( 129, 64, 32, 1 ), 500 iter max, lbfgs solver -> 76% precision
+
+( 129, 64, 32, 1 ), 500 iter max, scaled -> 86% precision
+( 129, 64, 32, 1 ), 500 iter max, scaled, tol = 10^-5 -> 86% precision
+( 129, 64, 32, 1 ), 500 iter max, scaled, tol = 10^-5, shuffle = true -> 86% precision
+
+( 129, 64, 1 ), 500 iter max, scaled, shuffle = true -> 88% precision for class 1
+( 129, 64, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> 89% precision for class 1, 79% for class 0
+
+shostakovich, ~53000 markings
+( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> 85% precision for class 1, 85% for class 0
+( 129, 65, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> 85% precision for class 1, 85% for class 0
+( 257, 128, 64, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> 86% precision for class 1, 88% for class 0
+( 65, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> 86% precision for class 1, 82% for class 0
+
+shostakovich, 59116 markings
+direct pick-up, ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 95%, class 1 - 93%
+direct pick-up, 2000Hz highpass ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 85%, class 1 - 86%
+pre RIAA, ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 95%, class 1 - 92%                                     -
+pre RIAA, 2000Hz highpass ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 83%, class 1 - 84%
+raw groove modulation, ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 93%, class 1 - 91%
+raw groove modulation, 2000Hz highpass ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 90%, class 1 - 87%        -
+
+chopin, 93388 markings
+direct pick-up, ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 82%, class 1 - 88%
+direct pick-up, 2000Hz highpass ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 90%, class 1 - 89%
+pre RIAA, ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 91%, class 1 - 92%                                     -
+pre RIAA, 2000Hz highpass ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 90%, class 1 - 90%
+raw groove modulation, ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 65%, class 1 - 68%
+raw groove modulation, 2000Hz highpass ( 129, 64, 32, 1 ), 500 iter max, scaled, tol=0.00001, shuffle = true -> class 0 - 90%, class 1 - 90%        -

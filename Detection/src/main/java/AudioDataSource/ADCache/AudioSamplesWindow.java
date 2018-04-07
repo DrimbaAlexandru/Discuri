@@ -1,6 +1,7 @@
 package AudioDataSource.ADCache;
 
 import AudioDataSource.Exceptions.DataSourceException;
+import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
@@ -30,6 +31,11 @@ public class AudioSamplesWindow
     public boolean containsSample( int sample_index )
     {
         return interval.contains( sample_index );
+    }
+
+    public boolean fitsSample( int sample_index )
+    {
+        return new Interval( interval.l, get_capacity() ).contains( sample_index );
     }
 
     public double getSample( int sample_index, int channel ) throws DataSourceException
@@ -64,7 +70,7 @@ public class AudioSamplesWindow
         {
             if( !containsSample( sample_index ) )
             {
-                throw new DataSourceException( "Requested frame (" + sample_index + ") is not cached", SAMPLE_NOT_CACHED );
+                throw new DataSourceException( "Requested sample (" + sample_index + ") is not cached", SAMPLE_NOT_CACHED );
             }
 
             if( ( channel < 0 ) || ( channel >= channel_number ) )
@@ -83,7 +89,7 @@ public class AudioSamplesWindow
         return interval.l;
     }
 
-    public int get_last_sample_index()
+    public int get_after_last_sample_index()
     {
         return interval.r;
     }
@@ -120,6 +126,23 @@ public class AudioSamplesWindow
         for( int ch = 0; ch < get_channel_number(); ch++ )
         {
             Windowing.apply( samples[ ch ], get_length(), function );
+        }
+    }
+
+    public int get_capacity()
+    {
+        return samples[ 0 ].length;
+    }
+
+    public void set_length( int new_length ) throws DataSourceException
+    {
+        if( new_length > get_capacity() )
+        {
+            throw new DataSourceException( "New length exceedes window capacity", DataSourceExceptionCause.NOT_ENOUGH_FREE_SPACE );
+        }
+        else
+        {
+            interval.r = interval.l + new_length;
         }
     }
 }

@@ -39,13 +39,18 @@ public class Interval
         }
         else
         {
-            return new Interval( nl, nr );
+            return new Interval( nl, nr, false );
         }
     }
 
     public boolean contains( int index )
     {
         return ( ( l <= index ) && ( index < r ) );
+    }
+
+    public boolean includes( Interval other )
+    {
+        return other.l >= this.l && other.r <= this.r ;
     }
 
     @Override
@@ -59,4 +64,21 @@ public class Interval
         return r - l;
     }
 
+    public void limit( int low_limit, int high_limit )
+    {
+        if( l < low_limit )
+        {
+            l = low_limit;
+        }
+        if( r > high_limit )
+        {
+            r = high_limit;
+        }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "[ " + l + ", " + r + " )";
+    }
 }

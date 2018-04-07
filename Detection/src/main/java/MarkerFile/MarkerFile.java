@@ -29,26 +29,26 @@ public class MarkerFile
         Marking tbm = ( map.floorKey( fms ) != null ) ? map.floorEntry( fms ).getValue() : null;
         boolean update_existing = false;
 
-        if( ( tbm != null ) && ( tbm.last_marked_sample >= fms - 1 ) )
+        if( ( tbm != null ) && ( tbm.get_last_marked_sample() >= fms - 1 ) )
         {
-            tbm.last_marked_sample = lms;
+            tbm.set_last_marked_sample( lms );
             update_existing = true;
         }
         else
         {
-            tbm = new Marking( fms, lms );
+            tbm = new Marking( fms, lms, ch );
         }
 
         Marking last = ( map.ceilingKey( lms ) ) != null ? map.ceilingEntry( lms ).getValue() : null;
-        if( ( last != null ) && ( last.first_marked_sample == lms + 1 ) )
+        if( ( last != null ) && ( last.get_first_marked_sample() == lms + 1 ) )
         {
-            tbm.last_marked_sample = last.last_marked_sample;
-            map.remove( last.first_marked_sample );
+            tbm.set_last_marked_sample( last.get_last_marked_sample() );
+            map.remove( last.get_first_marked_sample() );
         }
 
         if( !update_existing )
         {
-            map.put( tbm.first_marked_sample, tbm );
+            map.put( tbm.get_first_marked_sample(), tbm );
         }
     }
 
@@ -59,19 +59,19 @@ public class MarkerFile
         Marking tba = null;
         for( Marking m : map.values() )
         {
-            if( ( m.last_marked_sample >= fms ) && ( m.first_marked_sample <= lms ) ) //contains samples to be unmarked
+            if( ( m.get_last_marked_sample() >= fms ) && ( m.get_first_marked_sample() <= lms ) ) //contains samples to be unmarked
             {
-                if( m.last_marked_sample > lms )
+                if( m.get_last_marked_sample() > lms )
                 {
-                    tba = new Marking( lms + 1, m.last_marked_sample );
+                    tba = new Marking( lms + 1, m.get_last_marked_sample(),ch );
                 }
-                if( m.first_marked_sample < fms )
+                if( m.get_first_marked_sample() < fms )
                 {
-                    m.last_marked_sample = fms - 1;
+                    m.set_last_marked_sample( fms - 1 );
                 }
                 else
                 {
-                    keys_tbd.add( m.first_marked_sample );
+                    keys_tbd.add( m.get_first_marked_sample() );
                 }
             }
         }
@@ -81,7 +81,7 @@ public class MarkerFile
         }
         if( tba != null )
         {
-            map.put( tba.first_marked_sample, tba );
+            map.put( tba.get_first_marked_sample(), tba );
         }
 
     }
@@ -90,11 +90,11 @@ public class MarkerFile
     {
         for( Marking m : l_markings.values() )
         {
-            o.write( "ch0 " + m.first_marked_sample + " " + m.last_marked_sample + "\r\n" );
+            o.write( "ch0 " + m.get_first_marked_sample() + " " + m.get_last_marked_sample() + "\r\n" );
         }
         for( Marking m : r_markings.values() )
         {
-            o.write( "ch1 " + m.first_marked_sample + " " + m.last_marked_sample + "\r\n" );
+            o.write( "ch1 " + m.get_first_marked_sample() + " " + m.get_last_marked_sample() + "\r\n" );
         }
         o.close();
     }
@@ -122,11 +122,11 @@ public class MarkerFile
                 lmi = sc.nextInt();
                 if( line.charAt( 2 ) == '0' )
                 {
-                    mf.l_markings.put( fmi, new Marking( fmi, lmi ) );
+                    mf.l_markings.put( fmi, new Marking( fmi, lmi, 0 ) );
                 }
                 else
                 {
-                    mf.r_markings.put( fmi, new Marking( fmi, lmi ) );
+                    mf.r_markings.put( fmi, new Marking( fmi, lmi, 1 ) );
                 }
                 line = sc.nextLine();
 
@@ -160,7 +160,7 @@ public class MarkerFile
         entry = markings.ceilingEntry( current_index );
         if( entry != null )
         {
-            return new Interval( entry.getValue().first_marked_sample, entry.getValue().last_marked_sample - entry.getValue().first_marked_sample + 1 );
+            return new Interval( entry.getValue().get_first_marked_sample(), entry.getValue().get_last_marked_sample() - entry.getValue().get_first_marked_sample() + 1 );
         }
         else
         {
@@ -171,7 +171,22 @@ public class MarkerFile
     public boolean isMarked( int sample, int ch )
     {
         Map.Entry< Integer, Marking > entry = ( ch == 0 ) ? l_markings.floorEntry( sample ) : r_markings.floorEntry( sample );
-        return ( ( entry != null ) && ( entry.getValue().first_marked_sample <= sample ) && ( entry.getValue().last_marked_sample >= sample ) );
+        return ( ( entry != null ) && ( entry.getValue().get_first_marked_sample() <= sample ) && ( entry.getValue().get_last_marked_sample() >= sample ) );
+    }
+
+    public List< Marking > get_all_markings( Interval interval )
+    {
+        List< Marking > markings = new ArrayList< Marking >();
+        for( TreeMap< Integer, Marking > map : new TreeMap[]{ l_markings, r_markings } )
+        {
+            Map.Entry< Integer, Marking > entry = map.ceilingEntry( interval.l );
+            while( entry != null && entry.getValue().get_last_marked_sample() < interval.r )
+            {
+                markings.add( new Marking( entry.getValue().get_first_marked_sample(), entry.getValue().get_last_marked_sample(), entry.getValue().getChannel() ) );
+                entry = map.ceilingEntry( entry.getValue().get_last_marked_sample() + 1 );
+            }
+        }
+        return markings;
     }
 
 }

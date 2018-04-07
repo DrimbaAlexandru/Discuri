@@ -2,14 +2,14 @@ package MVC.GUI;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.Cached_ADS_Manager;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.IAudioDataSource;
-import AudioDataSource.Utils;
+import AudioDataSource.ADS_Utils;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Effects.*;
-import SignalProcessing.LiniarPrediction.BurgLP;
-import SignalProcessing.LiniarPrediction.LinearPrediction;
+import SignalProcessing.Filters.IIR;
 import Utils.Interval;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -482,20 +482,20 @@ public class Main_window
         final int milliseconds = ( selection_start_index % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate();
         time_scroll.setValue( selection_start_index );
         position_indicator.setText( "samples / " + ( sample_number ) +
-                                            " ( " + String.format( "%02d", seconds / 360 ) +
+                                            " ( " + String.format( "%02d", seconds / 3600 ) +
                                             ":" + String.format( "%02d", seconds / 60 % 60 ) +
                                             ":" + String.format( "%02d", seconds % 60 ) +
                                             "." + String.format( "%03d", milliseconds ) +
                                             " / " + String.format( "%02d", ( sample_number / dataSource.get_sample_rate() ) / 3600 ) +
                                             ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() / 60 % 60 ) +
                                             ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() % 60 ) +
-                                            "." + String.format( "%02d", ( sample_number % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
+                                            "." + String.format( "%03d", ( sample_number % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
         current_sample_spinner.getValueFactory().setValue( selection_start_index );
         sel_len_indicator.setText( "samples ( "+
                                            String.format( "%02d", sel_len / dataSource.get_sample_rate() / 3600 ) +
                                            ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() / 60 % 60 ) +
                                            ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() % 60 ) +
-                                           "." + String.format( "%02d", ( sel_len % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
+                                           "." + String.format( "%03d", ( sel_len % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
         sel_len_spinner.getValueFactory().setValue( sel_len );
         time_scroll.setBlockIncrement( window_size );
         time_scroll.setValue( first_sample_index );
@@ -519,6 +519,7 @@ public class Main_window
         ProjectStatics.registerEffect( new Repair_Marked() );
         ProjectStatics.registerEffect( new Sample_Summer() );
         ProjectStatics.registerEffect( new Repair_in_high_pass() );
+        ProjectStatics.registerEffect( new Repair_in_memory() );
 
         try
         {
@@ -587,7 +588,9 @@ public class Main_window
                     {
                         if( ProjectStatics.getVersionedADS() != null )
                         {
-                            Utils.copyToADS( dataSource, new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 ) );
+                            WAVFileAudioSource dest = new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 );
+                            ADS_Utils.copyToADS( dataSource, dest );
+                            dest.close();
                         }
                     }
                     catch( DataSourceException e )
@@ -662,7 +665,18 @@ public class Main_window
                                     } );
                     continue;
                 }
-
+                if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
+                {
+                    final Repair_in_memory effect = ( Repair_in_memory )eff;
+                    effect.setWork_on_high_pass( true );
+                    effect.setWork_on_position_domain( false );
+                    mi.setOnAction( ev ->
+                                    {
+                                        System.out.println( effect.getName() );
+                                        onApplyRepair_in_memory( effect );
+                                    } );
+                    continue;
+                }
             }
         }
         catch( IOException e )
@@ -673,10 +687,17 @@ public class Main_window
 
     private void onApplySampleSummer( Sample_Summer eff )
     {
-        apply_effect( eff, false, true );
+        IIR_Filter filter = new IIR_Filter();
+        filter.setFilter( new IIR( new double[]{ 1 }, 1, new double[]{ 1, -1 }, 2 ) );
+        apply_effect( filter, false, true );
     }
 
     private void onApplyRepair_in_high_pass( Repair_in_high_pass eff )
+    {
+        apply_effect( eff, false, false );
+    }
+
+    private void onApplyRepair_in_memory( Repair_in_memory eff )
     {
         apply_effect( eff, false, false );
     }
@@ -734,8 +755,9 @@ public class Main_window
                                               {
                                                   ProjectStatics.getVersionedADS().dispose();
                                               }
+                                              Cached_ADS_Manager.flush_all_caches();
                                           }
-                                          catch( InterruptedException e1 )
+                                          catch( DataSourceException | InterruptedException e1 )
                                           {
                                               treatException( e1 );
                                           }
@@ -850,6 +872,10 @@ public class Main_window
 
     private void apply_effect( IEffect effect, boolean allow_zero_selection, boolean use_destination_as_source )
     {
+        if( dataSource == null )
+        {
+            return;
+        }
         Interval interval = new Interval( selection_start_index, selection_end_index - selection_start_index );
         if( interval.get_length() < 0 )
         {

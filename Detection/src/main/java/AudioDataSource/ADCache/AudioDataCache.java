@@ -55,12 +55,12 @@ public class AudioDataCache
         //showCacheStatus();
         AudioSamplesWindow left, right;
 
-        if( win.get_length() * win.get_channel_number() > maxCacheSize )
+        if( win.get_capacity() * win.get_channel_number() > maxCacheSize )
         {
             throw new DataSourceException( "Not enough space in cache", NOT_ENOUGH_SPACE );
         }
 
-        if( win.get_length() * win.get_channel_number() > maxCacheSize - usedCacheSize )
+        if( win.get_capacity() * win.get_channel_number() > maxCacheSize - usedCacheSize )
         {
             throw new DataSourceException( "Not enough free space in cache", NOT_ENOUGH_FREE_SPACE );
         }
@@ -81,14 +81,14 @@ public class AudioDataCache
         ordered_caches.add( win );
         cache_access.addFirst( win );
 
-        usedCacheSize += win.get_channel_number() * win.get_length();
+        usedCacheSize += win.get_channel_number() * win.get_capacity();
     }
 
     public AudioSamplesWindow getCacheWindow( int sample_index )
     {
         AudioSamplesWindow result;
         result = ordered_caches.floor( new AudioSamplesWindow( null, sample_index, 0, 0 ) );
-        if( result != null && !result.containsSample( sample_index ) )
+        if( result != null && !result.fitsSample( sample_index ) )
         {
             result = null;
         }
@@ -114,7 +114,7 @@ public class AudioDataCache
         {
             ordered_caches.remove( win );
             cache_access.remove( win );
-            usedCacheSize -= win.get_channel_number() * win.get_length();
+            usedCacheSize -= win.get_channel_number() * win.get_capacity();
             return true;
         }
     }

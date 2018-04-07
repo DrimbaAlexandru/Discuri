@@ -14,7 +14,6 @@ public class FileStreamManager
     private static int capacity = 32;
     private static LinkedList< Pair< String, RandomAccessFile > > pool = new LinkedList<>();
 
-
     public static void setCapacity( int new_capacity )
     {
         capacity = new_capacity;

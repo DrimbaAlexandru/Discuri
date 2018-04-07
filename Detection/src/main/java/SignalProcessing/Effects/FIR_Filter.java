@@ -4,7 +4,6 @@ import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
-import ProjectStatics.ProjectStatics;
 import SignalProcessing.Filters.FIR;
 import Utils.Interval;
 
@@ -29,11 +28,11 @@ public class FIR_Filter implements IEffect
         {
             throw new DataSourceException( "No filter was set.", DataSourceExceptionCause.INVALID_STATE );
         }
-        if( filter.getTap_nr() >= max_chunk_size )
+        if( filter.getFf_coeff_nr() >= max_chunk_size )
         {
             throw new DataSourceException( "Buffer is smaller or equal to filter length", DataSourceExceptionCause.INVALID_STATE );
         }
-        int filter_length = filter.getTap_nr();
+        int filter_length = filter.getFf_coeff_nr();
         int temp_len;
         int i, k;
         int first_needed_sample_index;

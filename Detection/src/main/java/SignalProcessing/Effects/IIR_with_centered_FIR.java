@@ -10,10 +10,11 @@ import SignalProcessing.Filters.IIR;
 import Utils.Interval;
 
 /**
- * Created by Alex on 08.02.2018.
+ * Created by Alex on 13.02.2018.
  */
-public class Equalizer implements IEffect
+public class IIR_with_centered_FIR implements IEffect
 {
+    private IIR iir_filter = null;
     private FIR fir_filter = null;
     private int max_chunk_size = 1024;
     private final static double[] identity_FIR_coeffs = { 1 };
@@ -21,31 +22,33 @@ public class Equalizer implements IEffect
     @Override
     public String getName()
     {
-        return "Equalizer";
+        return "Centered IIR Filter";
     }
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
-        if( fir_filter == null )
+        if( iir_filter == null )
         {
             throw new DataSourceException( "No filter was set.", DataSourceExceptionCause.INVALID_STATE );
         }
 
-        final int buf_len = fir_filter.getFf_coeff_nr() / 2;
+        final int max_filter_len = Math.max( iir_filter.getFb_coeff_nr() - 1, fir_filter.getFf_coeff_nr() / 2 );
 
-        if( fir_filter.getFf_coeff_nr() > max_chunk_size )
+        if( max_filter_len + iir_filter.getFf_coeff_nr() > max_chunk_size )
         {
-            throw new DataSourceException( "Chunk size must be at least the size of the filter", DataSourceExceptionCause.INVALID_STATE );
+            throw new DataSourceException( "Chunk size must be at least the sum of the maximum filter size (FIR and IIR) and half the FIR filter size", DataSourceExceptionCause.INVALID_STATE );
         }
 
         final boolean isInPlace = ( dataDest == dataSource );
+        int buf1_size = fir_filter.getFf_coeff_nr() / 2;
+        int buf2_size = max_filter_len;
         double[][] prev_left_samples = null;
-        double[][] prev_processed_samples = new double[ dataSource.get_channel_number() ][ buf_len ];
+        double[][] regression_buffer = new double[ dataSource.get_channel_number() ][ buf2_size ];
         final Equalizer_FIR equalizer_fir = new Equalizer_FIR( fir_filter );
         if( isInPlace )
         {
-            prev_left_samples = new double[ dataSource.get_channel_number() ][ buf_len ];
+            prev_left_samples = new double[ dataSource.get_channel_number() ][ buf1_size ];
         }
 
         int temp_len;
@@ -61,7 +64,7 @@ public class Equalizer implements IEffect
 
         i = interval.l;
 
-        first_needed_sample_index = i - buf_len;
+        first_needed_sample_index = i - max_filter_len;
         first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
         temp_len = Math.min( interval.r - first_fetchable_sample_index + fir_filter.getFf_coeff_nr() / 2, max_chunk_size );
         win = dataSource.get_samples( first_fetchable_sample_index, temp_len );
@@ -84,27 +87,30 @@ public class Equalizer implements IEffect
         {
             if( isInPlace && i + applying_range.get_length() < interval.r )
             {
-                for( j = 0; j < buf_len; j++ )
+                for( j = 0; j < buf1_size; j++ )
                 {
-                    prev_left_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                    prev_left_samples[ k ][ buf1_size - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
                 }
             }
             equalizer_fir.apply( win.getSamples()[ k ], applying_range );
+            iir_filter.apply( win.getSamples()[ k ], applying_range, true );
             win.markModified();
+
             if( i + applying_range.get_length() < interval.r )
             {
-                for( j = 0; j < buf_len; j++ )
+                for( j = 0; j < buf2_size; j++ )
                 {
-                    prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                    regression_buffer[ k ][ buf2_size - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
                 }
             }
+
         }
         dataDest.put_samples( win );
         i += applying_range.get_length();
 
         for( ; i < interval.r; )
         {
-            first_needed_sample_index = i - buf_len;
+            first_needed_sample_index = i - max_filter_len;
             first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
             temp_len = Math.min( interval.r - first_fetchable_sample_index + fir_filter.getFf_coeff_nr() / 2, max_chunk_size );
             win = dataSource.get_samples( first_fetchable_sample_index, temp_len );
@@ -128,25 +134,26 @@ public class Equalizer implements IEffect
             {
                 if( isInPlace )
                 {
-                    for( j = 0; j < buf_len; j++ )
+                    for( j = 0; j < buf1_size; j++ )
                     {
-                        win.putSample( first_fetchable_sample_index + buf_len - 1 - j, k, prev_left_samples[ k ][ buf_len - 1 - j ] );
-                        prev_left_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                        win.putSample( first_fetchable_sample_index + buf1_size - 1 - j, k, prev_left_samples[ k ][ buf1_size - 1 - j ] );
+                        prev_left_samples[ k ][ buf1_size - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
                     }
                 }
 
                 equalizer_fir.apply( win.getSamples()[ k ], applying_range );
 
-                for( j = 0; j < buf_len; j++ )
+                for( j = 0; j < buf2_size; j++ )
                 {
-                    win.putSample( first_fetchable_sample_index + buf_len - 1 - j, k, prev_processed_samples[ k ][ buf_len - 1 - j ] );
+                    win.putSample( first_fetchable_sample_index + buf1_size - 1 - j, k, regression_buffer[ k ][ buf2_size - 1 - j ] );
                 }
 
+                iir_filter.apply( win.getSamples()[ k ], applying_range, true );
                 win.markModified();
 
-                for( j = 0; j < buf_len; j++ )
+                for( j = 0; j < buf2_size; j++ )
                 {
-                    prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                    regression_buffer[ k ][ buf2_size - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
                 }
             }
             dataDest.put_samples( win );
@@ -154,9 +161,10 @@ public class Equalizer implements IEffect
         }
     }
 
-    public void setFilter( FIR filter )
+    public void setFilter( IIR filter )
     {
-        fir_filter = filter;
+        this.iir_filter = new IIR( identity_FIR_coeffs, 1, filter.getFb(), filter.getFb_coeff_nr() );
+        this.fir_filter = new FIR( filter.getFf(), filter.getFf_coeff_nr() );
     }
 
     public void setMax_chunk_size( int max_chunk_size )

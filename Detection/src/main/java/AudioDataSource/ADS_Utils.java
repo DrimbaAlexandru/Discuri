@@ -6,7 +6,7 @@ import AudioDataSource.Exceptions.DataSourceException;
 /**
  * Created by Alex on 17.01.2018.
  */
-public class Utils
+public class ADS_Utils
 {
     public static int buffer_size = 16384;
 

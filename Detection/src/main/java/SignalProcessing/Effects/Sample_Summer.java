@@ -10,8 +10,7 @@ import Utils.Interval;
  */
 public class Sample_Summer implements IEffect
 {
-    private final static int max_buffer_size = 2048;
-    private static double[] buffer = new double[ max_buffer_size ];
+    private final static int max_buffer_size = 44100;
 
     @Override
     public String getName()
