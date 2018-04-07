@@ -7,5 +7,5 @@ import time
 #print d1, d2, d3, d4
 buf = struct.pack('>dddd',9,7,5,3)
 #sys.stdout.write(': ' + ( sys.stdin.read(4) ) )
-print buf
+sys.stdout.write( buf )
 #time.sleep(5)

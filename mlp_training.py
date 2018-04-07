@@ -50,3 +50,7 @@ print(classification_report(Y_test,predictions))
 f1 = open( "./pickle.jar", "w+")
 pickle.dump(mlp,f1,2)
 f1.close()
+
+f2 = open( "./pickle4scale.jar", "w+")
+pickle.dump(scaler,f2,2)
+f2.close()
