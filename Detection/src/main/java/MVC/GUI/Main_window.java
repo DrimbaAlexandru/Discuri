@@ -9,6 +9,7 @@ import AudioDataSource.IAudioDataSource;
 import AudioDataSource.ADS_Utils;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Effects.*;
+import SignalProcessing.Filters.IIR;
 import Utils.Interval;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -686,7 +687,9 @@ public class Main_window
 
     private void onApplySampleSummer( Sample_Summer eff )
     {
-        apply_effect( eff, false, true );
+        IIR_Filter filter = new IIR_Filter();
+        filter.setFilter( new IIR( new double[]{ 1 }, 1, new double[]{ 1, -1 }, 2 ) );
+        apply_effect( filter, false, true );
     }
 
     private void onApplyRepair_in_high_pass( Repair_in_high_pass eff )
