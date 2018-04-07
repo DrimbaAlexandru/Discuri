@@ -6,6 +6,7 @@ import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import ProjectStatics.ProjectStatics;
+import SignalProcessing.Effects.Create_Marker_File;
 import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.FIR_Filter;
 import SignalProcessing.Effects.Repair_in_memory;
@@ -201,7 +202,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main8( String[] args )
     {
         long start_time, end_time;
         start_time = System.currentTimeMillis();
@@ -237,5 +238,19 @@ public class TestMain {
         }
         end_time = System.currentTimeMillis();
         System.out.println( "Duration: " + ( end_time - start_time ) + " ms" );
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\clicks.wav");
+            Create_Marker_File create_marker_file = new Create_Marker_File();
+            create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
     }
 }

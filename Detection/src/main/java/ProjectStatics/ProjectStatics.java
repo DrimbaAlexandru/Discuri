@@ -30,6 +30,9 @@ public class ProjectStatics
     private static int default_cache_size = 44100;
     private static int default_cache_page_size = 2048;
     private static String temp_folder = "D:\\";
+    private static String python_classifier_script_path = "D:\\git\\Licenta\\Discuri\\mlp_prediction_server.py";
+    private static String python_classifier_mlp_path = "D:\\git\\Licenta\\Discuri\\pickle.jar";
+    private static String python_classifier_scaler_path = "D:\\git\\Licenta\\Discuri\\pickle4scale.jar";
 
     public static void loadAudioFile( String filePath ) throws DataSourceException
     {
@@ -94,5 +97,20 @@ public class ProjectStatics
     public static String getTemp_folder()
     {
         return temp_folder;
+    }
+
+    public static String getPython_classifier_script_path()
+    {
+        return python_classifier_script_path;
+    }
+
+    public static String getPython_classifier_mlp_path()
+    {
+        return python_classifier_mlp_path;
+    }
+
+    public static String getPython_classifier_scaler_path()
+    {
+        return python_classifier_scaler_path;
     }
 }
