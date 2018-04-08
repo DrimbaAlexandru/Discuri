@@ -454,12 +454,13 @@ public class Main_window
                            ( i + 1 ) * display_window_width / ( display_window_size )+ window_left_pad,
                            ( 1 + Math.min( Math.max( -r_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
 
-            /* Draw L-R channel */
+            /* Draw L-R channel *//*
             gc.setStroke( Color.PINK );
             gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
                            ( 1 + Math.min( Math.max( -( l_window[ i ] - r_window[ i ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2,
                            ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
                            ( 1 + Math.min( Math.max( -( l_window[ i + 1] - r_window[ i + 1 ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2 );
+        */
         }
         main_canvas.getGraphicsContext2D().setFill( Color.BLACK );
         inv_samples = false;
@@ -668,7 +669,7 @@ public class Main_window
                 if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
                 {
                     final Repair_in_memory effect = ( Repair_in_memory )eff;
-                    effect.setWork_on_high_pass( true );
+                    effect.setWork_on_high_pass( false );
                     effect.setWork_on_position_domain( false );
                     mi.setOnAction( ev ->
                                     {

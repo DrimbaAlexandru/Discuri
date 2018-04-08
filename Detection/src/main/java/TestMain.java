@@ -16,6 +16,8 @@ import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
+import java.io.*;
+
 import static Utils.Utils.plot_in_matlab;
 
 /**
@@ -247,8 +249,19 @@ public class TestMain {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\clicks.wav");
             Create_Marker_File create_marker_file = new Create_Marker_File();
             create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
+
+            ProjectStatics.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings 0.75.txt" ) ) );
+
         }
         catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+        catch( FileNotFoundException e )
+        {
+            e.printStackTrace();
+        }
+        catch( IOException e )
         {
             e.printStackTrace();
         }

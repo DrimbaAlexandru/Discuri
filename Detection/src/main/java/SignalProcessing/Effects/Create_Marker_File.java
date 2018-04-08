@@ -29,7 +29,7 @@ class Classify_In_Python
     private static Process proc = null;
     private static final int double_size = 8;
     private static final int int_size = 4;
-    private static final int buffer_size = 1024 * 64 * double_size;
+    private static final int buffer_size = 1024 * 4 * double_size;
     private static final ByteBuffer buffer = ByteBuffer.allocate( buffer_size );
 
     private static void readBytes( int size, InputStream inp ) throws IOException
@@ -152,6 +152,8 @@ class Classify_In_Python
         }
         catch( IOException e )
         {
+            proc.destroy();
+            proc = null;
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
         }
         return new MyPair< Integer, double[] >( length, array );
@@ -160,7 +162,7 @@ class Classify_In_Python
 
 public class Create_Marker_File implements IEffect
 {
-    private double threshold = 0.5;
+    private double threshold = 0.75;
     private int side_extend = 0;
 
     @Override
@@ -188,7 +190,7 @@ public class Create_Marker_File implements IEffect
         {
             int predict_start;
             temp_len = Math.min( applying_interval.r - i + nn_input_size - 1, chunk_size );
-            win = dataSource.get_samples( i - nn_input_size / 2, i + temp_len - nn_input_size / 2 );
+            win = dataSource.get_samples( i - nn_input_size / 2, temp_len );
             predict_start = win.get_first_sample_index() + nn_input_size / 2;
             for( int ch = 0; ch < win.get_channel_number(); ch++ )
             {
@@ -217,7 +219,10 @@ public class Create_Marker_File implements IEffect
                     {
                         if( mark != null )
                         {
-                            mf.addMark( mark.l - side_extend, mark.r - 1 + side_extend, ch );
+                            if( mark.get_length() > 3 )
+                            {
+                                mf.addMark( mark.l - side_extend, mark.r - 1 + side_extend, ch );
+                            }
                             mark = null;
                         }
                     }

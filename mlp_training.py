@@ -47,10 +47,10 @@ predictions = mlp.predict(X_test)
 print(confusion_matrix(Y_test,predictions))
 print(classification_report(Y_test,predictions))
 
-f1 = open( "./pickle.jar", "w+")
+f1 = open( "./pickle.jar", "wb")
 pickle.dump(mlp,f1,2)
 f1.close()
 
-f2 = open( "./pickle4scale.jar", "w+")
+f2 = open( "./pickle4scale.jar", "wb")
 pickle.dump(scaler,f2,2)
 f2.close()

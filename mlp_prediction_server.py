@@ -14,10 +14,13 @@ def send_errors( errors ):
     sys.stderr.write( pack )
 
 def read_double_array():
-    ( array_len ) = struct.unpack( '>i', sys.stdin.read( int_size * 1 ) )
+    recv = sys.stdin.read( int_size * 1 )
+    print >> sys.stderr, len( recv ), recv
+    array_len = struct.unpack( '>i', recv )[ 0 ]
     array = []
     for i in xrange( 0, array_len ):
-        ( value ) = struct.unpack( '>d', sys.stdin.read( double_size * 1 ) )
+        recv = sys.stdin.read( double_size * 1 )
+        value = struct.unpack( '>d', recv )[ 0 ]
         array.append( value )
     return ( array_len, array )
     
@@ -29,13 +32,15 @@ def print_double_array( array_len, array ):
 err_msgs = []
 
 try:
-    from sklearn.neural_network import MLPClassifier
-    from sklearn.preprocessing import StandardScaler
+    from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+    from sklearn.preprocessing.data import StandardScaler
     import sys
     import struct
     import pickle
-except ImportError as e:
-    err_msgs.append( str( e ) )
+    import traceback
+    import os
+except Exception as e:
+    err_msgs.append( traceback.format_exc() )
     send_errors( err_msgs )
     sys.exit( 1 )
 
@@ -47,18 +52,20 @@ if( len( sys.argv ) < 3 ):
 
 #Check for serialized objects' loading
 try:
-    mlp_f = open( sys.argv[ 1 ], "r" )
-    scaler_f = open( sys.argv[ 2 ], "r" )
-    inputs_size = mlp.coefs_[ 0 ].__len__()
+    mlp_f = open( sys.argv[ 1 ], "rb" )
+    scaler_f = open( sys.argv[ 2 ], "rb" )
 
     mlp = pickle.load( mlp_f )
     scaler = pickle.load( scaler_f )
+    inputs_size = mlp.coefs_[ 0 ].__len__()
 except Exception as e:
-    err_msgs.append( str( e ) )
+    err_msgs.append( traceback.format_exc() )
     send_errors( err_msgs )
     sys.exit( 3 )
 
 send_errors( err_msgs )
+
+sys.stderr = open("C:\Users\Alex\Desktop\python_stderr.txt", "w+" )
 #begin loop
 while True:
     ( n, samples ) = read_double_array()
@@ -67,12 +74,13 @@ while True:
     i = 0
     predictions = []
     while( i < n - inputs_size + 1 ):
-        temp_len = ( n - inputs_size + 1 - i, max_chunk )
+        temp_len = min( n - inputs_size + 1 - i, max_chunk )
         inputs = []
         for j in xrange( i, i + temp_len ):
             inputs.append( samples[ j : j + inputs_size ] )
         inputs = scaler.transform( inputs )
-        predictions_chunk = mlp.predict( inputs )[ 1 ]
+        predictions_chunk = mlp.predict_proba( inputs )[:,1]
+        print >> sys.stderr, predictions_chunk, type( predictions_chunk )
         predictions.extend( predictions_chunk )
         i += temp_len
     print_double_array( predictions.__len__(), predictions )
