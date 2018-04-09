@@ -162,7 +162,7 @@ class Classify_In_Python
 
 public class Create_Marker_File implements IEffect
 {
-    private double threshold = 0.75;
+    private double threshold = 0.5;
     private int side_extend = 0;
 
     @Override
@@ -192,6 +192,7 @@ public class Create_Marker_File implements IEffect
             temp_len = Math.min( applying_interval.r - i + nn_input_size - 1, chunk_size );
             win = dataSource.get_samples( i - nn_input_size / 2, temp_len );
             predict_start = win.get_first_sample_index() + nn_input_size / 2;
+            System.out.println( "At sample " + i );
             for( int ch = 0; ch < win.get_channel_number(); ch++ )
             {
                 Classify_In_Python.send_double_array( win.get_length(), win.getSamples()[ ch ] );
@@ -230,5 +231,10 @@ public class Create_Marker_File implements IEffect
             }
             i += win.get_length() - nn_input_size + 1;
         }
+    }
+
+    public void setThreshold( double threshold )
+    {
+        this.threshold = threshold;
     }
 }
