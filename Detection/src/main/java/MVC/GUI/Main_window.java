@@ -752,11 +752,11 @@ public class Main_window
                                           try
                                           {
                                               Thread.sleep( 100 );
+                                              Cached_ADS_Manager.finish_all_caches();
                                               if( ProjectStatics.getVersionedADS() != null )
                                               {
                                                   ProjectStatics.getVersionedADS().dispose();
                                               }
-                                              Cached_ADS_Manager.flush_all_caches();
                                           }
                                           catch( DataSourceException | InterruptedException e1 )
                                           {

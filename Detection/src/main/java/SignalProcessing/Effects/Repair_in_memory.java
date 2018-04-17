@@ -144,7 +144,6 @@ public class Repair_in_memory implements IEffect
             Interval repair_interval = marking.getInterval();
             try
             {
-
                 Interval overall_required_interval;
                 Interval prediction_required_interval;
 
@@ -156,7 +155,7 @@ public class Repair_in_memory implements IEffect
 
                 if( prediction_required_interval.l < 0 || prediction_required_interval.r > dataSource.get_sample_number() )
                 {
-                    throw new DataSourceException( "Not enough samples for linear prediction", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
+                    throw new DataSourceException( "Not enough samples for linear prediction", DataSourceExceptionCause.NOT_ENOUGH_LIN_PREDICT );
                 }
                 if( repair_interval.get_length() > max_repair_size )
                 {
@@ -342,7 +341,14 @@ public class Repair_in_memory implements IEffect
             }
             catch( DataSourceException ex )
             {
-                ex.printStackTrace();
+                if( ex.getDSEcause() != DataSourceExceptionCause.NOT_ENOUGH_LIN_PREDICT )
+                {
+                    throw ex;
+                }
+                else
+                {
+                    ex.printStackTrace();
+                }
             }
             if( repair_interval.l / dataSource.get_sample_rate() > second )
             {

@@ -248,7 +248,7 @@ public class TestMain {
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Carmen.wav");
             Create_Marker_File create_marker_file = new Create_Marker_File();
-            create_marker_file.setThreshold( 0.5 );
+            create_marker_file.setThreshold( 0.4 );
             create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
 
             ProjectStatics.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings Carmen 0.5.txt" ) ) );
