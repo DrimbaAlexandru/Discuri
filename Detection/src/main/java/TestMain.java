@@ -6,10 +6,7 @@ import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import ProjectStatics.ProjectStatics;
-import SignalProcessing.Effects.Create_Marker_File;
-import SignalProcessing.Effects.Equalizer;
-import SignalProcessing.Effects.FIR_Filter;
-import SignalProcessing.Effects.Repair_in_memory;
+import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Interpolation.Interpolator;
 import SignalProcessing.Interpolation.LinearInterpolator;
@@ -246,12 +243,12 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Carmen.wav");
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\enescu.wav");
             Create_Marker_File create_marker_file = new Create_Marker_File();
             create_marker_file.setThreshold( 0.4 );
             create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
 
-            ProjectStatics.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings Carmen 0.5.txt" ) ) );
+            ProjectStatics.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings enescu 0.4.txt" ) ) );
 
         }
         catch( DataSourceException e )
@@ -263,6 +260,22 @@ public class TestMain {
             e.printStackTrace();
         }
         catch( IOException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main9( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Carmen.wav" );
+            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 4096 * 8, 2048 );
+            WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\probs.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
+            Create_Probability_Graph graph = new Create_Probability_Graph();
+            graph.create_graph( cache, dest );
+        }
+        catch( DataSourceException e )
         {
             e.printStackTrace();
         }

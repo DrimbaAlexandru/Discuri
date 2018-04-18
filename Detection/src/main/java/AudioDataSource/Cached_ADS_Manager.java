@@ -97,14 +97,19 @@ public class Cached_ADS_Manager
     private static void process_to_be_closed() throws DataSourceException
     {
         long time_now = System.currentTimeMillis();
+        List< CachedAudioDataSource > to_be_removed = new ArrayList<>();
         for( Map.Entry< CachedAudioDataSource, Long > entry : to_be_closed.entrySet() )
         {
             if( entry.getValue() + close_delay_ms < time_now )
             {
-                entry.getKey().flushAll();
-                entry.getKey().close();
-                to_be_closed.remove( entry.getKey() );
+                to_be_removed.add( entry.getKey() );
             }
+        }
+        for( CachedAudioDataSource cads : to_be_removed )
+        {
+            cads.flushAll();
+            cads.close();
+            to_be_closed.remove( cads );
         }
     }
 
