@@ -159,7 +159,7 @@ public class Repair_in_memory implements IEffect
                 }
                 if( repair_interval.get_length() > max_repair_size )
                 {
-                    throw new DataSourceException( "Repair interval too big", DataSourceExceptionCause.GENERIC_ERROR );
+                    throw new DataSourceException( "Repair interval too big", DataSourceExceptionCause.WARNING );
                 }
 
                 //Complete the buffer
@@ -341,13 +341,14 @@ public class Repair_in_memory implements IEffect
             }
             catch( DataSourceException ex )
             {
-                if( ex.getDSEcause() != DataSourceExceptionCause.NOT_ENOUGH_LIN_PREDICT )
+                switch( ex.getDSEcause() )
                 {
-                    throw ex;
-                }
-                else
-                {
-                    ex.printStackTrace();
+                    case NOT_ENOUGH_LIN_PREDICT:
+                    case WARNING:
+                        ex.printStackTrace();
+                        break;
+                    default:
+                        throw ex;
                 }
             }
             if( repair_interval.l / dataSource.get_sample_rate() > second )

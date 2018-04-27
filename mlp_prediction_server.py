@@ -15,7 +15,7 @@ def send_errors( errors ):
 
 def read_double_array():
     recv = sys.stdin.read( int_size * 1 )
-    print >> sys.stderr, len( recv ), recv
+    #print >> sys.stderr, len( recv ), recv
     array_len = struct.unpack( '>i', recv )[ 0 ]
     array = []
     for i in xrange( 0, array_len ):
@@ -65,7 +65,7 @@ except Exception as e:
 
 send_errors( err_msgs )
 
-sys.stderr = open("C:\Users\Alex\Desktop\python_stderr.txt", "w+" )
+#sys.stderr = open("C:\Users\Alex\Desktop\python_stderr.txt", "w+" )
 #begin loop
 while True:
     ( n, samples ) = read_double_array()
@@ -80,7 +80,7 @@ while True:
             inputs.append( samples[ j : j + inputs_size ] )
         inputs = scaler.transform( inputs )
         predictions_chunk = mlp.predict_proba( inputs )[:,1]
-        print >> sys.stderr, predictions_chunk, type( predictions_chunk )
+        #print >> sys.stderr, predictions_chunk, type( predictions_chunk )
         predictions.extend( predictions_chunk )
         i += temp_len
     print_double_array( predictions.__len__(), predictions )
