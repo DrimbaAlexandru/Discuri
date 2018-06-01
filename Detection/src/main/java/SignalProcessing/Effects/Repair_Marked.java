@@ -2,10 +2,12 @@ package SignalProcessing.Effects;
 
 import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.IAudioDataSource;
+import MarkerFile.Marking;
 import ProjectStatics.ProjectStatics;
 import Utils.Interval;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Alex on 16.01.2018.
@@ -26,34 +28,31 @@ public class Repair_Marked implements IEffect
         int start = Math.max( 0, interval.l );
         int end = Math.min( dataSource.get_sample_number(), interval.r );
         Repair effect = new Repair();
-        Interval i;
-        int second;
+        Interval i = new Interval( 0, 0 );
+        List< Marking > markings = ProjectStatics.getMarkerFile().get_all_markings( interval );
+        int second = 0;
 
-        for( int k = 0; k < dataSource.get_channel_number(); k++ )
+        for( Marking m : markings )
         {
-            second = 0;
-            effect.setAffected_channels( Arrays.asList( k ) );
-            i = ProjectStatics.getMarkerFile().getNextMark( 0, k );
-            while( i != null )
+            effect.setAffected_channels( Arrays.asList( m.getChannel() ) );
+            i.l = m.get_first_marked_sample();
+            i.r = m.get_last_marked_sample() + 1;
+            if( i.l >= start && i.r < end )
             {
-                if( i.l >= start && i.r < end )
+                effect.set_fetch_ratio( Math.max( min_fetch_size / ( interval.get_length() ), min_fetch_ratio ) );
+                try
                 {
-                    effect.set_fetch_ratio( Math.max( min_fetch_size / ( interval.get_length() ), min_fetch_ratio ) );
-                    try
-                    {
-                        effect.apply( dataSource, dataDest, i );
-                    }
-                    catch( DataSourceException ex )
-                    {
-                        ex.printStackTrace();
-                    }
-                    if( i.l / dataSource.get_sample_rate() > second )
-                    {
-                        second = i.l / dataSource.get_sample_rate();
-                        System.out.println( "Processing at second " + second + " on channel " + k );
-                    }
+                    effect.apply( dataSource, dataDest, i );
                 }
-                i = ProjectStatics.getMarkerFile().getNextMark( i.r, k );
+                catch( DataSourceException ex )
+                {
+                    ex.printStackTrace();
+                }
+                if( i.l / dataSource.get_sample_rate() > second )
+                {
+                    second = i.l / dataSource.get_sample_rate();
+                    System.out.println( "Repairing at second " + second );
+                }
             }
         }
     }

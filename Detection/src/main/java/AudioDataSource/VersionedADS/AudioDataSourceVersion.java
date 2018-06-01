@@ -60,7 +60,7 @@ class FileToProjectMapping
 class ProjectFilesManager
 {
     public static String base_path = "C:\\Users\\Alex\\Desktop\\proj_files\\";
-    private static int file_id = 0;
+    private static int file_id = 1;
 
     private static TreeMap< String, List< Integer > > file_references = new TreeMap<>();
 

@@ -427,8 +427,9 @@ public class Main_window
         for( i = 0; i < display_window_size - 1; i++ )
         {
             /* Draw L channel */
-            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( first_sample_index + i, 0 ) )
+            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 0 ) )
             {
+
                 gc.setStroke( Color.RED );
             }
             else
@@ -441,7 +442,7 @@ public class Main_window
                            ( 1 + Math.min( Math.max( -l_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
 
             /* Draw R channel */
-            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( first_sample_index + i, 1 ) )
+            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 1 ) )
             {
                 gc.setStroke( Color.RED );
             }
@@ -669,7 +670,7 @@ public class Main_window
                 if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
                 {
                     final Repair_in_memory effect = ( Repair_in_memory )eff;
-                    effect.setWork_on_high_pass( false );
+                    effect.setWork_on_high_pass( true );
                     effect.setWork_on_position_domain( false );
                     mi.setOnAction( ev ->
                                     {
@@ -807,65 +808,6 @@ public class Main_window
         th.start();
     }
 
-    /*
-    private void interpolate_selection()
-    {
-        int ch, i, len = selection_end_index - selection_start_index;
-        int side_len = Math.min( Math.max( 1024, len ), Math.min( selection_start_index, sample_number - selection_end_index ) );
-        double[] left = new double[ side_len ];
-        double[] center = new double[ len ];
-        double[] right = new double[ side_len  ];
-        AudioSamplesWindow win;
-        for( ch = 0; ch < dataSource.get_channel_number(); ch++ )
-        {
-            try
-            {
-                win = dataSource.get_samples( selection_start_index - side_len, side_len );
-                for( i = 0; i < side_len ; i++ )
-                {
-                    left[ i ] = win.getSample( selection_start_index - side_len + i, ch );
-                }
-                win = dataSource.get_samples( selection_start_index + len, side_len );
-                for( i = 0; i < side_len; i++ )
-                {
-                    right[ i ] = win.getSample( selection_start_index + len + i, ch );
-                }
-
-                LinearPrediction LP = new BurgLP();
-
-                try
-                {
-                    LP.extrapolate( left, center, right, side_len, len, side_len );
-                    if( ch == 0 )
-                    {
-                        for( i = 0; i < len; i++ )
-                        {
-                            l_window[ selection_start_index - first_sample_index + i ] = center[ i ];
-                        }
-                    }
-                    else
-                    {
-                        for( i = 0; i < len; i++ )
-                        {
-                            r_window[ selection_start_index - first_sample_index + i ] = center[ i ];
-                        }
-                    }
-                }
-                catch( DataSourceException e )
-                {
-                    treatException( e );
-                }
-
-                inv_samples = true;
-            }
-            catch( DataSourceException e )
-            {
-                treatException( e );
-            }
-        }
-    }
-    */
-
     private void treatException( Exception e )
     {
         e.printStackTrace();
@@ -919,7 +861,6 @@ public class Main_window
         }
     }
 
-
     private void onDataSourceChanged()
     {
         try
@@ -933,6 +874,12 @@ public class Main_window
             treatException( e );
         }
     }
+
+    private int remap_to_interval( int x, int a1, int b1, int a2, int b2 )
+    {
+        return ( x - a1 ) * ( b2 - a2 ) / ( b1 - a1 ) + a2;
+    }
+
 
 }
 

@@ -34,7 +34,7 @@ public class Repair_in_memory implements IEffect
 
     public Repair_in_memory()
     {
-        this( 2000, 2047, 511, 256, 16 );
+        this( 2000, 2047, 511, 512, 16 );
     }
 
     public Repair_in_memory( int high_pass_frequency, int riaa_filter_length, int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )

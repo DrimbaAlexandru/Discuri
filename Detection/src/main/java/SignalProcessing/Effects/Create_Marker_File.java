@@ -180,7 +180,7 @@ public class Create_Marker_File implements IEffect
 
         int i;
         int temp_len;
-        int chunk_size = 15000;
+        int chunk_size = 44100;
         final int nn_input_size = 129;
         AudioSamplesWindow win;
         MyPair< Integer, double[] > prediction;

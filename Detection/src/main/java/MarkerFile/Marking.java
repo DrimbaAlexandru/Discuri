@@ -47,4 +47,13 @@ public class Marking
     {
         return channel;
     }
+
+    @Override
+    public boolean equals( Object obj )
+    {
+        return ( obj instanceof Marking ) &&
+               ( ( ( Marking )obj ).channel == channel ) &&
+               ( ( ( Marking )obj ).lms == lms ) &&
+               ( ( ( Marking )obj ).fms == fms );
+    }
 }

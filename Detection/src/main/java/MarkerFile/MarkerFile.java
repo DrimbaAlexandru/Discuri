@@ -1,5 +1,6 @@
 package MarkerFile;
 
+import Utils.DataStructures.OrderedNonOverlappingIntervalSet;
 import Utils.Interval;
 
 import java.io.*;
@@ -11,90 +12,61 @@ import java.util.*;
  */
 public class MarkerFile
 {
-    private TreeMap< Integer, Marking > l_markings;
-    private TreeMap< Integer, Marking > r_markings;
+    private OrderedNonOverlappingIntervalSet ch0_markings = new OrderedNonOverlappingIntervalSet();
+    private OrderedNonOverlappingIntervalSet ch1_markings = new OrderedNonOverlappingIntervalSet();
     private String path;
 
     public MarkerFile( String filePath )
     {
         path = filePath;
-        l_markings = new TreeMap<>();
-        r_markings = new TreeMap<>();
     }
 
     public void addMark( int fms, int lms, int ch )
     {
-        deleteMark( fms, lms, ch );
-        TreeMap< Integer, Marking > map = ( ch == 0 ? l_markings : r_markings );
-        Marking tbm = ( map.floorKey( fms ) != null ) ? map.floorEntry( fms ).getValue() : null;
-        boolean update_existing = false;
-
-        if( ( tbm != null ) && ( tbm.get_last_marked_sample() >= fms - 1 ) )
+        switch( ch )
         {
-            tbm.set_last_marked_sample( lms );
-            update_existing = true;
-        }
-        else
-        {
-            tbm = new Marking( fms, lms, ch );
-        }
-
-        Marking last = ( map.ceilingKey( lms ) ) != null ? map.ceilingEntry( lms ).getValue() : null;
-        if( ( last != null ) && ( last.get_first_marked_sample() == lms + 1 ) )
-        {
-            tbm.set_last_marked_sample( last.get_last_marked_sample() );
-            map.remove( last.get_first_marked_sample() );
-        }
-
-        if( !update_existing )
-        {
-            map.put( tbm.get_first_marked_sample(), tbm );
+            case 0:
+                ch0_markings.add( new Interval( fms, lms + 1, false ) );
+                break;
+            case 1:
+                ch1_markings.add( new Interval( fms, lms + 1, false ) );
+                break;
         }
     }
 
     public void deleteMark( int fms, int lms, int ch )
     {
-        TreeMap< Integer, Marking > map = ( ch == 0 ? l_markings : r_markings );
-        List< Integer > keys_tbd = new ArrayList<>();
-        Marking tba = null;
-        for( Marking m : map.values() )
+        switch( ch )
         {
-            if( ( m.get_last_marked_sample() >= fms ) && ( m.get_first_marked_sample() <= lms ) ) //contains samples to be unmarked
-            {
-                if( m.get_last_marked_sample() > lms )
-                {
-                    tba = new Marking( lms + 1, m.get_last_marked_sample(),ch );
-                }
-                if( m.get_first_marked_sample() < fms )
-                {
-                    m.set_last_marked_sample( fms - 1 );
-                }
-                else
-                {
-                    keys_tbd.add( m.get_first_marked_sample() );
-                }
-            }
+            case 0:
+                ch0_markings.remove( new Interval( fms, lms + 1, false ) );
+                break;
+            case 1:
+                ch1_markings.remove( new Interval( fms, lms + 1, false ) );
+                break;
         }
-        for( int k : keys_tbd )
-        {
-            map.remove( k );
-        }
-        if( tba != null )
-        {
-            map.put( tba.get_first_marked_sample(), tba );
-        }
-
     }
 
     public void writeMarkingsToFile( OutputStreamWriter o ) throws IOException
     {
-        for( Marking m : l_markings.values() )
+        Interval i;
+        ch0_markings.moveCursorOnFirst();
+        ch1_markings.moveCursorOnFirst();
+
+        i = ch0_markings.getCurrent();
+        while( i != null )
         {
-            o.write( "ch0 " + m.get_first_marked_sample() + " " + m.get_last_marked_sample() + "\r\n" );
+            o.write( "ch0 " + i.l + " " + ( i.r - 1 ) + "\r\n" );
+            ch0_markings.moveCursorNext();
+            i = ch0_markings.getCurrent();
         }
-        for( Marking m : r_markings.values() )
+
+        i = ch1_markings.getCurrent();
+        while( i != null )
         {
-            o.write( "ch1 " + m.get_first_marked_sample() + " " + m.get_last_marked_sample() + "\r\n" );
+            o.write( "ch1 " + i.l + " " + ( i.r - 1 ) + "\r\n" );
+            ch1_markings.moveCursorNext();
+            i = ch1_markings.getCurrent();
         }
         o.close();
     }
@@ -122,11 +94,11 @@ public class MarkerFile
                 lmi = sc.nextInt();
                 if( line.charAt( 2 ) == '0' )
                 {
-                    mf.l_markings.put( fmi, new Marking( fmi, lmi, 0 ) );
+                    mf.addMark( fmi, lmi, 0 );
                 }
                 else
                 {
-                    mf.r_markings.put( fmi, new Marking( fmi, lmi, 1 ) );
+                    mf.addMark( fmi, lmi, 1 );
                 }
                 line = sc.nextLine();
 
@@ -140,53 +112,98 @@ public class MarkerFile
         return mf;
     }
 
+
     public Interval getNextMark( int current_index, int channel )
     {
-        Marking mark = null;
-        Map.Entry< Integer, Marking > entry;
-        TreeMap< Integer, Marking > markings;
+        OrderedNonOverlappingIntervalSet set;
         switch( channel )
         {
             case 0:
-                markings = l_markings;
+                set = ch0_markings;
                 break;
             case 1:
-                markings = r_markings;
+                set = ch1_markings;
                 break;
             default:
                 return null;
         }
 
-        entry = markings.ceilingEntry( current_index );
-        if( entry != null )
-        {
-            return new Interval( entry.getValue().get_first_marked_sample(), entry.getValue().get_last_marked_sample() - entry.getValue().get_first_marked_sample() + 1 );
-        }
-        else
-        {
-            return null;
-        }
+        set.moveCursorOnOrAfter( current_index );
+        return set.getCurrent();
     }
 
-    public boolean isMarked( int sample, int ch )
+
+    public OrderedNonOverlappingIntervalSet getCopy( int ch )
     {
-        Map.Entry< Integer, Marking > entry = ( ch == 0 ) ? l_markings.floorEntry( sample ) : r_markings.floorEntry( sample );
-        return ( ( entry != null ) && ( entry.getValue().get_first_marked_sample() <= sample ) && ( entry.getValue().get_last_marked_sample() >= sample ) );
+        switch( ch )
+        {
+            case 0:
+                return ch0_markings.Clone();
+
+            case 1:
+                return ch1_markings.Clone();
+
+            default:
+                return null;
+        }
     }
 
     public List< Marking > get_all_markings( Interval interval )
     {
         List< Marking > markings = new ArrayList< Marking >();
-        for( TreeMap< Integer, Marking > map : new TreeMap[]{ l_markings, r_markings } )
+
+        OrderedNonOverlappingIntervalSet set1,set2;
+        set1 = ch0_markings.Clone();
+        set2 = ch1_markings.Clone();
+        set1.moveCursorOnOrAfter( interval.l );
+        set2.moveCursorOnOrAfter( interval.l );
+
+        Interval ch0 = set1.getCurrent(), ch1 = set2.getCurrent();
+
+        while( ch0 != null || ch1 != null )
         {
-            Map.Entry< Integer, Marking > entry = map.ceilingEntry( interval.l );
-            while( entry != null && entry.getValue().get_last_marked_sample() < interval.r )
+            if( ch0 == null || ( ch1 != null && ch0.l > ch1.l ) )
             {
-                markings.add( new Marking( entry.getValue().get_first_marked_sample(), entry.getValue().get_last_marked_sample(), entry.getValue().getChannel() ) );
-                entry = map.ceilingEntry( entry.getValue().get_last_marked_sample() + 1 );
+                markings.add( new Marking( ch1.l, ch1.r - 1, 1 ) );
+                set2.moveCursorNext();
+                ch1 = set2.getCurrent();
+                if( ch1 != null && ch1.l >= interval.r )
+                {
+                    ch1 = null;
+                }
+                continue;
+            }
+
+            if( ch1 == null || ( ch0 != null && ch0.l <= ch1.l ) )
+            {
+                markings.add( new Marking( ch0.l, ch0.r - 1, 0 ) );
+                set1.moveCursorNext();
+                ch0 = set1.getCurrent();
+                if( ch0 != null && ch0.l >= interval.r )
+                {
+                    ch0 = null;
+                }
+                continue;
             }
         }
+
         return markings;
     }
 
+    public boolean isMarked( int sample, int ch )
+    {
+        switch( ch )
+        {
+            case 0:
+                ch0_markings.moveCursorOnOrAfter( sample );
+                return ch0_markings.getCurrent() != null && ch0_markings.getCurrent().contains( sample );
+
+            case 1:
+                ch1_markings.moveCursorOnOrAfter( sample );
+                return ch1_markings.getCurrent() != null && ch1_markings.getCurrent().contains( sample );
+
+            default:
+                return false;
+        }
+    }
 }
