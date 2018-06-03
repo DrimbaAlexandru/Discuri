@@ -249,6 +249,9 @@ public class WAVFileAudioSource implements IFileAudioDataSource
     @Override
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
+        first_sample_index = Math.min( first_sample_index, get_sample_number() );
+        length = Math.min( length, sample_number - first_sample_index );
+
         double data[][] = new double[ channel_number ][ length ];
         int i, k;
         int buffer_position = 0, read_bytes = 0;
@@ -426,4 +429,20 @@ public class WAVFileAudioSource implements IFileAudioDataSource
         return file_path;
     }
 
+    @Override
+    public void limit_sample_number( int sample_number ) throws DataSourceException
+    {
+
+        if( sample_number < get_sample_number() )
+        {
+            this.sample_number = sample_number;
+            writeHeader();
+            try{
+            file.setLength( data_chunk_offset + this.sample_number * channel_number * byte_depth );}
+            catch( IOException e ){
+                throw new DataSourceException( DataSourceExceptionCause.IO_ERROR );
+            }
+
+        }
+    }
 }

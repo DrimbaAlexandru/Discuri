@@ -176,6 +176,9 @@ public class AUFileAudioSource implements IFileAudioDataSource
     @Override
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
+        first_sample_index = Math.min( first_sample_index, get_sample_number() );
+        length = Math.min( length, sample_number - first_sample_index );
+
         double data[][] = new double[ channel_number ][ length ];
         int i, k;
         int buffer_position = 0, read_bytes = 0;
