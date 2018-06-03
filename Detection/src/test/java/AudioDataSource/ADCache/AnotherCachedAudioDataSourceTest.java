@@ -5,6 +5,7 @@ import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import ProjectStatics.ProjectStatics;
 import Utils.Interval;
+import Utils.Utils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,11 +14,7 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.Random;
-
-import static java.nio.file.Files.deleteIfExists;
-import static org.junit.Assert.*;
 
 /**
  * Created by Alex on 03.06.2018.
@@ -68,7 +65,7 @@ public class AnotherCachedAudioDataSourceTest
     @Test
     public void get_channel_number() throws Exception
     {
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, 1000, 100 );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, 1000, 100 );
         Assert.assertEquals( dataSource.get_channel_number(), cache.get_channel_number() );
         cache.flushAll();
     }
@@ -76,7 +73,7 @@ public class AnotherCachedAudioDataSourceTest
     @Test
     public void get_sample_number() throws Exception
     {
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, 1000, 100 );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, 1000, 100 );
         Assert.assertEquals( dataSource.get_sample_number(), cache.get_sample_number() );
         cache.flushAll();
     }
@@ -84,7 +81,7 @@ public class AnotherCachedAudioDataSourceTest
     @Test
     public void get_sample_rate() throws Exception
     {
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, 1000, 100 );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, 1000, 100 );
         Assert.assertEquals( dataSource.get_sample_rate(), cache.get_sample_rate() );
         cache.flushAll();
     }
@@ -93,7 +90,7 @@ public class AnotherCachedAudioDataSourceTest
     public void get_samples_test_1() throws Exception
     {
         int i;
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow win, win2;
 
         rewrite_temp_file();
@@ -123,7 +120,7 @@ public class AnotherCachedAudioDataSourceTest
     public void get_samples_test_2() throws Exception
     {
         int i;
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow win, win2;
 
         rewrite_temp_file();
@@ -153,7 +150,7 @@ public class AnotherCachedAudioDataSourceTest
     public void get_samples_test_3() throws Exception
     {
         int i;
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow win, win2;
 
         rewrite_temp_file();
@@ -185,7 +182,7 @@ public class AnotherCachedAudioDataSourceTest
         page_size = 100;
         nr_of_pages = 10;
         int i;
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow win, win2;
 
         rewrite_temp_file();
@@ -229,7 +226,7 @@ public class AnotherCachedAudioDataSourceTest
     {
         int i;
         Interval interval;
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow win, win2;
 
         rewrite_temp_file();
@@ -266,7 +263,7 @@ public class AnotherCachedAudioDataSourceTest
         int i, k;
         double val;
         double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow win, winDS, win2write, winC;
 
         rewrite_temp_file();
@@ -318,7 +315,7 @@ public class AnotherCachedAudioDataSourceTest
         int i, k;
         double val;
         double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow winDS_orig, winDS, win2write, winC;
 
         rewrite_temp_file();
@@ -401,7 +398,7 @@ public class AnotherCachedAudioDataSourceTest
         int i, k;
         double val;
         double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
-        AnotherCachedAudioDataSource cache = new AnotherCachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow winDS_orig, winDS, win2write, winC;
 
         rewrite_temp_file();
@@ -457,4 +454,71 @@ public class AnotherCachedAudioDataSourceTest
         }
     }
 
+    @Test
+    public void put_samples_test_4() throws Exception
+    {
+        nr_of_pages = 0;
+        rewrite_temp_file();
+        nr_of_pages = 5;
+        int i, k;
+        double val;
+        double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
+        CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
+        AudioSamplesWindow winDS_orig, winDS, win2write, winC;
+
+        cache.setDataSource( dataSource );
+
+        for( k = 0; k < dataSource.get_channel_number(); k++ )
+        {
+            val = new Random().nextDouble() - 0.5;
+            for( i = 0; i < page_size + 1; i++ )
+            {
+                samples2write[ k ][ i ] = val;
+            }
+        }
+        win2write = new AudioSamplesWindow( samples2write, page_size, page_size + 1, dataSource.get_channel_number() );
+
+        Assert.assertEquals( dataSource.get_sample_number(), 0 );
+        Assert.assertEquals( cache.get_sample_number(), 0 );
+
+        cache.put_samples( win2write );
+
+        Assert.assertEquals( cache.get_sample_number(), 2 * page_size + 1 );
+        Assert.assertEquals( dataSource.get_sample_number(), 0 );
+
+        winC = cache.get_samples( 0, cache.get_sample_number() );
+        Assert.assertEquals( winC.get_length(), 2 * page_size + 1 );
+
+        boolean equals = true;
+        for( k = 0; k < dataSource.get_channel_number(); k++ )
+        {
+            for( i = 0; i < page_size; i++ )
+            {
+                equals = equals && ( winC.getSample( i, k ) == 0 );
+            }
+            for( i = page_size; i < page_size * 2 + 1; i++ )
+            {
+                equals = equals && ( winC.getSample( i, k ) == win2write.getSample( i, k ) );
+            }
+        }
+        Assert.assertTrue( equals );
+
+        cache.flushAll();
+
+        winDS = dataSource.get_samples( 0, dataSource.get_sample_number() );
+        Assert.assertEquals( dataSource.get_sample_number(), 2 * page_size + 1 );
+
+        for( k = 0; k < dataSource.get_channel_number(); k++ )
+        {
+            for( i = 0; i < page_size; i++ )
+            {
+                equals = equals && ( winDS.getSample( i, k ) == 0 );
+            }
+            for( i = page_size; i < page_size * 2 + 1; i++ )
+            {
+                equals = equals && ( Math.abs( winDS.getSample( i, k ) - win2write.getSample( i, k ) ) < 6e-5 );
+            }
+        }
+        Assert.assertTrue( equals );
+    }
 }

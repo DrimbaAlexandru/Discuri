@@ -192,7 +192,7 @@ public class Main_window
         try
         {
             ProjectStatics.loadAudioFile( raw_wav_filepath );
-            dataSource = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(), 44100, 512 );
+            dataSource = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(), ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
             window_size = Math.min( window_size, dataSource.get_sample_number() );
         }
         catch( Exception e )

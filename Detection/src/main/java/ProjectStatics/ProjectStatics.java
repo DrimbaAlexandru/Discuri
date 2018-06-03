@@ -33,6 +33,7 @@ public class ProjectStatics
     private static String python_classifier_script_path = "D:\\git\\Licenta\\Discuri\\mlp_prediction_server.py";
     private static String python_classifier_mlp_path = "D:\\git\\Licenta\\Discuri\\pickle.jar";
     private static String python_classifier_scaler_path = "D:\\git\\Licenta\\Discuri\\pickle4scale.jar";
+    private static String project_files_path = "C:\\Users\\Alex\\Desktop\\proj_files\\";
 
     public static void loadAudioFile( String filePath ) throws DataSourceException
     {
@@ -112,5 +113,10 @@ public class ProjectStatics
     public static String getPython_classifier_scaler_path()
     {
         return python_classifier_scaler_path;
+    }
+
+    public static String getProject_files_path()
+    {
+        return project_files_path;
     }
 }

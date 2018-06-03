@@ -8,6 +8,7 @@ import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
+import ProjectStatics.ProjectStatics;
 import Utils.Interval;
 
 import java.io.File;
@@ -59,7 +60,8 @@ class FileToProjectMapping
 
 class ProjectFilesManager
 {
-    public static String base_path = "C:\\Users\\Alex\\Desktop\\proj_files\\";
+    public static String base_path = ProjectStatics.getProject_files_path();
+
     private static int file_id = 1;
 
     private static TreeMap< String, List< Integer > > file_references = new TreeMap<>();
@@ -329,6 +331,10 @@ public class AudioDataSourceVersion implements IAudioDataSource
     {
         double buf[][] = null;
         int i, j, k;
+
+        first_sample_index = Math.min( first_sample_index, get_sample_number() );
+        length = Math.min( length, get_sample_number() - first_sample_index );
+
         for( i = 0; i < length; )
         {
             FileToProjectMapping map = get_mapping( i + first_sample_index );

@@ -4,21 +4,23 @@ import AudioDataSource.Exceptions.DataSourceException;
 import AudioDataSource.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
 
+import java.util.Arrays;
+
 /**
- * Created by Alex on 06.12.2017.
+ * Created by Alex on 03.06.2018.
  */
 public class CachedAudioDataSource implements IAudioDataSource
 {
     private AudioDataCache cache;
     private IAudioDataSource dataSource;
-    private int max_cache_page_size;
+    private int cache_page_size;
     private int sample_number = 0;
 
     public CachedAudioDataSource( IAudioDataSource dataSource, int max_cached_samples, int max_cache_page_size )
     {
         this.dataSource = dataSource;
         cache = new AudioDataCache( max_cached_samples * dataSource.get_channel_number() );
-        this.max_cache_page_size = Math.min( max_cache_page_size, max_cached_samples );
+        this.cache_page_size = Math.min( max_cache_page_size, max_cached_samples );
         sample_number = dataSource.get_sample_number();
     }
 
@@ -40,90 +42,63 @@ public class CachedAudioDataSource implements IAudioDataSource
         return dataSource.get_sample_rate();
     }
 
-    private AudioSamplesWindow cache_samples( int first_sample_index, int length, boolean build_window ) throws DataSourceException
+    private AudioSamplesWindow get_cached_page( int any_sample_in_page ) throws DataSourceException
     {
-        double samples[][] = null;
-        if( build_window )
+        int page_nr = any_sample_in_page / cache_page_size;
+        AudioSamplesWindow win = cache.getCacheWindow( any_sample_in_page );
+        if( win == null )
         {
-            samples = new double[ get_channel_number() ][ length ];
-        }
-        int i, j, k;
-        int temp_length;
-        int fetch_size;
-        AudioSamplesWindow win;
-        int cacheLastSampleIndex;
-
-        length = Math.min( length, get_sample_number() - first_sample_index );
-
-        for( i = 0; i < length; )
-        {
-            win = cache.getCacheWindow( i + first_sample_index );
-            if( win == null )
+            win = dataSource.get_samples( page_nr * cache_page_size, cache_page_size );
+            if( win.get_capacity() < cache_page_size )
             {
-                cacheLastSampleIndex = cache.getNextCachedSampleIndex( i + first_sample_index );
-                cacheLastSampleIndex = ( cacheLastSampleIndex < 0 ) ? get_sample_number() : cacheLastSampleIndex;
-                temp_length = Math.min( cacheLastSampleIndex - i - first_sample_index, length - i );
-                //temp_length = ( temp_length < 0 ) ? length - i : temp_length;
-                temp_length = ( temp_length > max_cache_page_size ) ? max_cache_page_size : temp_length;
-                fetch_size = Math.min( max_cache_page_size, cacheLastSampleIndex - i - first_sample_index );
-
-                win = dataSource.get_samples( i + first_sample_index, fetch_size );
-                if( win.get_length() < max_cache_page_size && cacheLastSampleIndex == get_sample_number() )
+                double[][] samples = new double[ get_channel_number() ][ cache_page_size ];
+                int k, i;
+                for( k = 0; k < get_channel_number(); k++ )
                 {
-                    double newbuffer[][] = new double[ get_channel_number() ][ max_cache_page_size ];
-                    for( k = 0; k < get_channel_number(); k++ )
+                    for( i = 0; i < win.get_length(); i++ )
                     {
-                        for( j = 0; j < win.get_length(); j++ )
-                        {
-                            newbuffer[ k ][ j ] = win.getSamples()[ k ][ j ];
-                        }
-                    }
-                    win = new AudioSamplesWindow( newbuffer, win.get_first_sample_index(), win.get_length(), win.get_channel_number() );
-                }
-                cache_samples( win );
-
-                if( build_window )
-                {
-                    for( k = 0; k < get_channel_number(); k++ )
-                    {
-                        for( j = 0; j < temp_length; j++ )
-                        {
-                            samples[ k ][ i + j ] = win.getSample( i + j + first_sample_index, k );
-                        }
+                        samples[ k ][ i ] = win.getSamples()[ k ][ i ];
                     }
                 }
-                i += temp_length;
+                win = new AudioSamplesWindow( samples, page_nr * cache_page_size, Math.max( 0, Math.min( cache_page_size, sample_number - page_nr * cache_page_size ) ), win.get_channel_number() );
             }
-            else
-            {
-                temp_length = Math.min( length - i, win.get_length() - i - first_sample_index + win.get_first_sample_index() );
-                if( build_window )
-                {
-                    for( k = 0; k < get_channel_number(); k++ )
-                    {
-                        for( j = 0; j < temp_length; j++ )
-                        {
-                            samples[ k ][ i + j ] = win.getSample( i + j + first_sample_index, k );
-                        }
-                    }
-                }
-                i += temp_length;
-            }
-        }
-        if( build_window )
-        {
-            return new AudioSamplesWindow( samples, first_sample_index, length, get_channel_number() );
+            cache_window( win );
+            return cache.getCacheWindow( any_sample_in_page );
         }
         else
         {
-            return null;
+            if( win.get_first_sample_index() != page_nr * cache_page_size || win.get_capacity() != cache_page_size )
+            {
+                throw new DataSourceException( "Cache page doesn't have the expected interval/capacity", DataSourceExceptionCause.INVALID_STATE );
+            }
+            return win;
         }
     }
+
 
     @Override
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
-        return cache_samples( first_sample_index, length, true );
+        int i, j, k, end;
+        first_sample_index = Math.min( first_sample_index, get_sample_number() );
+        length = Math.min( length, get_sample_number() - first_sample_index );
+        double[][] samples = new double[ get_channel_number() ][ length ];
+        AudioSamplesWindow win;
+
+        for( i = first_sample_index; i < first_sample_index + length; )
+        {
+            win = get_cached_page( i );
+            end = Math.min( first_sample_index + length, win.get_after_last_sample_index() );
+            for( k = 0; k < get_channel_number(); k++ )
+            {
+                for( j = i; j < end; j++ )
+                {
+                    samples[ k ][ j - first_sample_index ] = win.getSample( j, k );
+                }
+            }
+            i = end;
+        }
+        return new AudioSamplesWindow( samples, first_sample_index, length, get_channel_number() );
     }
 
     public AudioSamplesWindow get_resized_samples( int first_sample_index, int length, int resized_length ) throws DataSourceException
@@ -191,63 +166,28 @@ public class CachedAudioDataSource implements IAudioDataSource
     @Override
     public void put_samples( AudioSamplesWindow new_samples ) throws DataSourceException
     {
-        int i, j, k;
+        int i, j, k, last;
         int temp_length;
         AudioSamplesWindow win;
 
-        for( i = 0; i < new_samples.get_length(); )
+        for( i = new_samples.get_first_sample_index(); i < new_samples.get_after_last_sample_index(); )
         {
-            win = cache.getCacheWindow( i + new_samples.get_first_sample_index() );
-            if( win == null )
+            win = get_cached_page( i );
+            last = Math.min( win.get_first_sample_index() + win.get_capacity(), new_samples.get_after_last_sample_index() );
+            if( last > win.get_after_last_sample_index() )
             {
-                cache_samples( i + new_samples.get_first_sample_index(), 1, false );
+                win.set_length( last - win.get_first_sample_index() );
             }
-            win = cache.getCacheWindow( i + new_samples.get_first_sample_index() );
-            if( win == null )
+            for( k = 0; k < get_channel_number(); k++ )
             {
-                if( i + new_samples.get_first_sample_index() == get_sample_number() )
+                for( j = i; j < last; j++ )
                 {
-                    double samples[][] = new double[ new_samples.get_channel_number() ][ max_cache_page_size ];
-                    temp_length = Math.min( max_cache_page_size, new_samples.get_length() - i );
-                    for( k = 0; k < get_channel_number(); k++ )
-                    {
-                        for( j = 0; j < temp_length; j++ )
-                        {
-                            samples[ k ][ j ] = new_samples.getSample( i + j + new_samples.get_first_sample_index(), k );
-                        }
-                    }
-                    win = new AudioSamplesWindow( samples, new_samples.get_first_sample_index() + i, temp_length, new_samples.get_channel_number() );
-                    win.markModified();
-                    cache_samples( win );
-                    i += temp_length;
-                }
-                else
-                {
-                    throw new DataSourceException( "This should never happen", DataSourceExceptionCause.THIS_SHOULD_NEVER_HAPPEN );
+                    win.putSample( j, k, new_samples.getSample( j, k ) );
                 }
             }
-            else
-            {
-                temp_length = Math.min( new_samples.get_length() - i, win.get_capacity() + win.get_first_sample_index() - ( new_samples.get_first_sample_index() + i ) );
-                int max_put = i + temp_length + new_samples.get_first_sample_index();
-                if( max_put > win.get_after_last_sample_index() )
-                {
-                    win.set_length( max_put - win.get_first_sample_index() );
-                }
-
-                for( k = 0; k < get_channel_number(); k++ )
-                {
-                    for( j = 0; j < temp_length; j++ )
-                    {
-                        win.putSample( j + i + new_samples.get_first_sample_index(), k, new_samples.getSample( i + j + new_samples.get_first_sample_index(), k ) );
-                    }
-                }
-
-                i += temp_length;
-            }
-            sample_number = Math.max( sample_number, new_samples.get_first_sample_index() + i );
+            i = last;
+            sample_number = Math.max( sample_number, i );
         }
-
     }
 
     @Override
@@ -275,7 +215,7 @@ public class CachedAudioDataSource implements IAudioDataSource
         sample_number = dataSource.get_sample_number();
     }
 
-    private void cache_samples( AudioSamplesWindow win ) throws DataSourceException
+    private void cache_window( AudioSamplesWindow win ) throws DataSourceException
     {
         boolean succeeded = false;
         while( !succeeded )
@@ -294,12 +234,8 @@ public class CachedAudioDataSource implements IAudioDataSource
                         if( cache.getOldestUsedCache().isModified() )
                         {
                             flush( cache.getOldestUsedCache() );
-                            cache.freeOldestCache();
                         }
-                        else
-                        {
-                            cache.freeOldestCache();
-                        }
+                        cache.freeOldestCache();
                         break;
                     }
                     default:
@@ -331,8 +267,7 @@ public class CachedAudioDataSource implements IAudioDataSource
         {
             invalidateCache();
             this.dataSource = dataSource;
-            sample_number = dataSource.get_sample_number();
         }
-
+        sample_number = dataSource.get_sample_number();
     }
 }
