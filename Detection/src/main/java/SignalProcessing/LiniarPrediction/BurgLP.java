@@ -1,7 +1,7 @@
 package SignalProcessing.LiniarPrediction;
 
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.Windowing.Windowing;
 
 import java.util.function.Function;

@@ -1,7 +1,7 @@
 package SignalProcessing.Effects;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 import AudioDataSource.IAudioDataSource;
 import Utils.Interval;
 

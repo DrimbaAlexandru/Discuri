@@ -91,4 +91,63 @@ public class Utils
         System.out.println( "plot( t1, in, 'LineWidth', 1, ...\n t2, out, 'LineWidth', 1 );" );
         System.out.println( "legend( 'original signal', 'resized signal' );" );
     }
+
+    public static void plot_in_matlab( double[] xs, double[] ys, int n )
+    {
+        int i;
+        System.out.print( "xs = [ " );
+        for( i = 0; i < n - 1; i++ )
+        {
+            System.out.print( xs[ i ] + ", " );
+        }
+        System.out.println( xs[ n - 1 ] + " ];" );
+
+        System.out.print( "ys = [ " );
+        for( i = 0; i < n - 1; i++ )
+        {
+            System.out.print( ys[ i ] + ", " );
+        }
+        System.out.println( ys[ n - 1 ] + " ];" );
+        System.out.println( "plot( xs, ys, '-o' );" );
+    }
+
+    public static void plot_in_matlab( double[] orig_f_xs, double[] orig_f_ys, int orig_f_len,double[] new_xs, double[] new_ys, int new_len )
+    {
+        int i;
+        System.out.print( "orig_f_xs = [ " );
+        for( i = 0; i < orig_f_len - 1; i++ )
+        {
+            System.out.print( orig_f_xs[ i ] + ", " );
+        }
+        System.out.println( orig_f_xs[ orig_f_len - 1 ] + " ];" );
+
+        System.out.print( "orig_f_ys = [ " );
+        for( i = 0; i < orig_f_len - 1; i++ )
+        {
+            System.out.print( orig_f_ys[ i ] + ", " );
+        }
+        System.out.println( orig_f_ys[ orig_f_len - 1 ] + " ];" );
+
+        System.out.print( "new_xs = [ " );
+        for( i = 0; i < new_len - 1; i++ )
+        {
+            System.out.print( new_xs[ i ] + ", " );
+        }
+        System.out.println( new_xs[ new_len - 1 ] + " ];" );
+
+        System.out.print( "new_ys = [ " );
+        for( i = 0; i < new_len - 1; i++ )
+        {
+            System.out.print( new_ys[ i ] + ", " );
+        }
+        System.out.println( new_ys[ new_len - 1 ] + " ];" );
+        if( new_len > orig_f_len )
+        {
+            System.out.println( "plot( orig_f_xs, orig_f_ys, '-o', new_xs, new_ys );" );
+        }
+        else
+        {
+            System.out.println( "plot( orig_f_xs, orig_f_ys, new_xs, new_ys, '-o' );" );
+        }
+    }
 }

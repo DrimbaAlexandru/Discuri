@@ -1,12 +1,6 @@
 package ProjectStatics;
 
-import AudioDataSource.ADCache.CachedAudioDataSource;
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
-import AudioDataSource.FileADS.FileAudioSourceFactory;
-import AudioDataSource.FileADS.IFileAudioDataSource;
-import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.IAudioDataSource;
+import Exceptions.DataSourceException;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import MarkerFile.MarkerFile;
 import SignalProcessing.Effects.IEffect;

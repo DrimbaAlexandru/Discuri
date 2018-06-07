@@ -1,6 +1,6 @@
 package AudioDataSource.VersionedADS;
 
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 
 import java.util.ArrayList;
 import java.util.List;

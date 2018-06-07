@@ -1,14 +1,14 @@
 package AudioDataSource.ADCache;
 
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
 import java.util.function.Function;
 
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
+import static Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
+import static Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
 
 /**
  * Created by Alex on 10.09.2017.

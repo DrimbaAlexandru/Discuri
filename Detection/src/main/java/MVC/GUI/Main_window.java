@@ -3,7 +3,7 @@ package MVC.GUI;
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Cached_ADS_Manager;
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.ADS_Utils;

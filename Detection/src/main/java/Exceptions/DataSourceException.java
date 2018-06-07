@@ -1,6 +1,6 @@
-package AudioDataSource.Exceptions;
+package Exceptions;
 
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.GENERIC_ERROR;
+import static Exceptions.DataSourceExceptionCause.GENERIC_ERROR;
 
 /**
  * Created by Alex on 08.12.2017.

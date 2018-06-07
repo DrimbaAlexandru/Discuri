@@ -1,7 +1,7 @@
 package SignalProcessing.Interpolation;
 
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Complex;
 
@@ -30,7 +30,7 @@ public class FFTInterpolator implements Interpolator
         }
     }
 
-    public void upsample( double[] in, int n, double[] out, int m ) throws DataSourceException
+    private void upsample( double[] in, int n, double[] out, int m ) throws DataSourceException
     {
         if( in.length < n || out.length < m || !is_power_of_two( ( double )( m - 1 ) / ( n - 1 ) ) )
         {

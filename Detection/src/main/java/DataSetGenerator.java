@@ -1,10 +1,7 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.ADCache.CachedAudioDataSource;
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
-import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.IAudioDataSource;
 import MarkerFile.MarkerFile;
 import Utils.Interval;
 
@@ -21,9 +18,9 @@ public class DataSetGenerator
 {
     public static void main( String[] args )
     {
-        final String WAVFilePath = "D:\\datasets\\Chopin - Etude op. 25 no. 11 inv riaa.wav";
-        final String MarkerFilePath = "D:\\teste procesare audio\\chopin m3 0.015.txt";
-        final String DataSetFile = "D:\\datasets\\dataset_chopin inv riaa class 0.txt";
+        final String WAVFilePath = "C:\\Users\\Alex\\Desktop\\Beethoven - Quartet no 4 - IV frg pre RIAA re-refined 2.wav";
+        final String MarkerFilePath = "C:\\Users\\Alex\\Desktop\\Beethoven - Quartet no 4 mark from residue.txt";
+        final String DataSetFile = "D:\\datasets\\dataset_beethovem inv riaa.txt";
 
         final int window_size = 129;
         final int near_window_size = 32;
@@ -46,7 +43,7 @@ public class DataSetGenerator
             Interval prev_mark;
 
             //for( i = 0; i < dataSource.get_sample_number() - window_size; )
-            for( i = ( 5 * 60 + 55 ) * dataSource.get_sample_rate(); i < dataSource.get_sample_number() - window_size; )
+            for( i = ( 18 ) * dataSource.get_sample_rate(); i < ( 29 ) * dataSource.get_sample_rate() - window_size; )
             {
                 win = dataSource.get_samples( i, Math.min( fetch_size, dataSource.get_sample_number() - i ) );
 

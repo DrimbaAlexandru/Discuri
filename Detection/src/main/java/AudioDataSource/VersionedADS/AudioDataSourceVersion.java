@@ -3,8 +3,8 @@ package AudioDataSource.VersionedADS;
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.Cached_ADS_Manager;
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
+import static Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static java.nio.file.Files.deleteIfExists;
 import static java.nio.file.Files.write;
 

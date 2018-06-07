@@ -1,7 +1,7 @@
 package SignalProcessing.Filters;
 
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import Utils.Interval;
 
 /**

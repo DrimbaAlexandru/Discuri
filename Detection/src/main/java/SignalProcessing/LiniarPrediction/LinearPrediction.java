@@ -1,6 +1,6 @@
 package SignalProcessing.LiniarPrediction;
 
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 
 /**
  * Created by Alex on 10.11.2017.

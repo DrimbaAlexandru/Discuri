@@ -1,8 +1,8 @@
 package SignalProcessing.Effects;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.MemoryADS.SingleBlockADS;
 import MarkerFile.Marking;
@@ -155,7 +155,7 @@ public class Repair_in_memory implements IEffect
 
                 if( prediction_required_interval.l < 0 || prediction_required_interval.r > dataSource.get_sample_number() )
                 {
-                    throw new DataSourceException( "Not enough samples for linear prediction", DataSourceExceptionCause.NOT_ENOUGH_LIN_PREDICT );
+                    throw new DataSourceException( "Not enough samples for linear prediction", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
                 }
                 if( repair_interval.get_length() > max_repair_size )
                 {
@@ -343,7 +343,7 @@ public class Repair_in_memory implements IEffect
             {
                 switch( ex.getDSEcause() )
                 {
-                    case NOT_ENOUGH_LIN_PREDICT:
+                    case INTERPOLATION_EXCEPTION:
                     case WARNING:
                         ex.printStackTrace();
                         break;

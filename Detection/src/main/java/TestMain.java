@@ -1,19 +1,21 @@
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
 import AudioDataSource.ADS_Utils;
-import AudioDataSource.Cached_ADS_Manager;
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
+import SignalProcessing.FunctionApproximation.FourierInterpolator;
+import SignalProcessing.FunctionApproximation.FunctionApproximation;
 import SignalProcessing.Interpolation.Interpolator;
 import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 
 import java.io.*;
+import java.util.function.Function;
 
 import static Utils.Utils.plot_in_matlab;
 
@@ -239,7 +241,7 @@ public class TestMain {
         System.out.println( "Duration: " + ( end_time - start_time ) + " ms" );
     }
 
-    public static void main( String[] args )
+    public static void main10( String[] args )
     {
         try
         {
@@ -279,5 +281,61 @@ public class TestMain {
         {
             e.printStackTrace();
         }
+    }
+
+    public static void main( String[] args )
+    {
+        Function<Double,Double> func=new Function< Double, Double >()
+        {
+            @Override
+            public Double apply( Double aDouble )
+            {
+                return Math.sin( ( aDouble + 0.125 ) * 2 * Math.PI ) * 0.5 + Math.sin( ( aDouble - 0.375 ) * 2 * Math.PI * 2 ) * 0.25 + Math.sin( ( aDouble + 0.05 ) * 2 * Math.PI * 8 ) * 0.33;
+            }
+        };
+
+        int full_n = 500;
+        double[] full_xs = new double[ full_n ];
+        double[] full_ys = new double[ full_n ];
+
+        int orig_n = 32;
+        double[] orig_xs = new double[ orig_n ];
+        double[] orig_ys = new double[ orig_n ];
+
+        int approx_n = 200;
+        double[] approx_xs = new double[ approx_n ];
+        double[] approx_ys = new double[ approx_n ];
+
+        int i;
+        for( i = 0; i < full_n; i++ )
+        {
+            full_xs[ i ] = i * ( 1.0 / full_n );
+            full_ys[ i ] = func.apply( full_xs[ i ] );
+        }
+
+        for( i = 0; i < orig_n; i++ )
+        {
+            orig_xs[ i ] = i * ( 1.0 / orig_n );
+            orig_ys[ i ] = func.apply( orig_xs[ i ] );
+        }
+
+        for( i = 0; i < approx_n; i++ )
+        {
+            approx_xs[ i ] = i * ( 1.0 / approx_n );
+        }
+
+        FunctionApproximation fa = new FourierInterpolator();
+        try
+        {
+            fa.prepare( orig_xs, orig_ys, orig_n );
+            fa.get_values( null, approx_ys, approx_n );
+            plot_in_matlab( orig_xs, orig_ys, orig_n, approx_xs, approx_ys, approx_n );
+            plot_in_matlab( full_xs, full_ys, full_n, approx_xs, approx_ys, approx_n );
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+
     }
 }

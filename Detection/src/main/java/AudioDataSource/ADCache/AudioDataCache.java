@@ -1,11 +1,11 @@
 package AudioDataSource.ADCache;
 
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 
 import java.util.LinkedList;
 import java.util.TreeSet;
 
-import static AudioDataSource.Exceptions.DataSourceExceptionCause.*;
+import static Exceptions.DataSourceExceptionCause.*;
 
 /**
  * Created by Alex on 10.09.2017.

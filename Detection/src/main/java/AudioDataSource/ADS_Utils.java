@@ -1,7 +1,7 @@
 package AudioDataSource;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 
 /**
  * Created by Alex on 17.01.2018.

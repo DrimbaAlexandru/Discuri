@@ -1,7 +1,8 @@
 package SignalProcessing.Interpolation;
 
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 
 /**
  * Created by Alex on 06.02.2018.

@@ -1,6 +1,6 @@
 package SignalProcessing.Effects;
 
-import AudioDataSource.Exceptions.DataSourceException;
+import Exceptions.DataSourceException;
 import AudioDataSource.IAudioDataSource;
 import MarkerFile.Marking;
 import ProjectStatics.ProjectStatics;

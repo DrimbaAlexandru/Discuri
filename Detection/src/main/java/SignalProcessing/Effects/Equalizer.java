@@ -1,12 +1,11 @@
 package SignalProcessing.Effects;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
 import SignalProcessing.Filters.Equalizer_FIR;
 import SignalProcessing.Filters.FIR;
-import SignalProcessing.Filters.IIR;
 import Utils.Interval;
 
 /**

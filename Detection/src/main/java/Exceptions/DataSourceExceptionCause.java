@@ -1,4 +1,4 @@
-package AudioDataSource.Exceptions;
+package Exceptions;
 
 /**
  * Created by Alex on 08.12.2017.
@@ -18,7 +18,7 @@ public enum DataSourceExceptionCause
     INVALID_PARAMETER,
     INVALID_STATE,
     WARNING,
-    NOT_ENOUGH_LIN_PREDICT,
+    INTERPOLATION_EXCEPTION,
     THIS_SHOULD_NEVER_HAPPEN,
     PYTHON_COMMUNICATION_ERROR
 }

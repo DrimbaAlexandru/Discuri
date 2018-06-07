@@ -2,8 +2,8 @@ package SignalProcessing.Effects;
 
 import AudioDataSource.ADCache.AudioSamplesWindow;
 import AudioDataSource.ADCache.CachedAudioDataSource;
-import AudioDataSource.Exceptions.DataSourceException;
-import AudioDataSource.Exceptions.DataSourceExceptionCause;
+import Exceptions.DataSourceException;
+import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.AUFileAudioSource;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.ADS_Utils;
