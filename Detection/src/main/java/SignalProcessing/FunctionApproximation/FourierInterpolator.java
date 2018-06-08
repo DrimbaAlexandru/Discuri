@@ -4,8 +4,7 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Complex;
-import Utils.Utils;
-import com.sun.media.sound.FFT;
+import Utils.Util_Stuff;
 
 /**
  * Created by Alex on 07.06.2018.
@@ -24,7 +23,7 @@ public class FourierInterpolator implements FunctionApproximation
         {
             throw new DataSourceException( "n larger than array size", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
         }
-        if( !Utils.is_power_of_two( n ) )
+        if( !Util_Stuff.is_power_of_two( n ) )
         {
             throw new DataSourceException( "n must be a power of 2", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
         }
@@ -70,7 +69,7 @@ public class FourierInterpolator implements FunctionApproximation
         }
         else
         {
-            lin_n = Utils.next_power_of_two( n - 1 );
+            lin_n = Util_Stuff.next_power_of_two( n - 1 );
             Complex[] ifft = new Complex[ lin_n ];
             lin_xs = new double[ lin_n ];
             lin_ys = new double[ lin_n ];

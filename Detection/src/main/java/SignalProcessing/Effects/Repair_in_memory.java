@@ -11,6 +11,7 @@ import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
+import Utils.MyPair;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,7 +35,7 @@ public class Repair_in_memory implements IEffect
 
     public Repair_in_memory()
     {
-        this( 2000, 2047, 511, 512, 16 );
+        this( 2000, 1023, 255, 512, 16 );
     }
 
     public Repair_in_memory( int high_pass_frequency, int riaa_filter_length, int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
@@ -71,22 +72,25 @@ public class Repair_in_memory implements IEffect
             Filter definitions
         */
         final double integration_coeffs[] = { 1, -1 };
-        final Function< Double, Double > window = Windowing.Blackman_window;
+        final MyPair< double[], double[] > riaa_resp = FIR.get_RIAA_response();
+        final MyPair< double[], double[] > inv_riaa_resp = FIR.get_RIAA_response();
+
+        final int nr_freqs = dataSource.get_sample_rate() / 2 / 50;
+        final double[] freqs = new double[ nr_freqs ];
+        final double[] hp_response = new double[ nr_freqs ];
+        for( int i = 0; i < nr_freqs; i++ )
+        {
+            freqs[ i ] = 1.0 * i * dataSource.get_sample_rate() / 2 / nr_freqs;
+        }
+        FIR.add_pass_cut_freq_resp( freqs, hp_response, nr_freqs, cutoff_frq, -120, 0 );
 
         final FIR derivation_filter = new FIR( new double[]{ 1, -1 }, 2 );
-        final FIR riaa_filter = FIR.fromFreqResponse( FIR.get_RIAA_response( riaa_length, dataSource.get_sample_rate() ), riaa_length, dataSource.get_sample_rate(), riaa_length );
-        final FIR inverse_riaa_filter = FIR.fromFreqResponse( FIR.get_inverse_RIAA_response( riaa_length, dataSource.get_sample_rate() ), riaa_length, dataSource.get_sample_rate(), riaa_length );
-        final FIR high_pass_filter = FIR.fromFreqResponse( FIR.pass_cut_freq_resp( high_pass_length, cutoff_frq, dataSource.get_sample_rate(), -96, 0 ), high_pass_length, dataSource.get_sample_rate(), high_pass_length );
+        final FIR riaa_filter = FIR.fromFreqResponse( riaa_resp.getLeft(), riaa_resp.getRight(), riaa_resp.getLeft().length, dataSource.get_sample_rate(), riaa_length );
+        final FIR inverse_riaa_filter = FIR.fromFreqResponse( inv_riaa_resp.getLeft(), inv_riaa_resp.getRight(), inv_riaa_resp.getLeft().length, dataSource.get_sample_rate(), riaa_length );
+        final FIR high_pass_filter = FIR.fromFreqResponse( freqs, hp_response, nr_freqs, dataSource.get_sample_rate(), high_pass_length );
+
         final IIR integrated_riia_filter = new IIR( inverse_riaa_filter.getFf(), inverse_riaa_filter.getFf_coeff_nr(), integration_coeffs, integration_coeffs.length );
         final IIR integration_filter = new IIR( new double[]{ 1 }, 1, integration_coeffs, integration_coeffs.length );
-
-        //Windowing.apply( inverse_riaa_filter.getFf(), inverse_riaa_filter.getFf_coeff_nr(), ( v ) -> preamp );
-        //Windowing.apply( integrated_riia_filter.getFf(), integrated_riia_filter.getFf_coeff_nr(), ( v ) -> preamp );
-        //Windowing.apply( riaa_filter.getFf(), riaa_filter.getFf_coeff_nr(), ( v ) -> postamp );
-
-        Windowing.apply( integrated_riia_filter.getFf(), integrated_riia_filter.getFf_coeff_nr(), window );
-        Windowing.apply( riaa_filter.getFf(), riaa_filter.getFf_coeff_nr(), window );
-        Windowing.apply( high_pass_filter.getFf(), high_pass_filter.getFf_coeff_nr(), window );
 
         /*
             Data sources

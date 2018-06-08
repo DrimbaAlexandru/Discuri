@@ -37,6 +37,8 @@ public class Repair_in_high_pass implements IEffect
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
+        throw new RuntimeException( "Obsolete function" );
+        /*
         final double preamp_coeffs[] = new double[]{ preamp };
         final double postamp_coeffs[] = new double[]{ postamp };
         final double riaa_response[] = FIR.get_RIAA_response( riaa_length, dataSource.get_sample_rate() );
@@ -167,7 +169,6 @@ public class Repair_in_high_pass implements IEffect
         equalizer.setFilter( riaa_filter );
         equalizer.apply( temp_cache2, dataDest, interval );
         System.out.println( "Finished phase 8 & 9" );
-        //TODO: Delete temp file 2
-
+        //TODO: Delete temp file 2*/
     }
 }

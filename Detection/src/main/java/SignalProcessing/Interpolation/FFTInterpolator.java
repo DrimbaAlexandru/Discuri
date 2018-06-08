@@ -5,8 +5,8 @@ import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Complex;
 
-import static Utils.Utils.is_power_of_two;
-import static Utils.Utils.next_power_of_two;
+import static Utils.Util_Stuff.is_power_of_two;
+import static Utils.Util_Stuff.next_power_of_two;
 
 /**
  * Created by Alex on 06.02.2018.

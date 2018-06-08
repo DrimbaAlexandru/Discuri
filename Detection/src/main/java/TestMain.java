@@ -9,15 +9,14 @@ import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;
 import SignalProcessing.FunctionApproximation.FunctionApproximation;
-import SignalProcessing.Interpolation.Interpolator;
-import SignalProcessing.Interpolation.LinearInterpolator;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
+import Utils.MyPair;
 
 import java.io.*;
 import java.util.function.Function;
 
-import static Utils.Utils.plot_in_matlab;
+import static Utils.Util_Stuff.plot_in_matlab;
 
 /**
  * Created by Alex on 08.09.2017.
@@ -70,86 +69,6 @@ public class TestMain {
         {
             e.printStackTrace();
 
-        }
-    }
-
-    public static void main3( String args[] )
-    {
-        try
-        {
-            WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\eq test.wav" );
-            WAVFileAudioSource dst = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
-            CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
-            CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
-
-            double[] x = { 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0, -48, 0 };
-            Windowing.apply( x, x.length, ( v ) -> 1.0 / 6 );
-            FIR fir = FIR.fromFreqResponse( x, x.length - 1, src.get_sample_rate(), 493 );
-            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), Windowing.Hann_window );
-            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), ( v ) -> 1.0 / ( fir.getFf_coeff_nr() ) );
-
-            plot_in_matlab( x, 0, x.length, fir.getFf(), 0, fir.getFf_coeff_nr() );
-
-            FIR_Filter effect = new FIR_Filter();
-            effect.setFilter( fir );
-            effect.setMax_chunk_size( 44100 );
-            effect.apply( src_cache, dst_cache, new Interval( 0, src.get_sample_number() ) );
-            dst_cache.flushAll();
-            dst.close();
-        }
-        catch( DataSourceException e )
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main4( String args[] )
-    {
-        double[] in = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
-        int n = in.length;
-        int m = 31;
-        double[] out = new double[ m ];
-        int i;
-
-        Interpolator interpolator = new LinearInterpolator();
-        try
-        {
-            interpolator.resize( in, n, out, m );
-        }
-        catch( DataSourceException e )
-        {
-            e.printStackTrace();
-        }
-
-        plot_in_matlab( in, 0, n, out, 0, m );
-    }
-
-    public static void main5( String[] args )
-    {
-        try
-        {
-            WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\eq test.wav" );
-            WAVFileAudioSource dst = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
-            CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100, 2048 );
-            CachedAudioDataSource dst_cache = new CachedAudioDataSource( dst, 44100, 2048 );
-
-            double[] FR = FIR.get_RIAA_response( 512, src.get_sample_rate() );
-            FIR fir = FIR.fromFreqResponse( FR, FR.length - 1, src.get_sample_rate(), 2047 );
-            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), Windowing.Hann_window );
-            Windowing.apply( fir.getFf(), fir.getFf_coeff_nr(), ( v ) -> 1.0 / ( fir.getFf_coeff_nr() ) );
-
-            plot_in_matlab( new double[]{ 0, 0 }, 0, 2, FR, 0, FR.length );
-
-            FIR_Filter effect = new FIR_Filter();
-            effect.setFilter( fir );
-            effect.setMax_chunk_size( 44100 );
-            effect.apply( src_cache, dst_cache, new Interval( 0, src.get_sample_number() ) );
-            dst_cache.flushAll();
-            dst.close();
-        }
-        catch( DataSourceException e )
-        {
-            e.printStackTrace();
         }
     }
 
@@ -283,7 +202,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main11( String[] args )
     {
         Function<Double,Double> func=new Function< Double, Double >()
         {
@@ -331,6 +250,37 @@ public class TestMain {
             fa.get_values( null, approx_ys, approx_n );
             plot_in_matlab( orig_xs, orig_ys, orig_n, approx_xs, approx_ys, approx_n );
             plot_in_matlab( full_xs, full_ys, full_n, approx_xs, approx_ys, approx_n );
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
+            WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), 2 );
+
+            int nr_freq = 1000;
+            double[] freqs = new double[ nr_freq ];
+            double[] resps = new double[ nr_freq ];
+            for( int i = 0; i < nr_freq; i++ )
+            {
+                freqs[ i ] = i * wav.get_sample_rate() / nr_freq;
+            }
+
+            FIR.add_pass_cut_freq_resp( freqs, resps, nr_freq, 2000, -120, 0 );
+            //plot_in_matlab( freqs, resps, nr_freq );
+
+            FIR fir = FIR.fromFreqResponse( freqs, resps, nr_freq, wav.get_sample_rate(), 127 );
+            Equalizer effect = new Equalizer();
+            effect.setMax_chunk_size( 100000 );
+            effect.setFilter( fir );
+            effect.apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
         }
         catch( DataSourceException e )
         {

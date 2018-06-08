@@ -3,7 +3,7 @@ package Utils;
 /**
  * Created by Alex on 21.12.2017.
  */
-public class Utils
+public class Util_Stuff
 {
     public static < T > boolean memeq( T array[], int offset, int length, T value )
     {
@@ -101,6 +101,20 @@ public class Utils
             System.out.print( xs[ i ] + ", " );
         }
         System.out.println( xs[ n - 1 ] + " ];" );
+
+        System.out.print( "ys = [ " );
+        for( i = 0; i < n - 1; i++ )
+        {
+            System.out.print( ys[ i ] + ", " );
+        }
+        System.out.println( ys[ n - 1 ] + " ];" );
+        System.out.println( "plot( xs, ys, '-o' );" );
+    }
+
+    public static void plot_in_matlab( double[] ys, int n )
+    {
+        int i;
+        System.out.println( "xs = linspace( 0, " + ( n - 1 ) + ", " + n + " );" );
 
         System.out.print( "ys = [ " );
         for( i = 0; i < n - 1; i++ )

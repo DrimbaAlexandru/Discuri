@@ -3,18 +3,18 @@ package SignalProcessing.Filters;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
-import SignalProcessing.Interpolation.FFTInterpolator;
-import SignalProcessing.Interpolation.Interpolator;
-import SignalProcessing.Interpolation.LinearInterpolator;
+import SignalProcessing.FunctionApproximation.FunctionApproximation;
+import SignalProcessing.FunctionApproximation.LinearInterpolation;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Complex;
 import Utils.Interval;
+import Utils.MyPair;
+import Utils.Util_Stuff;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
-import static Utils.Utils.log2lin;
-import static Utils.Utils.next_power_of_two;
+import static Utils.Util_Stuff.plot_in_matlab;
+
 
 /**
  * Created by Alex on 24.11.2017.
@@ -54,87 +54,85 @@ public class FIR
         System.arraycopy( coeffs, 0, ff, 0, n );
     }
 
-    public static FIR fromFreqResponse( double[] x, int nr_of_frequencies, int sample_rate, int filter_length ) throws DataSourceException
+    /**
+     * @param frequencies: frequencies in Hertz, ordered, between 0 - Nyquist freq
+     * @param amplitudes: in dB
+     * @param nr_of_frequencies
+     * @param sample_rate
+     * @param filter_length
+     * @return
+     * @throws DataSourceException
+     */
+    public static FIR fromFreqResponse( double[] frequencies, double[] amplitudes, int nr_of_frequencies, int sample_rate, int filter_length ) throws DataSourceException
     {
-        return fromFreqResponse( x, nr_of_frequencies, sample_rate, filter_length, false );
-    }
-
-    public static FIR fromFreqResponse( double[] x, int nr_of_frequencies, int sample_rate, int filter_length, boolean remove_DC_offset ) throws DataSourceException
-    {
-        if( nr_of_frequencies == 1 )
+        if( frequencies.length < nr_of_frequencies || amplitudes.length < nr_of_frequencies )
         {
-            throw new DataSourceException( "Number of frequencies must be at least 2", DataSourceExceptionCause.INVALID_PARAMETER );
+            throw new DataSourceException( "Array sizes less than expected length", DataSourceExceptionCause.INVALID_PARAMETER );
         }
-        if( filter_length % 2 == 0 )
+        if( filter_length % 2 != 1 )
         {
-            throw new DataSourceException( "Filter length must be an odd number", DataSourceExceptionCause.INVALID_PARAMETER );
-        }
-        if( sample_rate % 2 != 0 )
-        {
-            throw new DataSourceException( "Sample rate must be an even number", DataSourceExceptionCause.INVALID_PARAMETER );
-        }
-        if( filter_length > sample_rate )
-        {
-            throw new DataSourceException( "Filter length cannot be larger than sample rate", DataSourceExceptionCause.INVALID_PARAMETER );
+            throw new DataSourceException( "Filter length must be odd", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
-        final Interpolator interpolator = new FFTInterpolator();
-        final Interpolator lin_interpolator = new LinearInterpolator();
+        int ifft_size = Util_Stuff.next_power_of_two( ( filter_length - 1 ) / 2 );
+        FunctionApproximation fa = new LinearInterpolation();
+        double[] ifft_xs = new double[ ifft_size ];
+        double[] ifft_ys = new double[ ifft_size ];
+        boolean interpolate_logarithmically = false;
+        Complex[] ifft_in = new Complex[ ifft_size ];
+        Complex[] ifft_out;
+        double[] final_filter = new double[ filter_length ];
+        int i;
 
-        int i, copy_offset;
-        int interm_filter_length = next_power_of_two( sample_rate - 1 );
-        int interm_length = interm_filter_length / 2;
-        double[] interm_frq_resp = new double[ interm_length ];
-        Complex frq[] = new Complex[ interm_filter_length ];
-        double final_filter[] = new double[ filter_length ];
-
-        //Utils.plot_in_matlab( new double[]{ 0, 0 }, 0, 2, x, 0, nr_of_frequencies + 1 );
-
-        lin_interpolator.resize( x, nr_of_frequencies + 1, interm_frq_resp, interm_length );
-
-        log2lin( interm_frq_resp, interm_length, 2 );
-
-        if( remove_DC_offset )
+        for( i = 0; i < ifft_size; i++ )
         {
-            interm_frq_resp[ 0 ] = 0;
+            ifft_xs[ i ] = 1.0 * sample_rate / ifft_size * i;
         }
-
-        for( i = 0; i < interm_length; i++ )
+        if( interpolate_logarithmically )
         {
-            if( i % 2 == 0 )
+            ifft_xs[ 0 ] = 1e-12;
+            Util_Stuff.lin2log( ifft_xs, ifft_size, 2 );
+            if( frequencies[ 0 ] < 1e-10 )
             {
-                frq[ i ] = new Complex( interm_frq_resp[ i ], 0 );
+                frequencies[ 0 ] = 1e-10;
             }
-            else
+            Util_Stuff.lin2log( frequencies, nr_of_frequencies, 2 );
+        }
+        Windowing.apply( amplitudes, nr_of_frequencies, ( Double x ) -> 1.0 / 6 );
+        Util_Stuff.log2lin( amplitudes, nr_of_frequencies, 2 );
+
+        fa.prepare( frequencies, amplitudes, nr_of_frequencies );
+        fa.get_values( ifft_xs, ifft_ys, ifft_size );
+
+        //plot_in_matlab( frequencies, amplitudes, nr_of_frequencies, ifft_xs, ifft_ys, ifft_size );
+        for( i = 0; i < ifft_size / 2; i++ )
+        {
+            ifft_ys[ ifft_size / 2 + i ] = ifft_ys[ ifft_size / 2 - i ];
+        }
+        if( interpolate_logarithmically )
+        {
+            for( i = 0; i < ifft_size; i++ )
             {
-                frq[ i ] = new Complex( -interm_frq_resp[ i ], 0 );
+                ifft_xs[ i ] = 1.0 * sample_rate / ifft_size * i;
             }
         }
-        for( i = interm_length; i <= interm_filter_length / 2; i++ )
+        for( i = 0; i < ifft_size; i++ )
         {
-            if( i % 2 == 0 )
-            {
-                frq[ i ] = new Complex( 0, 0 );
-            }
-            else
-            {
-                frq[ i ] = new Complex( 0, 0 );
-            }
+            ifft_in[ i ] = new Complex( ifft_ys[ i ], 0 );
         }
-        for( i = interm_filter_length / 2 + 1; i < interm_filter_length; i++ )
+        ifft_out = Fourier.IFFT( ifft_in, ifft_size );
+        int f = 0;
+        for( i = ( filter_length ) / 2; i >= 0; i-- )
         {
-            frq[ i ] = new Complex( 0, 0 );
+            final_filter[ filter_length - i - 1 ] = final_filter[ i ] = ifft_out[ f ].r();
+            f++;
         }
-
-        frq = Fourier.IFFT( frq, interm_filter_length );
-        copy_offset = interm_filter_length / 2 - ( filter_length - 1 ) / 2;
-
+        Windowing.apply( final_filter, filter_length, Windowing.Blackman_window );
         for( i = 0; i < filter_length; i++ )
         {
-            final_filter[ i ] = frq[ copy_offset + i ].r();
+            final_filter[ i ] /= ifft_size;
         }
-        Windowing.apply( final_filter, filter_length, ( v ) -> 1.0 / ( ( double )interm_filter_length / 2 ) );
-
+        //Utils.plot_in_matlab( final_filter, filter_length );
         return new FIR( final_filter, filter_length );
     }
 
@@ -148,100 +146,43 @@ public class FIR
         return ff;
     }
 
-    public static double[] pass_cut_freq_resp( int nr_of_frequencies, int cutoff_frequency, int sample_rate, double low_rolloff, double high_rolloff ) throws DataSourceException
+    public static void add_pass_cut_freq_resp( double[] frequencies, double[] amplitudes, int nr_of_frequencies, int cutoff_frequency, double low_gain_per_octave, double high_gain_per_octave ) throws DataSourceException
     {
         int i;
-        double[] frq_resp = new double[ nr_of_frequencies + 1 ];
-        final double frq_step = ( double )sample_rate / 2 / nr_of_frequencies;
-        final double cutoff_position = ( cutoff_frequency / frq_step );
-        final int first_low_position = ( int )cutoff_position;
-
-        frq_resp[ first_low_position ] = low_rolloff * ( Math.log( ( cutoff_position / first_low_position ) ) / Math.log( 2 ) );
-        if( first_low_position + 1 <= nr_of_frequencies )
-        {
-            frq_resp[ first_low_position + 1 ] = high_rolloff * ( Math.log( ( first_low_position + 1 ) / cutoff_position ) / Math.log( 2 ) );
-        }
-        for( i = first_low_position + 2; i <= nr_of_frequencies; i++ )
-        {
-            frq_resp[ i ] = frq_resp[ first_low_position + 1 ] + high_rolloff * ( Math.log( ( double )i / ( first_low_position + 1 ) ) / Math.log( 2 ) );
-        }
-        for( i = first_low_position - 1; i > 0; i-- )
-        {
-            frq_resp[ i ] = frq_resp[ first_low_position ] + low_rolloff * ( Math.log( ( double )( first_low_position ) / ( i ) ) / Math.log( 2 ) );
-        }
-        frq_resp[ 0 ] = frq_resp[ 1 ] + low_rolloff ;
-
-        Windowing.apply( frq_resp, frq_resp.length, ( v ) -> 1.0 / 6 );
-        return frq_resp;
-        //return fromFreqResponse( frq_resp, nr_of_frequencies, sample_rate, filter_length );
-
-    }
-
-    public static double[] get_RIAA_response( int nr_of_frequencies, int sample_rate ) throws DataSourceException
-    {
-        List< double[] > responses = new ArrayList<>();
-        int i, j;
-        double[] accumulator;
-        double[] source;
-        final double plus_20_dB = 20.0 / 6.0;
-
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 10, sample_rate, 0, -1.29 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 50, sample_rate, 0, -2.39 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 80, sample_rate, 0, -1.03 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 300, sample_rate, 0, 1.32 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 500, sample_rate, 0, 0.38 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 2500, sample_rate, 0, -1.49 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 5000, sample_rate, 0, -0.65 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 8000, sample_rate, 0, -0.85 ) );
-
-        accumulator = responses.get( 0 );
-
-        for( j = 1; j < responses.size(); j++ )
-        {
-            source = responses.get( j );
-            for( i = 0; i <= nr_of_frequencies; i++ )
-            {
-                accumulator[ i ] += source[ i ];
-            }
-        }
-        for( i = 0; i <= nr_of_frequencies; i++ )
-        {
-            accumulator[ i ] += plus_20_dB;
-        }
-        return accumulator;
-    }
-
-    public static double[] get_inverse_RIAA_response( int nr_of_frequencies, int sample_rate ) throws DataSourceException
-    {
-        List< double[] > responses = new ArrayList<>();
-        int i, j;
-        double[] accumulator;
-        double[] source;
-        final double minus_20_dB = -20.0 / 6.0;
-
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 10, sample_rate, 0, 1.29 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 50, sample_rate, 0, 2.39 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 80, sample_rate, 0, 1.03 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 300, sample_rate, 0, -1.32 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 500, sample_rate, 0, -0.38 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 2500, sample_rate, 0, 1.49 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 5000, sample_rate, 0, 0.65 ) );
-        responses.add( pass_cut_freq_resp( nr_of_frequencies, 8000, sample_rate, 0, 0.85 ) );
-
-        accumulator = responses.get( 0 );
-
-        for( j = 1; j < responses.size(); j++ )
-        {
-            source = responses.get( j );
-            for( i = 0; i < nr_of_frequencies; i++ )
-            {
-                accumulator[ i ] += source[ i ];
-            }
-        }
         for( i = 0; i < nr_of_frequencies; i++ )
         {
-            accumulator[ i ] += minus_20_dB;
+            if( frequencies[ i ] < 1 )
+            {
+                amplitudes[ i ] += low_gain_per_octave * ( Math.log( cutoff_frequency ) / Math.log( 2 ) );
+                continue;
+            }
+            if( frequencies[ i ] > cutoff_frequency )
+            {
+                amplitudes[ i ] += high_gain_per_octave * ( Math.log( frequencies[ i ] / cutoff_frequency ) / Math.log( 2 ) );
+            }
+            else
+            {
+                amplitudes[ i ] += low_gain_per_octave * ( Math.log( cutoff_frequency / frequencies[ i ] ) / Math.log( 2 ) );
+            }
         }
-        return accumulator;
+    }
+
+    public static MyPair< double[], double[] > get_RIAA_response()
+    {
+        final double[] riaa_points = { 20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000, 25000, 48000 };
+        final double[] riaa_resp = { 19.274, 18.954, 18.516, 17.792, 16.946, 15.852, 14.506, 13.088, 11.563, 9.809, 8.219, 6.677, 5.179, 3.784, 2.648, 1.642, 0.751, 0, -0.744, -1.643, -2.589, -3.700, -5.038, -6.605, -8.210, -9.980, -11.894, -13.734, -15.609, -17.708, -19.620, -21.542, -27.187 };
+        assert riaa_points.length == riaa_resp.length;
+        return new MyPair<>( Arrays.copyOf( riaa_points, riaa_points.length ), Arrays.copyOf( riaa_resp, riaa_resp.length ) );
+    }
+
+    public static MyPair< double[], double[] > get_inverse_RIAA_response() throws DataSourceException
+    {
+        MyPair< double[], double[] > resp = get_RIAA_response();
+        double[] resp_ref = resp.getRight();
+        for( int i = 0; i < resp.getRight().length; i++ )
+        {
+            resp_ref[ i ] *= -1;
+        }
+        return resp;
     }
 }
