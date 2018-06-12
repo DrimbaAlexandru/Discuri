@@ -14,6 +14,7 @@ import Utils.Interval;
 import Utils.MyPair;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.function.Function;
 
 import static Utils.Util_Stuff.plot_in_matlab;
@@ -160,7 +161,7 @@ public class TestMain {
         System.out.println( "Duration: " + ( end_time - start_time ) + " ms" );
     }
 
-    public static void main10( String[] args )
+    public static void main9( String[] args )
     {
         try
         {
@@ -186,7 +187,7 @@ public class TestMain {
         }
     }
 
-    public static void main9( String[] args )
+    public static void main10( String[] args )
     {
         try
         {
@@ -258,7 +259,7 @@ public class TestMain {
 
     }
 
-    public static void main( String[] args )
+    public static void main12( String[] args )
     {
         try
         {
@@ -287,5 +288,30 @@ public class TestMain {
             e.printStackTrace();
         }
 
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
+            WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
+            ADS_Utils.copyToADS( wav, dest );
+            long st = System.currentTimeMillis();
+            Interval r = new Interval( 20000, 1000 );
+            float ratio = 20;
+            Repair repair = new Repair();
+            repair.set_fetch_ratio( ratio );
+            ArrayList< Integer > ch = new ArrayList<>();
+            ch.add( 0 );
+            repair.setAffected_channels( ch );
+            repair.apply( wav, dest, r );
+            System.out.println( "Total time: " + ( System.currentTimeMillis() - st ) + "ms " );
+            wav.close();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
     }
 }

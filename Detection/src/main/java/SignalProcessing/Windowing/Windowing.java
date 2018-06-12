@@ -7,18 +7,22 @@ import java.util.function.Function;
  */
 public class Windowing
 {
-    public static void apply( double[] samples, int len, Function< Double, Double > window_function )
+    public static void apply( double[] samples, int start_offset,int len, Function< Double, Double > window_function )
     {
         if( len == 0 )
         {
             return;
         }
         int i;
-        samples[ 0 ] *= window_function.apply( 0.0 );
+        samples[ start_offset ] *= window_function.apply( 0.0 );
         for( i = 1; i < len; i++ )
         {
-            samples[ i ] *= window_function.apply( ( double )i / ( len - 1 ) );
+            samples[ start_offset + i ] *= window_function.apply( ( double )i / ( len - 1 ) );
         }
+    }
+    public static void apply( double[] samples, int len, Function< Double, Double > window_function )
+    {
+        apply( samples, 0, len, window_function );
     }
 
     public final static Function< Double, Double > fade_in_window = ( x -> x );

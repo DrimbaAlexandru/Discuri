@@ -659,18 +659,20 @@ public class Main_window
                 }
                 if( eff.getClass().getCanonicalName().equals( Repair_in_high_pass.class.getCanonicalName() ) )
                 {
-                    final Repair_in_high_pass effect = ( Repair_in_high_pass )eff;
+                    final Repair_in_memory effect = new Repair_in_memory();
+                    effect.setWork_on_high_pass( true );
+                    effect.setWork_on_position_domain( false );
                     mi.setOnAction( ev ->
                                     {
                                         System.out.println( effect.getName() );
-                                        onApplyRepair_in_high_pass( effect );
+                                        onApplyRepair_in_memory( effect );
                                     } );
                     continue;
                 }
                 if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
                 {
                     final Repair_in_memory effect = ( Repair_in_memory )eff;
-                    effect.setWork_on_high_pass( true );
+                    effect.setWork_on_high_pass( false );
                     effect.setWork_on_position_domain( false );
                     mi.setOnAction( ev ->
                                     {
