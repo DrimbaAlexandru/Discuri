@@ -38,7 +38,7 @@ public class BurgLP implements LinearPrediction
         l_bme.predict_forward( c_length, left_extrapolated_samples );
         r_bme.predict_backward( c_length, right_extrapolated_samples );
 
-        LR_balance = l_bme.forward_L_P_error() / r_bme.backward_L_P_error();
+        //LR_balance = l_bme.forward_L_P_error() / r_bme.backward_L_P_error();
 
         Windowing.apply( left_extrapolated_samples, c_length, x -> left_component_window_function.apply( x ) );
         Windowing.apply( right_extrapolated_samples, c_length, x -> ( 1 - left_component_window_function.apply( x ) ) );
