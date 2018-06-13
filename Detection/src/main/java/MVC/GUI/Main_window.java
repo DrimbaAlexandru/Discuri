@@ -1,7 +1,7 @@
 package MVC.GUI;
 
-import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.AudioSamplesWindow;
+import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.Cached_ADS_Manager;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
@@ -520,7 +520,6 @@ public class Main_window
         ProjectStatics.registerEffect( new Repair() );
         ProjectStatics.registerEffect( new Repair_Marked() );
         ProjectStatics.registerEffect( new Sample_Summer() );
-        ProjectStatics.registerEffect( new Repair_in_high_pass() );
         ProjectStatics.registerEffect( new Repair_in_memory() );
 
         try
@@ -657,22 +656,11 @@ public class Main_window
                                     } );
                     continue;
                 }
-                if( eff.getClass().getCanonicalName().equals( Repair_in_high_pass.class.getCanonicalName() ) )
-                {
-                    final Repair_in_memory effect = new Repair_in_memory();
-                    effect.setWork_on_high_pass( true );
-                    effect.setWork_on_position_domain( false );
-                    mi.setOnAction( ev ->
-                                    {
-                                        System.out.println( effect.getName() );
-                                        onApplyRepair_in_memory( effect );
-                                    } );
-                    continue;
-                }
+
                 if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
                 {
                     final Repair_in_memory effect = ( Repair_in_memory )eff;
-                    effect.setWork_on_high_pass( false );
+                    effect.setWork_on_high_pass( true );
                     effect.setWork_on_position_domain( false );
                     mi.setOnAction( ev ->
                                     {
@@ -694,11 +682,6 @@ public class Main_window
         IIR_Filter filter = new IIR_Filter();
         filter.setFilter( new IIR( new double[]{ 1 }, 1, new double[]{ 1, -1 }, 2 ) );
         apply_effect( filter, false, true );
-    }
-
-    private void onApplyRepair_in_high_pass( Repair_in_high_pass eff )
-    {
-        apply_effect( eff, false, false );
     }
 
     private void onApplyRepair_in_memory( Repair_in_memory eff )

@@ -1,5 +1,5 @@
-import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.AudioSamplesWindow;
+import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.ADS_Utils;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
@@ -9,12 +9,13 @@ import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;
 import SignalProcessing.FunctionApproximation.FunctionApproximation;
-import SignalProcessing.Windowing.Windowing;
+import SignalProcessing.LinearPrediction.BurgMethod;
+import SignalProcessing.LinearPrediction.LinearPrediction;
 import Utils.Interval;
-import Utils.MyPair;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Function;
 
 import static Utils.Util_Stuff.plot_in_matlab;
@@ -290,7 +291,7 @@ public class TestMain {
 
     }
 
-    public static void main( String[] args )
+    public static void main13( String[] args )
     {
         try
         {
@@ -308,6 +309,36 @@ public class TestMain {
             repair.apply( wav, dest, r );
             System.out.println( "Total time: " + ( System.currentTimeMillis() - st ) + "ms " );
             wav.close();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\4p.wav" );
+            WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\predict.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
+            ADS_Utils.copyToADS( wav, dest );
+            long st = System.currentTimeMillis();
+            int fit_start = 0;
+            int prediction_length = 44100 * 10;
+            AudioSamplesWindow win = wav.get_samples( fit_start, wav.get_sample_number() - fit_start );
+            for( int k = 0; k < win.get_channel_number(); k++ )
+            {
+                BurgMethod burgMethod = new BurgMethod( win.getSamples()[ k ], 0, win.get_length(), win.get_length()/2 - 1 );
+                LinearPrediction lp = new LinearPrediction( burgMethod.get_coeffs(), burgMethod.get_nr_coeffs() );
+                double samples[] = Arrays.copyOf( win.getSamples()[ k ], prediction_length + win.get_length() );
+                lp.predict_forward( samples, win.get_length(), samples.length );
+                win.getSamples()[ k ] = samples;
+            }
+            win.set_length( win.get_length() + prediction_length );
+            dest.put_samples( win );
+            System.out.println( "Total time: " + ( System.currentTimeMillis() - st ) + "ms " );
+            dest.close();
         }
         catch( DataSourceException e )
         {

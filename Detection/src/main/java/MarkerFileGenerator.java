@@ -1,4 +1,4 @@
-import AudioDataSource.ADCache.AudioSamplesWindow;
+import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;

@@ -1,7 +1,7 @@
 package AudioDataSource.VersionedADS;
 
-import AudioDataSource.ADCache.AudioSamplesWindow;
-import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.AudioSamplesWindow;
+import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.Cached_ADS_Manager;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;

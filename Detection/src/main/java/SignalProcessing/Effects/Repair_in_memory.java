@@ -1,6 +1,6 @@
 package SignalProcessing.Effects;
 
-import AudioDataSource.ADCache.AudioSamplesWindow;
+import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
@@ -9,13 +9,11 @@ import MarkerFile.Marking;
 import ProjectStatics.ProjectStatics;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
-import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 import Utils.MyPair;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 
 /**
  * Created by Alex on 27.02.2018.

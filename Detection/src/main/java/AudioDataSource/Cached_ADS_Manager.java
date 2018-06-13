@@ -1,6 +1,6 @@
 package AudioDataSource;
 
-import AudioDataSource.ADCache.CachedAudioDataSource;
+import AudioDataSource.CachedADS.CachedAudioDataSource;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
