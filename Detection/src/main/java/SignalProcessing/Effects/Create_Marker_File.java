@@ -52,6 +52,7 @@ class Classify_In_Python
         {
             try
             {
+                System.out.println( "Starting python script" );
                 proc = Runtime.getRuntime().exec( script_exec );
                 InputStream err = proc.getErrorStream();
                 buffer.clear();

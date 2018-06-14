@@ -19,9 +19,7 @@ public class CMain extends Application {
     }
 
     /**TODO:
-     *  - implement another method for interpolation
      *  - add the generate marking functionality to the UI
      *  - work on the UI
-     *  -
      */
 }

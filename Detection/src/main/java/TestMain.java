@@ -162,16 +162,16 @@ public class TestMain {
         System.out.println( "Duration: " + ( end_time - start_time ) + " ms" );
     }
 
-    public static void main9( String[] args )
+    public static void main( String[] args )
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\enescu.wav");
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Beethoven - Quartet no 4 - IV frg pre RIAA.wav");
             Create_Marker_File create_marker_file = new Create_Marker_File();
-            create_marker_file.setThreshold( 0.4 );
+            create_marker_file.setThreshold( 0.5 );
             create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
 
-            ProjectStatics.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings enescu 0.4.txt" ) ) );
+            ProjectStatics.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings beet 0.5.txt" ) ) );
 
         }
         catch( DataSourceException e )
@@ -192,9 +192,9 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Carmen.wav" );
-            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 4096 * 8, 2048 );
-            WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\probs.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\4p riaa.wav" );
+            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 4096 );
+            WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\probs hg.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
             Create_Probability_Graph graph = new Create_Probability_Graph();
             graph.create_graph( cache, dest );
         }
@@ -316,7 +316,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main14( String[] args )
     {
         try
         {
@@ -324,15 +324,17 @@ public class TestMain {
             WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\predict.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
             ADS_Utils.copyToADS( wav, dest );
             long st = System.currentTimeMillis();
-            int fit_start = 0;
+            int fit_start = 85000;
             int prediction_length = 44100 * 10;
             AudioSamplesWindow win = wav.get_samples( fit_start, wav.get_sample_number() - fit_start );
             for( int k = 0; k < win.get_channel_number(); k++ )
             {
-                BurgMethod burgMethod = new BurgMethod( win.getSamples()[ k ], 0, win.get_length(), win.get_length()/2 - 1 );
+                BurgMethod burgMethod = new BurgMethod( win.getSamples()[ k ], 0, win.get_length(), win.get_length() - 1 );
+                System.out.println( "Calculated coeffs" );
                 LinearPrediction lp = new LinearPrediction( burgMethod.get_coeffs(), burgMethod.get_nr_coeffs() );
                 double samples[] = Arrays.copyOf( win.getSamples()[ k ], prediction_length + win.get_length() );
                 lp.predict_forward( samples, win.get_length(), samples.length );
+                System.out.println( "Prediction done" );
                 win.getSamples()[ k ] = samples;
             }
             win.set_length( win.get_length() + prediction_length );

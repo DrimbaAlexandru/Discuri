@@ -37,7 +37,6 @@ public class Create_Probability_Graph
                 {
                     throw new DataSourceException( "Received unexpected array length", DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
                 }
-                Interval mark = null;
                 double probabilities[] = prediction.getRight();
                 write_samples[ ch ] = probabilities;
             }
