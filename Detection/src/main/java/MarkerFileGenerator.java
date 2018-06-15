@@ -14,14 +14,14 @@ public class MarkerFileGenerator
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Beethoven - Quartet no 4 - IV frg pre RIAA stereo residue.wav" );
-            double threshold = 0.0005;
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\datasets\\dvorak 4th symph fin marking.wav" );
+            double threshold = 0.007;
             int side = 1;
             int[] mark_start = new int[]{ -1, -1 };
             int i, j, k;
             boolean mark;
             boolean duplicate_L_to_R = true;
-            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\Beethoven - Quartet no 4 mark from residue.txt" );
+            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\datasets\\dvorak 4th symph fin mark " + String.format( "%.3f", threshold ) + ".txt" );
             AudioSamplesWindow win;
 
             if( wav.get_channel_number() > 2 )

@@ -21,7 +21,8 @@ import java.util.List;
 public class Repair_in_memory implements IEffect
 {
     //TODO: change some of these as configurable parameters in constructor.
-    final private int cutoff_frq;
+    private int low_cutoff_frq;
+    private int high_cutoff_frq;
     final private int riaa_length;
     final private int high_pass_length;
     final private int max_repair_size;
@@ -29,16 +30,17 @@ public class Repair_in_memory implements IEffect
     final private int cache_size;
 
     private boolean work_on_position_domain = false;
-    private boolean work_on_high_pass = false;
+    private boolean work_on_band_pass = false;
 
     public Repair_in_memory()
     {
-        this( 2000, 1023, 255, 1024, 16 );
+        this( 2000, -1, 1023, 511, 512, 16 );
     }
 
-    public Repair_in_memory( int high_pass_frequency, int riaa_filter_length, int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
+    public Repair_in_memory( int band_pass_low_bound, int band_pass_high_bound, int riaa_filter_length, int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
     {
-        cutoff_frq = high_pass_frequency;
+        low_cutoff_frq = band_pass_low_bound;
+        high_cutoff_frq = band_pass_high_bound;
         riaa_length = riaa_filter_length;
         high_pass_length = band_pass_filter_length;
         max_repair_size = max_repaired_size;
@@ -51,9 +53,9 @@ public class Repair_in_memory implements IEffect
         this.work_on_position_domain = work_on_position_domain;
     }
 
-    public void setWork_on_high_pass( boolean work_on_high_pass )
+    public void setWork_on_band_pass( boolean work_on_band_pass )
     {
-        this.work_on_high_pass = work_on_high_pass;
+        this.work_on_band_pass = work_on_band_pass;
     }
 
     @Override
@@ -80,7 +82,15 @@ public class Repair_in_memory implements IEffect
         {
             freqs[ i ] = 1.0 * i * dataSource.get_sample_rate() / 2 / nr_freqs;
         }
-        FIR.add_pass_cut_freq_resp( freqs, hp_response, nr_freqs, cutoff_frq, -120, 0 );
+
+        if( low_cutoff_frq != -1 )
+        {
+            FIR.add_pass_cut_freq_resp( freqs, hp_response, nr_freqs, low_cutoff_frq, -96, 0 );
+        }
+        if( high_cutoff_frq != -1 )
+        {
+            FIR.add_pass_cut_freq_resp( freqs, hp_response, nr_freqs, high_cutoff_frq, 0, -96 );
+        }
 
         final FIR derivation_filter = new FIR( new double[]{ 1, -1 }, 2 );
         final FIR riaa_filter = FIR.fromFreqResponse( riaa_resp.getLeft(), riaa_resp.getRight(), riaa_resp.getLeft().length, dataSource.get_sample_rate(), riaa_length );
@@ -110,7 +120,7 @@ public class Repair_in_memory implements IEffect
         int i;
         int second;
         //side length e numarul de sample-uri necesar la dreapta si la stanga selectiei pentru repair, necesare la high-pass si riaa
-        final int side_length = Math.max( ( work_on_high_pass ) ? high_pass_length / 2 : 0, ( work_on_position_domain ) ? riaa_length / 2 : 0 );
+        final int side_length = Math.max( ( work_on_band_pass ) ? high_pass_length / 2 : 0, ( work_on_position_domain ) ? riaa_length / 2 : 0 );
 
         /*
             Work
@@ -290,7 +300,7 @@ public class Repair_in_memory implements IEffect
                 repair_dest.put_samples( workADS.get_samples( repair_dest_fetch.l, repair_dest_fetch.get_length() ) );
 
                 //Predict the new samples
-                if( work_on_high_pass )
+                if( work_on_band_pass )
                 {
                     SingleBlockADS high_pass = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), 0, new Interval( 0, 0 ) );
 
@@ -359,5 +369,11 @@ public class Repair_in_memory implements IEffect
                 System.out.println( "Repairing at second " + second );
             }
         }
+    }
+
+    public void setBandpass_cutoff_frqs( int low_cutoff_frq, int high_cutoff_frq )
+    {
+        this.low_cutoff_frq = low_cutoff_frq;
+        this.high_cutoff_frq = high_cutoff_frq;
     }
 }

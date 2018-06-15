@@ -659,11 +659,12 @@ public class Main_window
 
                 if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
                 {
-                    final Repair_in_memory effect = ( Repair_in_memory )eff;
-                    effect.setWork_on_high_pass( true );
-                    effect.setWork_on_position_domain( false );
                     mi.setOnAction( ev ->
                                     {
+                                        final Repair_in_memory effect = new Repair_in_memory();
+                                        effect.setWork_on_band_pass( true );
+                                        effect.setWork_on_position_domain( false );
+                                        effect.setBandpass_cutoff_frqs( 2000, -1 );
                                         System.out.println( effect.getName() );
                                         onApplyRepair_in_memory( effect );
                                     } );

@@ -112,7 +112,7 @@ public class TestMain {
             //Utils.copyToADS( wav, out );
             Repair_in_memory effect = new Repair_in_memory();
             effect.setWork_on_position_domain( true );
-            effect.setWork_on_high_pass( true );
+            effect.setWork_on_band_pass( true );
             effect.apply( cache, out, new Interval( 0, wav.get_sample_number() ) );
 
             cache.flushAll();
@@ -162,7 +162,7 @@ public class TestMain {
         System.out.println( "Duration: " + ( end_time - start_time ) + " ms" );
     }
 
-    public static void main( String[] args )
+    public static void main9( String[] args )
     {
         try
         {
