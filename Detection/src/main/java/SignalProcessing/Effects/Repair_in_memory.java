@@ -137,13 +137,6 @@ public class Repair_in_memory implements IEffect
 
         List< Marking > repair_intervals = ProjectStatics.getMarkerFile().get_all_markings( interval );
 
-        /*repair_intervals.add( new Marking( 200, 204, 0 ) ); // requires [150,255)
-        repair_intervals.add( new Marking( 210, 229, 0 ) ); // requires [110,330)
-        repair_intervals.add( new Marking( 1005, 1014, 0 ) ); // requires [905,1115)
-        repair_intervals.add( new Marking( 2000, 2010, 0 ) ); // requires [1900,2110)
-        repair_intervals.add( new Marking( cache_size - 5, cache_size + 4, 0 ) ); // requires [7900,8110)
-        repair_intervals.add( new Marking( 20000, 20050, 0 ) ); // requires [19500,20550)
-*/
         repair_intervals.sort( ( i1, i2 ) ->
                                {
                                    return -( i2.getInterval().l - i2.getInterval().get_length() * fetch_ratio ) + ( i1.getInterval().l - i1.getInterval().get_length() * fetch_ratio );

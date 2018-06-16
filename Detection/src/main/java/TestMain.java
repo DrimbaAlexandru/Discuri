@@ -14,6 +14,7 @@ import SignalProcessing.LinearPrediction.LinearPrediction;
 import Utils.Interval;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
@@ -267,7 +268,7 @@ public class TestMain {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
             WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), 2 );
 
-            int nr_freq = 1000;
+            int nr_freq = 500;
             double[] freqs = new double[ nr_freq ];
             double[] resps = new double[ nr_freq ];
             for( int i = 0; i < nr_freq; i++ )
@@ -275,14 +276,15 @@ public class TestMain {
                 freqs[ i ] = i * wav.get_sample_rate() / nr_freq;
             }
 
-            FIR.add_pass_cut_freq_resp( freqs, resps, nr_freq, 2000, -120, 0 );
+            FIR.add_pass_cut_freq_resp( freqs, resps, nr_freq, 2000, 0, 0 );
             //plot_in_matlab( freqs, resps, nr_freq );
 
-            FIR fir = FIR.fromFreqResponse( freqs, resps, nr_freq, wav.get_sample_rate(), 127 );
+            FIR fir = FIR.fromFreqResponse( freqs, resps, nr_freq, wav.get_sample_rate(), 2047 );
             Equalizer effect = new Equalizer();
             effect.setMax_chunk_size( 100000 );
             effect.setFilter( fir );
             effect.apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
+            dest.close();
         }
         catch( DataSourceException e )
         {
@@ -343,6 +345,39 @@ public class TestMain {
             dest.close();
         }
         catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 res p1.wav" );
+            CachedAudioDataSource dest = new CachedAudioDataSource( new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 res p2.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() ), 50000, 2048 );
+            ADS_Utils.copyToADS( wav, dest );
+            ProjectStatics.loadMarkerFile( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
+            Multi_Band_Repair_Marked repair_marked = new Multi_Band_Repair_Marked( 511, 512, 16 );
+            repair_marked.getBand_cutoffs().add( 2000 );
+            //repair_marked.getBand_cutoffs().add( 500 );
+            repair_marked.setRepair_residue( true );
+            /*Repair_in_memory repair_marked = new Repair_in_memory();
+            repair_marked.setBandpass_cutoff_frqs( 2000, -1 );
+            repair_marked.setWork_on_band_pass( true );*/
+            repair_marked.apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
+            dest.flushAll();
+            dest.close();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+        catch( FileNotFoundException e )
+        {
+            e.printStackTrace();
+        }
+        catch( ParseException e )
         {
             e.printStackTrace();
         }

@@ -40,7 +40,7 @@ public class Equalizer implements IEffect
 
         final boolean isInPlace = ( dataDest == dataSource );
         double[][] prev_left_samples = null;
-        double[][] prev_processed_samples = new double[ dataSource.get_channel_number() ][ buf_len ];
+        double[][] flusing_buffer = new double[ dataSource.get_channel_number() ][ max_chunk_size ];
         final Equalizer_FIR equalizer_fir = new Equalizer_FIR( fir_filter );
         if( isInPlace )
         {
@@ -90,15 +90,16 @@ public class Equalizer implements IEffect
             }
             equalizer_fir.apply( win.getSamples()[ k ], applying_range );
             win.markModified();
-            if( i + applying_range.get_length() < interval.r )
+        }
+        for( k = 0; k < dataSource.get_channel_number(); k++ )
+        {
+            for( j = 0; j < applying_range.get_length(); j++ )
             {
-                for( j = 0; j < buf_len; j++ )
-                {
-                    prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
-                }
+                flusing_buffer[ k ][ j ] = win.getSamples()[ k ][ applying_range.l + j ];
             }
         }
-        dataDest.put_samples( win );
+        dataDest.put_samples( new AudioSamplesWindow( flusing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
+
         i += applying_range.get_length();
 
         for( ; i < interval.r; )
@@ -136,19 +137,18 @@ public class Equalizer implements IEffect
 
                 equalizer_fir.apply( win.getSamples()[ k ], applying_range );
 
-                for( j = 0; j < buf_len; j++ )
-                {
-                    win.putSample( first_fetchable_sample_index + buf_len - 1 - j, k, prev_processed_samples[ k ][ buf_len - 1 - j ] );
-                }
-
                 win.markModified();
 
-                for( j = 0; j < buf_len; j++ )
+            }
+            for( k = 0; k < dataSource.get_channel_number(); k++ )
+            {
+                for( j = 0; j < applying_range.get_length(); j++ )
                 {
-                    prev_processed_samples[ k ][ buf_len - 1 - j ] = win.getSamples()[ k ][ applying_range.r - 1 - j ];
+                    flusing_buffer[ k ][ j ] = win.getSamples()[ k ][ applying_range.l + j ];
                 }
             }
-            dataDest.put_samples( win );
+            dataDest.put_samples( new AudioSamplesWindow( flusing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
+
             i += applying_range.get_length();
         }
     }

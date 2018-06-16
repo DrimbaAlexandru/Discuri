@@ -145,4 +145,5 @@ public class AudioSamplesWindow
             interval.r = interval.l + new_length;
         }
     }
+
 }

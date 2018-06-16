@@ -661,12 +661,17 @@ public class Main_window
                 {
                     mi.setOnAction( ev ->
                                     {
-                                        final Repair_in_memory effect = new Repair_in_memory();
+                                        /*final Repair_in_memory effect = new Repair_in_memory();
                                         effect.setWork_on_band_pass( true );
                                         effect.setWork_on_position_domain( false );
                                         effect.setBandpass_cutoff_frqs( 2000, -1 );
                                         System.out.println( effect.getName() );
-                                        onApplyRepair_in_memory( effect );
+                                        onApplyRepair_in_memory( effect );*/
+                                        final Multi_Band_Repair_Marked effect = new Multi_Band_Repair_Marked();
+                                        effect.getBand_cutoffs().add( 2000 );
+                                        effect.setRepair_residue( true );
+                                        System.out.println( effect.getName() );
+                                        apply_effect( effect, false, false );
                                     } );
                     continue;
                 }

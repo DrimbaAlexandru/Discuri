@@ -108,7 +108,7 @@ public class Util_Stuff
             System.out.print( ys[ i ] + ", " );
         }
         System.out.println( ys[ n - 1 ] + " ];" );
-        System.out.println( "plot( xs, ys, '-o' );" );
+        System.out.println( "plot( xs, ys, '-' );" );
     }
 
     public static void plot_in_matlab( double[] ys, int n )
@@ -122,7 +122,7 @@ public class Util_Stuff
             System.out.print( ys[ i ] + ", " );
         }
         System.out.println( ys[ n - 1 ] + " ];" );
-        System.out.println( "plot( xs, ys, '-o' );" );
+        System.out.println( "plot( xs, ys, '-' );" );
     }
 
     public static void plot_in_matlab( double[] orig_f_xs, double[] orig_f_ys, int orig_f_len,double[] new_xs, double[] new_ys, int new_len )
