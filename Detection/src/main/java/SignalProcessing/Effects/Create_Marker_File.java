@@ -5,7 +5,7 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
 import MarkerFile.MarkerFile;
-import ProjectStatics.ProjectStatics;
+import ProjectStatics.*;
 import Utils.Interval;
 import Utils.MyPair;
 
@@ -176,7 +176,7 @@ public class Create_Marker_File implements IEffect
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         Interval applying_interval = new Interval( interval.l, interval.get_length() );
-        MarkerFile mf = ProjectStatics.getMarkerFile();
+        MarkerFile mf = ProjectManager.getMarkerFile();
 
         int i;
         int temp_len;

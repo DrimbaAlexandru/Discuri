@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Slider?>
+<?import javafx.scene.layout.AnchorPane?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="250.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Button fx:id="btn_cancel" layoutX="149.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="40.0" />
+      <Button fx:id="btn_apply" layoutX="36.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Apply" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="40.0" />
+      <CheckBox fx:id="chk_use_direct_repair" layoutX="20.0" layoutY="125.0" mnemonicParsing="false" text="Use direct repair if favorable" AnchorPane.leftAnchor="20.0">
+         <padding>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </padding>
+      </CheckBox>
+      <CheckBox fx:id="chk_repair_residue" layoutX="20.0" layoutY="103.0" mnemonicParsing="false" text="Repair residue" AnchorPane.leftAnchor="20.0">
+         <padding>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </padding>
+      </CheckBox>
+      <CheckBox fx:id="chk_8000_cut" layoutX="14.0" layoutY="23.0" mnemonicParsing="false" text="8000Hz cutoff" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="40.0">
+         <padding>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </padding>
+      </CheckBox>
+      <CheckBox fx:id="chk_2000_cut" layoutX="20.0" layoutY="61.0" mnemonicParsing="false" text="2000Hz cutoff" AnchorPane.leftAnchor="20.0">
+         <padding>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </padding>
+      </CheckBox>
+      <CheckBox fx:id="chk_500_cut" layoutX="14.0" layoutY="82.0" mnemonicParsing="false" text="500Hz cutoff" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="82.0">
+         <padding>
+            <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+         </padding>
+      </CheckBox>
+      <Label layoutX="10.0" layoutY="156.0" text="LP coefficients: " AnchorPane.leftAnchor="10.0" />
+      <Slider fx:id="slider_lp_coeffs" blockIncrement="4.0" layoutX="89.0" layoutY="156.0" max="32.0" min="1.0" prefHeight="17.0" prefWidth="121.0" value="16.0" />
+      <Label fx:id="lbl_lp_coeffs" layoutX="222.0" layoutY="156.0" prefHeight="17.0" prefWidth="20.0" text="32" />
+      <Label layoutX="83.0" layoutY="6.0" text="Repair markings" />
+   </children>
+</AnchorPane>

@@ -6,7 +6,7 @@ import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.MemoryADS.SingleBlockADS;
 import MarkerFile.Marking;
-import ProjectStatics.ProjectStatics;
+import ProjectStatics.ProjectManager;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
 import Utils.Interval;
@@ -135,7 +135,7 @@ public class Repair_in_memory implements IEffect
         }
 
 
-        List< Marking > repair_intervals = ProjectStatics.getMarkerFile().get_all_markings( interval );
+        List< Marking > repair_intervals = ProjectManager.getMarkerFile().get_all_markings( interval );
 
         repair_intervals.sort( ( i1, i2 ) ->
                                {

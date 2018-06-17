@@ -36,6 +36,10 @@ public class OrderedNonOverlappingIntervalSet
      * */
     private void moveCursorOnOrBefore( int pos )
     {
+        if( current.getValue().contains( pos ) )
+        {
+            return;
+        }
         if( last.getPrev().getValue() != null && last.getPrev().getValue().l <= pos )
         {
             current = last.getPrev();

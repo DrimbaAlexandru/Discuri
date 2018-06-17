@@ -1,15 +1,15 @@
 package MVC.GUI;
 
 import AudioDataSource.AudioSamplesWindow;
-import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.Cached_ADS_Manager;
+import AudioDataSource.MemoryADS.InMemoryADS;
 import Exceptions.DataSourceException;
-import AudioDataSource.FileADS.WAVFileAudioSource;
-import AudioDataSource.IAudioDataSource;
-import AudioDataSource.ADS_Utils;
-import ProjectStatics.ProjectStatics;
+import Exceptions.DataSourceExceptionCause;
+import MVC.GUI.UI_Components.Amplify_Dialog;
+import MVC.GUI.UI_Components.Effect_UI_Component;
+import MarkerFile.Marking;
+import ProjectStatics.*;
 import SignalProcessing.Effects.*;
-import SignalProcessing.Filters.IIR;
 import Utils.Interval;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -19,7 +19,6 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -28,7 +27,7 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.text.ParseException;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by Alex on 27.03.2017.
@@ -73,18 +72,12 @@ public class Main_window
     private int window_size = 32768;
     private int first_sample_index = 0;
 
-    private boolean update_samples_window = true;
-
-    private int selection_start_index = 0;
+    private final Interval selection = new Interval( 0, 0 );
     private int selection_started_index = 0;
-    private int selection_end_index = 0;
 
-    private double l_window[] = new double[ 0 ];
-    private double r_window[] = new double[ 0 ];
+    private AudioSamplesWindow visible_samples = null;
+    private Interval visible_samples_interval = new Interval( 0, 0 );
 
-    private String raw_wav_filepath = "";
-
-    private CachedAudioDataSource dataSource = null;
     private int sample_number;
     private int channel_number;
 
@@ -100,7 +93,7 @@ public class Main_window
     private boolean main_canvas_LMB_down_on_zoom;
     private int periodic_window_increment = 0;
 
-    private boolean inv_select, inv_samples; /* Flags for updating selection and samples related GUI components
+    private boolean window_size_changed, selection_changed, displayed_interval_changed; /* Flags for updating selection and samples related GUI components
 
 
     /*************************************************
@@ -129,7 +122,7 @@ public class Main_window
     {
         if( first_sample_index != value )
         {
-            update_samples_window = true;
+            displayed_interval_changed = true;
         }
 
         first_sample_index = value;
@@ -141,7 +134,6 @@ public class Main_window
         {
             first_sample_index = 0;
         }
-        inv_samples = true;
     } /* set_first_sample_index */
 
 
@@ -153,12 +145,45 @@ public class Main_window
 
     private void refresh_view()
     {
-        if( inv_select || inv_samples )
+        if( selection_changed || displayed_interval_changed || window_size_changed )
         {
             drawSamples();
+        }
+        if( selection_changed )
+        {
             refreshSelection();
         }
     } /* refresh_view */
+
+
+    /*----------------------------------------
+    Method name: on_data_source_modified()
+    Description: Handle the change of the underlying datasource
+    ----------------------------------------*/
+    private void on_data_source_changed()
+    {
+        if( sample_number != ProjectManager.getCache().get_sample_number() )
+        {
+            sample_number = ProjectManager.getCache().get_sample_number();
+
+            current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
+            sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
+
+            time_scroll.setMin( 0 );
+            time_scroll.setMax( sample_number );
+
+            window_size = Math.min( window_size, sample_number );
+            window_size_changed = true;
+        }
+        if( channel_number != ProjectManager.getCache().get_channel_number() )
+        {
+            channel_number = ProjectManager.getCache().get_channel_number();
+        }
+        selection_changed = true;
+        displayed_interval_changed = true;
+        visible_samples_interval.l = 0;
+        visible_samples_interval.r = 0;
+    }
 
 
     /*----------------------------------------
@@ -179,173 +204,31 @@ public class Main_window
         --------------------------------*/
         fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "WAV Files", "*.wav" ) );
         File f = fc.showOpenDialog( localScene.getWindow() );
+        String audio_file_path;
         if( f != null )
         {
-            raw_wav_filepath = f.getAbsolutePath();
+            audio_file_path = f.getAbsolutePath();
         }
         else
         {
-            raw_wav_filepath = ""; /* cancel the initialization if the file open failed */
+            /* cancel the initialization if the file open failed */
             return;
         }
 
         try
         {
-            ProjectStatics.loadAudioFile( raw_wav_filepath );
-            dataSource = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(), ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
-            window_size = Math.min( window_size, dataSource.get_sample_number() );
+            ProjectManager.new_project_from_audio_file( audio_file_path );
+
+            /*--------------------------------
+            Initialize variables and GUI components
+            --------------------------------*/
+            on_data_source_changed();
         }
         catch( Exception e )
         {
             treatException( e );
             showDialog( Alert.AlertType.ERROR, "File load failed. " + e.getMessage() );
-            return;
         }
-
-        /*--------------------------------
-        Initialize variables and GUI components
-        --------------------------------*/
-        inv_select = true;
-        inv_samples = true;
-        update_samples_window = true;
-
-        sample_number = dataSource.get_sample_number();
-        channel_number = dataSource.get_channel_number();
-
-        current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
-        sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
-
-        time_scroll.setMin( 0 );
-        time_scroll.setMax( sample_number );
-        time_scroll.setUnitIncrement( 1 );
-        time_scroll.setOnMouseClicked( e ->
-                                       {
-                                           set_first_sample_index( ( int )time_scroll.getValue() );
-                                       } );
-        time_scroll.setOnDragDone( e ->
-                                   {
-                                       set_first_sample_index( ( int )time_scroll.getValue() );
-                                   } );
-
-        btn_next_frame.setOnMouseClicked( e ->
-                                          {
-                                              set_first_sample_index( first_sample_index + window_size );
-                                          } );
-        btn_next_sample.setOnMouseClicked( e ->
-                                           {
-                                               set_first_sample_index( first_sample_index + ( window_size + display_window_width - 1 ) / display_window_width );
-                                           } );
-        btn_prev_frame.setOnMouseClicked( e ->
-                                          {
-                                              set_first_sample_index( first_sample_index - window_size );
-                                          } );
-        btn_prev_sample.setOnMouseClicked( e ->
-                                           {
-                                               set_first_sample_index( first_sample_index - ( window_size + display_window_width - 1 ) / display_window_width );
-
-                                           } );
-        btn_constrict_select.setOnMouseClicked( e ->
-                                                {
-                                                    update_samples_window = true;
-                                                    window_size /= 2;
-                                                    if( window_size < 4 )
-                                                    {
-                                                        window_size = 4;
-                                                    }
-                                                    set_first_sample_index( ( selection_start_index + selection_end_index ) / 2 - window_size / 2 );
-                                                    inv_samples = true;
-                                                } );
-        btn_expand_select.setOnMouseClicked( e ->
-                                             {
-                                                 update_samples_window = true;
-                                                 window_size *= 2;
-                                                 if( window_size > sample_number )
-                                                 {
-                                                     window_size = sample_number;
-                                                 }
-                                                 set_first_sample_index( first_sample_index - window_size / 4 );
-                                                 inv_samples = true;
-                                             } );
-        btn_zoom_in.setOnMouseClicked( e->
-                                       {
-                                           zoom_index++;
-                                           inv_samples = true;
-                                       });
-        btn_zoom_out.setOnMouseClicked( e->
-                                        {
-                                            zoom_index--;
-                                            inv_samples = true;
-                                        });
-        main_canvas.setOnMousePressed( e->
-                                       {
-                                           System.out.println( "Pressed" );
-                                           main_canvas_LMB_down_on_samples = false;
-                                           main_canvas_LMB_down_on_zoom = false;
-                                           if( e.getX() >= window_left_pad && e.getX() <=main_canvas.getWidth() ) /* Selection change handling */
-                                           {
-                                               selection_start_index = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
-                                               selection_started_index = selection_start_index;
-                                               selection_end_index = selection_start_index;
-                                               inv_select = true;
-                                               main_canvas_LMB_down_on_samples = true;
-                                           }
-                                           if( e.getX() < window_left_pad && e.getX() >= 0 ) /* Zoom change handling */
-                                           {
-                                               main_canvas_LMB_down_on_zoom = true;
-                                           }
-
-                                       });
-        main_canvas.setOnMouseReleased( e ->
-                                        {
-                                            System.out.println( "Released" );
-                                            periodic_window_increment = 0;
-                                        } );
-
-        main_canvas.setOnMouseDragged( e ->
-                                       {
-                                           if( main_canvas_LMB_down_on_samples ) /* Selection change handling */
-                                           {
-                                               periodic_window_increment = 0;
-                                               inv_select = true;
-                                               int temp = ( int )( first_sample_index + window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
-
-                                               if( temp < selection_started_index )
-                                               {
-                                                   selection_start_index = temp;
-                                                   selection_end_index = selection_started_index;
-                                               }
-                                               else
-                                               {
-                                                   selection_start_index = selection_started_index;
-                                                   selection_end_index = temp;
-                                               }
-                                               if( e.getX() < window_left_pad || e.getX() > main_canvas.getWidth() )
-                                               {
-                                                   periodic_window_increment = ( int )( window_size * ( ( e.getX() - window_left_pad ) / ( display_window_width ) ) );
-                                               }
-                                               if( e.getX() > main_canvas.getWidth() )
-                                               {
-                                                   periodic_window_increment = ( int )( window_size * ( ( e.getX() - main_canvas.getWidth() ) / ( display_window_width ) ) );
-                                               }
-                                           }
-                                           else /* Vertical zoom handling */
-                                           {
-                                               ;
-                                           }
-
-                                       } );
-        localScene.setOnKeyReleased( e ->
-                                     {
-                                         if( e.getCode() == KeyCode.I && e.isControlDown() )
-                                         {
-                                             onApplyRepairSelected( new Repair() );
-                                         }
-                                         if( e.getCode() == KeyCode.M && e.isControlDown() )
-                                         {
-                                             onApplyMarkSelected( new Mark_selected() );
-                                         }
-                                     } );
-
     } /* loadWAV */
 
 
@@ -364,9 +247,12 @@ public class Main_window
         int display_window_size;
         AudioSamplesWindow win;
         final GraphicsContext gc = main_canvas.getGraphicsContext2D();
+        Interval visible_selection = new Interval( selection.l, selection.r, false );
+        visible_selection.limit( first_sample_index, first_sample_index + window_size );
+        double samples[];
 
         /* Handle no WAV file loaded case */
-        if( dataSource == null )
+        if( ProjectManager.getCache() == null )
         {
             return;
         }
@@ -374,7 +260,7 @@ public class Main_window
         /*--------------------------------
         Initialize variables
         --------------------------------*/
-        if( window_size < display_window_width )
+        if( window_size <= display_window_width )
         {
             display_window_size = window_size;
         }
@@ -383,11 +269,25 @@ public class Main_window
             display_window_size = 2 * display_window_width;
         }
 
-        if( display_window_size > l_window.length )
+        //Update the visible_samples
+        if( window_size_changed || selection_changed )
         {
-            l_window = new double[ display_window_size ];
-            r_window = new double[ display_window_size ];
+            try
+            {
+                if( !visible_samples_interval.includes( new Interval( first_sample_index, window_size ) ) )
+                {
+                    visible_samples = ProjectManager.getCache().get_resized_samples( first_sample_index, window_size, display_window_size );
+                    visible_samples_interval.l = visible_samples.get_first_sample_index();
+                    visible_samples_interval.r = visible_samples.get_after_last_sample_index();
+                }
+            }
+            catch( DataSourceException e )
+            {
+                treatException( e );
+                return;
+            }
         }
+
         /*--------------------------------
         Redraw the canvas
         --------------------------------*/
@@ -395,76 +295,50 @@ public class Main_window
         gc.fillRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
 
         gc.setFill( new Color( 0, 0.5, 1, 0.1 ) );
-        gc.fillRect( window_left_pad + ( double )( selection_start_index - first_sample_index ) / window_size * display_window_width, 0, ( double )( selection_end_index - selection_start_index ) / window_size * display_window_width + 1, main_canvas.getHeight() );
+        gc.fillRect( window_left_pad + remap_to_interval( visible_selection.l - first_sample_index, 0, window_size, 0, display_window_width ), 0, remap_to_interval( visible_selection.get_length(), 0, window_size, 0, display_window_width ), main_canvas.getHeight() );
 
         gc.setStroke( Color.BLACK );
         gc.strokeLine( window_left_pad, 0, window_left_pad, main_canvas.getHeight() );
         gc.strokeLine( window_left_pad, main_canvas.getHeight() / 2, main_canvas.getWidth(), main_canvas.getHeight() / 2 );
         gc.strokeRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
 
-        //System.out.println( "Window size: " + window_size );
-        //System.out.println( "Window from sample " + first_sample_index + " to sample " + last_sample_index );
-
-        try
-        {
-            if( update_samples_window )
-            {
-                win = dataSource.get_resized_samples( first_sample_index, window_size, display_window_size );
-                update_samples_window = false;
-                for( i = 0; i < display_window_size; i++ )
-                {
-                    l_window[ i ] = win.getSample( i, 0 );
-                    r_window[ i ] = win.getSample( i, ( channel_number < 2 ) ? 0 : 1 );
-                }
-            }
-        }
-        catch( Exception e )
-        {
-            treatException( e );
-            return;
-        }
-
         for( i = 0; i < display_window_size - 1; i++ )
         {
             /* Draw L channel */
-            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 0 ) )
+            if(channel_number>=0)
             {
-
-                gc.setStroke( Color.RED );
+                if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 0 ) )
+                {
+                    gc.setStroke( ProjectStatics.marked_signal_color );
+                }
+                else
+                {
+                    gc.setStroke( ProjectStatics.signal_color );
+                }
+                gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                               ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
+                               ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                               ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
             }
-            else
-            {
-                gc.setStroke( Color.GREEN );
-            }
-            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -l_window[ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
-                           ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -l_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
-
             /* Draw R channel */
-            if( ProjectStatics.getMarkerFile() != null && ProjectStatics.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 1 ) )
+            if(channel_number>=1)
             {
-                gc.setStroke( Color.RED );
+                if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 1 ) )
+                {
+                    gc.setStroke( ProjectStatics.marked_signal_color );
+                }
+                else
+                {
+                    gc.setStroke( ProjectStatics.other_signal_color );
+                }
+                gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                               ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 1 ][ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
+                               ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                               ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 1 ][ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
             }
-            else
-            {
-                gc.setStroke( Color.BLUE );
-            };
-            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -r_window[ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2,
-                           ( i + 1 ) * display_window_width / ( display_window_size )+ window_left_pad,
-                           ( 1 + Math.min( Math.max( -r_window[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
-
-            /* Draw L-R channel *//*
-            gc.setStroke( Color.PINK );
-            gc.strokeLine( i * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -( l_window[ i ] - r_window[ i ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2,
-                           ( i + 1 ) * display_window_width / ( display_window_size ) + window_left_pad,
-                           ( 1 + Math.min( Math.max( -( l_window[ i + 1] - r_window[ i + 1 ] ) * Math.pow( 2, zoom_index - 1 ), -1 ), 1 ) ) * display_window_height / 2 );
-        */
         }
         main_canvas.getGraphicsContext2D().setFill( Color.BLACK );
-        inv_samples = false;
+        displayed_interval_changed = false;
     } /* drawSamples */
 
 
@@ -475,33 +349,37 @@ public class Main_window
 
     private void refreshSelection()
     {
-        if( dataSource == null )
+        if( ProjectManager.getCache() == null )
         {
             return;
         }
-        final int sel_len = selection_end_index - selection_start_index;
-        final int seconds = selection_start_index / dataSource.get_sample_rate();
-        final int milliseconds = ( selection_start_index % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate();
-        time_scroll.setValue( selection_start_index );
+        final int sample_rate = ProjectManager.getCache().get_sample_rate();
+        final int sel_len = selection.get_length();
+        final int sel_start_seconds = selection.l / sample_rate;
+        final int sel_start_milliseconds = ( selection.l % sample_rate * 1000 ) / sample_rate;
+        final int sel_end_seconds = selection.r / sample_rate;
+        final int sel_end_millisecods = ( selection.r % sample_rate * 1000 ) / sample_rate;
+
+        time_scroll.setValue( selection.l );
         position_indicator.setText( "samples / " + ( sample_number ) +
-                                            " ( " + String.format( "%02d", seconds / 3600 ) +
-                                            ":" + String.format( "%02d", seconds / 60 % 60 ) +
-                                            ":" + String.format( "%02d", seconds % 60 ) +
-                                            "." + String.format( "%03d", milliseconds ) +
-                                            " / " + String.format( "%02d", ( sample_number / dataSource.get_sample_rate() ) / 3600 ) +
-                                            ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() / 60 % 60 ) +
-                                            ":" + String.format( "%02d", sample_number / dataSource.get_sample_rate() % 60 ) +
-                                            "." + String.format( "%03d", ( sample_number % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
-        current_sample_spinner.getValueFactory().setValue( selection_start_index );
+                                            " ( " + String.format( "%02d", sel_start_seconds / 3600 ) +
+                                            ":" + String.format( "%02d", sel_start_seconds / 60 % 60 ) +
+                                            ":" + String.format( "%02d", sel_start_seconds % 60 ) +
+                                            "." + String.format( "%03d", sel_start_milliseconds ) +
+                                            " / " + String.format( "%02d", ( sample_number / sample_rate ) / 3600 ) +
+                                            ":" + String.format( "%02d", sample_number / sample_rate / 60 % 60 ) +
+                                            ":" + String.format( "%02d", sample_number / sample_rate % 60 ) +
+                                            "." + String.format( "%03d", ( sample_number % sample_rate * 1000 ) / sample_rate ) + " )" );
+        current_sample_spinner.getValueFactory().setValue( selection.l );
         sel_len_indicator.setText( "samples ( "+
-                                           String.format( "%02d", sel_len / dataSource.get_sample_rate() / 3600 ) +
-                                           ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() / 60 % 60 ) +
-                                           ":" + String.format( "%02d", sel_len / dataSource.get_sample_rate() % 60 ) +
-                                           "." + String.format( "%03d", ( sel_len % dataSource.get_sample_rate() * 1000 ) / dataSource.get_sample_rate() ) + " )" );
+                                           String.format( "%02d", sel_len / sample_rate / 3600 ) +
+                                           ":" + String.format( "%02d", sel_len / sample_rate / 60 % 60 ) +
+                                           ":" + String.format( "%02d", sel_len / sample_rate % 60 ) +
+                                           "." + String.format( "%03d", ( sel_len % sample_rate * 1000 ) / sample_rate ) + " )" );
         sel_len_spinner.getValueFactory().setValue( sel_len );
         time_scroll.setBlockIncrement( window_size );
         time_scroll.setValue( first_sample_index );
-        inv_select = false;
+        selection_changed = false;
     }
 
 
@@ -516,17 +394,10 @@ public class Main_window
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
         l.setLocation( getClass().getClassLoader().getResource( "fxml_main.fxml" ) );
-        ProjectStatics.registerEffect( new Mark_selected() );
-        ProjectStatics.registerEffect( new Repair() );
-        ProjectStatics.registerEffect( new Repair_Marked() );
-        ProjectStatics.registerEffect( new Sample_Summer() );
-        ProjectStatics.registerEffect( new Repair_in_memory() );
 
         try
         {
             mainLayout = l.load();
-            //markerFile = MarkerFile.fromFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
-            //markerFile = new MarkerFile( "C:\\Users\\Alex\\Desktop\\marker.txt" );
             display_window_height = ( int )main_canvas.getHeight();
             display_window_width = ( int )main_canvas.getWidth() - window_left_pad;
             startRefresher();
@@ -535,7 +406,7 @@ public class Main_window
                                         {
                                             loadWAV();
                                         } );
-            menu_load_marker.setOnAction( e->
+            menu_load_marker.setOnAction( e ->
                                           {
                                               FileChooser fc = new FileChooser();
 
@@ -552,15 +423,15 @@ public class Main_window
                                               }
                                               try
                                               {
-                                                  ProjectStatics.loadMarkerFile( path );
+                                                  ProjectManager.load_marker_file( path );
                                               }
                                               catch( FileNotFoundException | ParseException e1 )
                                               {
                                                   showDialog( Alert.AlertType.ERROR, e1.getMessage() );
                                               }
-                                          });
+                                          } );
 
-            menu_save_marker.setOnAction( ev->
+            menu_save_marker.setOnAction( ev ->
                                           {
                                               FileChooser fc = new FileChooser();
 
@@ -570,112 +441,188 @@ public class Main_window
                                               {
                                                   try
                                                   {
-                                                      ProjectStatics.getMarkerFile().writeMarkingsToFile( new FileWriter( f ) );
+                                                      ProjectManager.export_marker_file( f.getAbsolutePath() );
                                                   }
                                                   catch( IOException e )
                                                   {
                                                       treatException( e );
                                                   }
                                               }
-                                          });
-            menu_export.setOnAction( ev->{
-                FileChooser fc = new FileChooser();
+                                          } );
+            menu_export.setOnAction( ev ->
+                                     {
+                                         FileChooser fc = new FileChooser();
 
-                fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
-                File f = fc.showSaveDialog( null );
-                if( f != null )
-                {
-                    try
-                    {
-                        if( ProjectStatics.getVersionedADS() != null )
-                        {
-                            WAVFileAudioSource dest = new WAVFileAudioSource( f.getAbsolutePath(), dataSource.get_channel_number(), dataSource.get_sample_rate(), 2 );
-                            ADS_Utils.copyToADS( dataSource, dest );
-                            dest.close();
-                        }
-                    }
-                    catch( DataSourceException e )
-                    {
-                        treatException( e );
-                    }
-                }
-            } );
+                                         fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Audio files", "*.wav" ) );
+                                         File f = fc.showSaveDialog( null );
+                                         if( f != null )
+                                         {
+                                             try
+                                             {
+                                                 ProjectManager.export_project( f.getAbsolutePath() );
+                                             }
+                                             catch( DataSourceException e )
+                                             {
+                                                 treatException( e );
+                                             }
+                                         }
+                                     } );
 
             btn_redo.setOnAction( ev ->
                                   {
-                                      ProjectStatics.getVersionedADS().redo();
-                                      onDataSourceChanged();
+                                      try
+                                      {
+                                          ProjectManager.redo();
+                                          on_data_source_changed();
+                                      }
+                                      catch( DataSourceException e )
+                                      {
+                                          treatException( e );
+                                      }
                                   } );
             btn_undo.setOnAction( ev ->
                                   {
-                                      ProjectStatics.getVersionedADS().undo();
-                                      onDataSourceChanged();
+                                      try
+                                      {
+                                          ProjectManager.undo();
+                                          on_data_source_changed();
+                                      }
+                                      catch( DataSourceException e )
+                                      {
+                                          treatException( e );
+                                      }
                                   } );
 
-            for( IEffect eff : ProjectStatics.getEffectList() )
-            {
-                MenuItem mi = new MenuItem( eff.getName() );
-                menu_effects.getItems().add( mi );
-                if( eff.getClass().getCanonicalName().equals( Mark_selected.class.getCanonicalName() ) )
-                {
-                    final Mark_selected effect = ( Mark_selected )eff;
-                    mi.setOnAction( ev ->
-                                    {
-                                        System.out.println( effect.getName() );
-                                        onApplyMarkSelected( effect );
-                                    } );
-                    continue;
-                }
-                if( eff.getClass().getCanonicalName().equals( Repair.class.getCanonicalName() ) )
-                {
-                    final Repair effect = ( Repair )eff;
-                    mi.setOnAction( ev ->
-                                    {
-                                        System.out.println( effect.getName() );
-                                        onApplyRepairSelected( effect );
-                                    } );
-                    continue;
-                }
-                if( eff.getClass().getCanonicalName().equals( Repair_Marked.class.getCanonicalName() ) )
-                {
-                    final Repair_Marked effect = ( Repair_Marked )eff;
-                    mi.setOnAction( ev ->
-                                    {
-                                        System.out.println( effect.getName() );
-                                        onApplyRepairMarked( effect );
-                                    } );
-                    continue;
-                }
-                if( eff.getClass().getCanonicalName().equals( Sample_Summer.class.getCanonicalName() ) )
-                {
-                    final Sample_Summer effect = ( Sample_Summer )eff;
-                    mi.setOnAction( ev ->
-                                    {
-                                        System.out.println( effect.getName() );
-                                        onApplySampleSummer( effect );
-                                    } );
-                    continue;
-                }
+            time_scroll.setUnitIncrement( 1 );
+            time_scroll.setOnMouseClicked( e ->
+                                           {
+                                               set_first_sample_index( ( int )time_scroll.getValue() );
+                                           } );
+            time_scroll.setOnDragDone( e ->
+                                       {
+                                           set_first_sample_index( ( int )time_scroll.getValue() );
+                                       } );
 
-                if( eff.getClass().getCanonicalName().equals( Repair_in_memory.class.getCanonicalName() ) )
-                {
-                    mi.setOnAction( ev ->
-                                    {
-                                        /*final Repair_in_memory effect = new Repair_in_memory();
-                                        effect.setWork_on_band_pass( true );
-                                        effect.setWork_on_position_domain( false );
-                                        effect.setBandpass_cutoff_frqs( 2000, -1 );
-                                        System.out.println( effect.getName() );
-                                        onApplyRepair_in_memory( effect );*/
-                                        final Multi_Band_Repair_Marked effect = new Multi_Band_Repair_Marked();
-                                        effect.getBand_cutoffs().add( 2000 );
-                                        effect.setRepair_residue( true );
-                                        System.out.println( effect.getName() );
-                                        apply_effect( effect, false, false );
-                                    } );
-                    continue;
-                }
-            }
+            btn_next_frame.setOnMouseClicked( e ->
+                                              {
+                                                  set_first_sample_index( first_sample_index + window_size );
+                                              } );
+            btn_next_sample.setOnMouseClicked( e ->
+                                               {
+                                                   set_first_sample_index( first_sample_index + ( window_size + display_window_width - 1 ) / display_window_width );
+                                               } );
+            btn_prev_frame.setOnMouseClicked( e ->
+                                              {
+                                                  set_first_sample_index( first_sample_index - window_size );
+                                              } );
+            btn_prev_sample.setOnMouseClicked( e ->
+                                               {
+                                                   set_first_sample_index( first_sample_index - ( window_size + display_window_width - 1 ) / display_window_width );
+
+                                               } );
+            btn_constrict_select.setOnMouseClicked( e ->
+                                                    {
+                                                        window_size /= 2;
+                                                        if( window_size < 4 )
+                                                        {
+                                                            window_size = 4;
+                                                        }
+                                                        window_size_changed = true;
+                                                        set_first_sample_index( selection.l + selection.get_length() / 2 - window_size / 2 );
+                                                    } );
+            btn_expand_select.setOnMouseClicked( e ->
+                                                 {
+                                                     window_size *= 2;
+                                                     if( window_size > sample_number )
+                                                     {
+                                                         window_size = sample_number;
+                                                     }
+                                                     window_size_changed = true;
+                                                     set_first_sample_index( first_sample_index - window_size / 4 );
+                                                 } );
+            btn_zoom_in.setOnMouseClicked( e ->
+                                           {
+                                               zoom_index++;
+                                               displayed_interval_changed = true;
+                                           } );
+            btn_zoom_out.setOnMouseClicked( e ->
+                                            {
+                                                zoom_index--;
+                                                displayed_interval_changed = true;
+                                            } );
+            main_canvas.setOnMousePressed( e ->
+                                           {
+                                               System.out.println( "Pressed" );
+                                               main_canvas_LMB_down_on_samples = false;
+                                               main_canvas_LMB_down_on_zoom = false;
+                                               if( e.getX() >= window_left_pad && e.getX() <= main_canvas.getWidth() ) /* Selection change handling */
+                                               {
+                                                   selection_started_index = remap_to_interval( ( int )e.getX() - window_left_pad, 0, display_window_width, first_sample_index, first_sample_index + window_size );
+                                                   selection.r = selection.l = selection_started_index;
+                                                   selection_changed = true;
+                                                   main_canvas_LMB_down_on_samples = true;
+                                               }
+                                               if( e.getX() < window_left_pad && e.getX() >= 0 ) /* Zoom change handling */
+                                               {
+                                                   main_canvas_LMB_down_on_zoom = true;
+                                               }
+
+                                           } );
+            main_canvas.setOnMouseReleased( e ->
+                                            {
+                                                System.out.println( "Released" );
+                                                periodic_window_increment = 0;
+                                            } );
+
+            main_canvas.setOnMouseDragged( e ->
+                                           {
+                                               if( main_canvas_LMB_down_on_samples ) /* Selection change handling */
+                                               {
+                                                   periodic_window_increment = 0;
+                                                   selection_changed = true;
+                                                   int cursor_position = remap_to_interval( ( int )e.getX() - window_left_pad, 0, display_window_width, first_sample_index, first_sample_index + window_size );
+
+                                                   if( cursor_position < selection_started_index )
+                                                   {
+                                                       selection.l = cursor_position;
+                                                       selection.r = selection_started_index;
+                                                   }
+                                                   else
+                                                   {
+                                                       selection.l = selection_started_index;
+                                                       selection.r = cursor_position;
+                                                   }
+                                                   if( e.getX() < window_left_pad )
+                                                   {
+                                                       periodic_window_increment = ( int )( e.getX() - window_left_pad ) * window_size / display_window_width;
+                                                   }
+                                                   if( e.getX() > main_canvas.getWidth() )
+                                                   {
+                                                       periodic_window_increment = ( int )( e.getX() - main_canvas.getWidth() ) * window_size / display_window_width;
+                                                   }
+                                               }
+                                               else /* Vertical zoom handling */
+                                               {
+                                                   ;
+                                               }
+
+                                           } );
+
+            MenuItem mi;
+            mi = new MenuItem( "Amplify" );
+            menu_effects.getItems().add( mi );
+            mi.setOnAction( ev ->
+                            {
+                                try
+                                {
+                                    start_effect_with_UI( new Amplify_Dialog() );
+                                }
+                                catch( IOException | DataSourceException e )
+                                {
+                                    treatException( e );
+                                }
+                            } );
+
         }
         catch( IOException e )
         {
@@ -683,43 +630,11 @@ public class Main_window
         }
     } /* Main_window */
 
-    private void onApplySampleSummer( Sample_Summer eff )
-    {
-        IIR_Filter filter = new IIR_Filter();
-        filter.setFilter( new IIR( new double[]{ 1 }, 1, new double[]{ 1, -1 }, 2 ) );
-        apply_effect( filter, false, true );
-    }
-
-    private void onApplyRepair_in_memory( Repair_in_memory eff )
-    {
-        apply_effect( eff, false, false );
-    }
-
-    private void onApplyRepairMarked( Repair_Marked eff )
-    {
-        eff.setMin_fetch_ratio( 32 );
-        eff.setMin_fetch_size( 512 );
-        apply_effect( eff, false, false );
-    }
-
-    private void onApplyRepairSelected( Repair eff )
-    {
-        eff.setAffected_channels( Arrays.asList( 0, 1 ) );
-        eff.set_fetch_ratio( Math.max( 512 / ( selection_end_index - selection_start_index ), 32 ) );
-        apply_effect( eff, false, true );
-    }
-
-    private void onApplyMarkSelected( Mark_selected eff )
-    {
-        eff.setAffected_channels( Arrays.asList( 0, 1 ) );
-        apply_effect( eff, false, true );
-    }
 
     /*----------------------------------------
     Method name: run()
     Description: JavaFX method for application init.
     ----------------------------------------*/
-
     public void run()
     {
         if( mainLayout == null )
@@ -738,17 +653,17 @@ public class Main_window
         localroot.getChildren().add( mainLayout );
         localStage.show();
         refresh_view();
+        localScene.setOnKeyReleased( e ->
+                                     {
+                                         //Handle key shortcuts
+                                     } );
         localStage.setOnCloseRequest( ( e ) ->
                                       {
                                           run_updater = false;
                                           try
                                           {
                                               Thread.sleep( 100 );
-                                              Cached_ADS_Manager.finish_all_caches();
-                                              if( ProjectStatics.getVersionedADS() != null )
-                                              {
-                                                  ProjectStatics.getVersionedADS().dispose();
-                                              }
+                                              ProjectManager.discard_project();
                                           }
                                           catch( DataSourceException | InterruptedException e1 )
                                           {
@@ -773,15 +688,14 @@ public class Main_window
                                                                    {
                                                                        periodic_window_increment = Math.min( periodic_window_increment, window_size / 2 );
                                                                        set_first_sample_index( first_sample_index + periodic_window_increment );
-                                                                       selection_end_index = first_sample_index + window_size;
+                                                                       selection.r = first_sample_index + window_size;
                                                                    }
                                                                    else
                                                                    {
                                                                        periodic_window_increment = Math.max( periodic_window_increment, -window_size / 2 );
                                                                        set_first_sample_index( first_sample_index + periodic_window_increment );
-                                                                       selection_start_index = first_sample_index;
+                                                                       selection.l = first_sample_index;
                                                                    }
-
                                                                }
                                                                refresh_view();
                                                            } );
@@ -804,13 +718,9 @@ public class Main_window
         e.printStackTrace();
     }
 
-    private void apply_effect( IEffect effect, boolean allow_zero_selection, boolean use_destination_as_source )
+    private void apply_effect( IEffect effect, boolean allow_zero_selection )
     {
-        if( dataSource == null )
-        {
-            return;
-        }
-        Interval interval = new Interval( selection_start_index, selection_end_index - selection_start_index );
+        Interval interval = new Interval( selection.l, selection.r, false );
         if( interval.get_length() < 0 )
         {
             return;
@@ -824,41 +734,14 @@ public class Main_window
             else
             {
                 interval.l = 0;
-                interval.r = dataSource.get_sample_number();
+                interval.r = sample_number;
             }
         }
         try
         {
-            dataSource.flushAll();
-            IAudioDataSource srcDS = null;
-            if( !use_destination_as_source )
-            {
-                srcDS = new CachedAudioDataSource( ProjectStatics.getVersionedADS().get_current_version(),
-                                                   ProjectStatics.getDefault_cache_size(),
-                                                   ProjectStatics.getDefault_cache_page_size() );
-            }
-            dataSource.setDataSource( ProjectStatics.getVersionedADS().create_new() );
-            if( use_destination_as_source )
-            {
-                srcDS = dataSource;
-            }
-            effect.apply( srcDS, dataSource, interval );
-            inv_samples = true;
-            update_samples_window = true;
-        }
-        catch( DataSourceException e )
-        {
-            treatException( e );
-        }
-    }
-
-    private void onDataSourceChanged()
-    {
-        try
-        {
-            inv_samples = true;
-            update_samples_window = true;
-            dataSource.setDataSource( ProjectStatics.getVersionedADS().get_current_version() );
+            ProjectManager.apply_effect( effect, interval );
+            on_data_source_changed();
+            displayed_interval_changed = true;
         }
         catch( DataSourceException e )
         {
@@ -871,7 +754,18 @@ public class Main_window
         return ( x - a1 ) * ( b2 - a2 ) / ( b1 - a1 ) + a2;
     }
 
-
+    private void start_effect_with_UI( Effect_UI_Component component )
+    {
+        component.show( localScene.getWindow() );
+        if( component.get_close_exception() != null )
+        {
+            treatException( component.get_close_exception() );
+        }
+        else
+        {
+            apply_effect( component.get_prepared_effect(), false );
+        }
+    }
 }
 
 /* TODO:

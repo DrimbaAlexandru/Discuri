@@ -12,149 +12,114 @@ import java.util.*;
  */
 public class MarkerFile
 {
-    private OrderedNonOverlappingIntervalSet ch0_markings = new OrderedNonOverlappingIntervalSet();
-    private OrderedNonOverlappingIntervalSet ch1_markings = new OrderedNonOverlappingIntervalSet();
-    private String path;
+    private HashMap< Integer, OrderedNonOverlappingIntervalSet > markings = new HashMap<>();
 
-    public MarkerFile( String filePath )
+    public MarkerFile()
     {
-        path = filePath;
+        markings.put( 0, new OrderedNonOverlappingIntervalSet() );
+        markings.put( 1, new OrderedNonOverlappingIntervalSet() );
     }
 
     public void addMark( int fms, int lms, int ch )
     {
-        switch( ch )
+        OrderedNonOverlappingIntervalSet set = markings.get( ch );
+        if( set == null )
         {
-            case 0:
-                ch0_markings.add( new Interval( fms, lms + 1, false ) );
-                break;
-            case 1:
-                ch1_markings.add( new Interval( fms, lms + 1, false ) );
-                break;
+            set = markings.put( ch, new OrderedNonOverlappingIntervalSet() );
         }
+        set.add( new Interval( fms, lms + 1, false ) );
     }
 
     public void deleteMark( int fms, int lms, int ch )
     {
-        switch( ch )
+        OrderedNonOverlappingIntervalSet set = markings.get( ch );
+        if( set == null )
         {
-            case 0:
-                ch0_markings.remove( new Interval( fms, lms + 1, false ) );
-                break;
-            case 1:
-                ch1_markings.remove( new Interval( fms, lms + 1, false ) );
-                break;
+            return;
         }
+        set.remove( new Interval( fms, lms + 1, false ) );
     }
 
     public void writeMarkingsToFile( OutputStreamWriter o ) throws IOException
     {
         Interval i;
-        ch0_markings.moveCursorOnFirst();
-        ch1_markings.moveCursorOnFirst();
-
-        i = ch0_markings.getCurrent();
-        while( i != null )
+        OrderedNonOverlappingIntervalSet set;
+        for( int ch : markings.keySet() )
         {
-            o.write( "ch0 " + i.l + " " + ( i.r - 1 ) + "\r\n" );
-            ch0_markings.moveCursorNext();
-            i = ch0_markings.getCurrent();
-        }
-
-        i = ch1_markings.getCurrent();
-        while( i != null )
-        {
-            o.write( "ch1 " + i.l + " " + ( i.r - 1 ) + "\r\n" );
-            ch1_markings.moveCursorNext();
-            i = ch1_markings.getCurrent();
+            set = markings.get( ch );
+            set.moveCursorOnFirst();
+            i = set.getCurrent();
+            while( i != null )
+            {
+                o.write( "ch" + ch + " " + i.l + " " + ( i.r - 1 ) + "\r\n" );
+                set.moveCursorNext();
+                i = set.getCurrent();
+            }
         }
         o.close();
     }
 
-    public void writeMarkingsToFile() throws IOException
-    {
-        OutputStreamWriter os = new OutputStreamWriter( new FileOutputStream( path ) );
-        writeMarkingsToFile( os );
-    }
-
-    public static MarkerFile fromFile( String file ) throws FileNotFoundException, ParseException
+    public void add_from_file( String file ) throws FileNotFoundException, ParseException
     {
         FileInputStream fis = new FileInputStream( file );
         Scanner sc = new Scanner( fis );
-        MarkerFile mf = new MarkerFile( file );
         String line;
         int fmi, lmi;
+        int ch;
 
         while( sc.hasNextLine() )
         {
             try
             {
-                line = sc.findInLine( "ch[01] " );
+                line = sc.findInLine( "ch[\\d+] " );
                 fmi = sc.nextInt();
                 lmi = sc.nextInt();
-                if( line.charAt( 2 ) == '0' )
+                ch = Integer.parseInt( line.substring( 2, line.length() - 1 ) );
+                addMark( fmi, lmi, ch );
+                /*if( line.charAt( 2 ) == '0' )
                 {
-                    mf.addMark( fmi, lmi, 0 );
+                    addMark( fmi, lmi, 0 );
                 }
                 else
                 {
-                    mf.addMark( fmi, lmi, 1 );
-                }
-                line = sc.nextLine();
-
+                    addMark( fmi, lmi, 1 );
+                }*/
+                sc.nextLine();
             }
             catch( Exception e )
             {
-                throw new ParseException( "Parse failed!", 0 );
+                throw new ParseException( "Parse error!", 0 );
             }
-
         }
+    }
+
+    public static MarkerFile fromFile( String file ) throws FileNotFoundException, ParseException
+    {
+        MarkerFile mf = new MarkerFile();
+        mf.add_from_file( file );
         return mf;
     }
 
 
     public Interval getNextMark( int current_index, int channel )
     {
-        OrderedNonOverlappingIntervalSet set;
-        switch( channel )
+        OrderedNonOverlappingIntervalSet set = markings.get( channel );
+        if( set == null )
         {
-            case 0:
-                set = ch0_markings;
-                break;
-            case 1:
-                set = ch1_markings;
-                break;
-            default:
-                return null;
+            return null;
         }
-
         set.moveCursorOnOrAfter( current_index );
         return set.getCurrent();
     }
 
 
-    public OrderedNonOverlappingIntervalSet getCopy( int ch )
-    {
-        switch( ch )
-        {
-            case 0:
-                return ch0_markings.Clone();
-
-            case 1:
-                return ch1_markings.Clone();
-
-            default:
-                return null;
-        }
-    }
-
     public List< Marking > get_all_markings( Interval interval )
     {
-        List< Marking > markings = new ArrayList< Marking >();
+        List< Marking > markings_list = new ArrayList< Marking >();
 
         OrderedNonOverlappingIntervalSet set1,set2;
-        set1 = ch0_markings.Clone();
-        set2 = ch1_markings.Clone();
+        set1 = markings.get( 0 ).Clone();
+        set2 = markings.get( 1 ).Clone();
         set1.moveCursorOnOrAfter( interval.l );
         set2.moveCursorOnOrAfter( interval.l );
 
@@ -164,7 +129,7 @@ public class MarkerFile
         {
             if( ch0 == null || ( ch1 != null && ch0.l > ch1.l ) )
             {
-                markings.add( new Marking( ch1.l, ch1.r - 1, 1 ) );
+                markings_list.add( new Marking( ch1.l, ch1.r - 1, 1 ) );
                 set2.moveCursorNext();
                 ch1 = set2.getCurrent();
                 if( ch1 != null && ch1.l >= interval.r )
@@ -176,7 +141,7 @@ public class MarkerFile
 
             if( ch1 == null || ( ch0 != null && ch0.l <= ch1.l ) )
             {
-                markings.add( new Marking( ch0.l, ch0.r - 1, 0 ) );
+                markings_list.add( new Marking( ch0.l, ch0.r - 1, 0 ) );
                 set1.moveCursorNext();
                 ch0 = set1.getCurrent();
                 if( ch0 != null && ch0.l >= interval.r )
@@ -187,23 +152,23 @@ public class MarkerFile
             }
         }
 
-        return markings;
+        return markings_list;
     }
 
     public boolean isMarked( int sample, int ch )
     {
-        switch( ch )
+        OrderedNonOverlappingIntervalSet set = markings.get( ch );
+        if( set == null )
         {
-            case 0:
-                ch0_markings.moveCursorOnOrAfter( sample );
-                return ch0_markings.getCurrent() != null && ch0_markings.getCurrent().contains( sample );
-
-            case 1:
-                ch1_markings.moveCursorOnOrAfter( sample );
-                return ch1_markings.getCurrent() != null && ch1_markings.getCurrent().contains( sample );
-
-            default:
-                return false;
+            return false;
         }
+        return set.getCurrent() != null && set.getCurrent().contains( sample );
+    }
+
+    public void clear_all_markings()
+    {
+        markings.clear();
+        markings.put( 0, new OrderedNonOverlappingIntervalSet() );
+        markings.put( 1, new OrderedNonOverlappingIntervalSet() );
     }
 }

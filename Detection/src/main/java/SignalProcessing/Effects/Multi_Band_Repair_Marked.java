@@ -7,7 +7,7 @@ import AudioDataSource.MemoryADS.SingleBlockADS;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import MarkerFile.Marking;
-import ProjectStatics.ProjectStatics;
+import ProjectStatics.ProjectManager;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Interval;
@@ -28,8 +28,8 @@ public class Multi_Band_Repair_Marked implements IEffect
     final private int fetch_ratio;
     final private int buffer_size;
     private boolean repair_residue = false;
-    final private double freq_compare_threshold = 10;
-    final private int freq_compare_side_length_ratio = 1;
+    final private double freq_compare_threshold = 8;
+    final private int freq_compare_side_length_ratio = 2;
     private boolean compare_with_direct_repair = false;
 
     public Multi_Band_Repair_Marked()
@@ -127,7 +127,7 @@ public class Multi_Band_Repair_Marked implements IEffect
         {
             return;
         }
-        List< Marking > repair_intervals = ProjectStatics.getMarkerFile().get_all_markings( interval );
+        List< Marking > repair_intervals = ProjectManager.getMarkerFile().get_all_markings( interval );
 
         repair_intervals.sort( ( i1, i2 ) ->
                                {

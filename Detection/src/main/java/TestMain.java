@@ -4,7 +4,7 @@ import AudioDataSource.ADS_Utils;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
-import ProjectStatics.ProjectStatics;
+import ProjectStatics.*;
 import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;
@@ -172,7 +172,7 @@ public class TestMain {
             create_marker_file.setThreshold( 0.5 );
             create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
 
-            ProjectStatics.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings beet 0.5.txt" ) ) );
+            ProjectManager.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings beet 0.5.txt" ) ) );
 
         }
         catch( DataSourceException e )
@@ -357,7 +357,7 @@ public class TestMain {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 10.wav" );
             CachedAudioDataSource dest = new CachedAudioDataSource( new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 10 pass 2.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() ), 50000, 2048 );
             ADS_Utils.copyToADS( wav, dest );
-            ProjectStatics.loadMarkerFile( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
+            ProjectManager.load_marker_file( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
             Multi_Band_Repair_Marked repair_marked = new Multi_Band_Repair_Marked( 511, 512, 16 );
             repair_marked.getBand_cutoffs().add( 2000 );
             repair_marked.getBand_cutoffs().add( 500 );

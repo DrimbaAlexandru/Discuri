@@ -4,6 +4,7 @@ import Exceptions.DataSourceException;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import MarkerFile.MarkerFile;
 import SignalProcessing.Effects.IEffect;
+import javafx.scene.paint.Color;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -17,67 +18,17 @@ import java.util.List;
  */
 public class ProjectStatics
 {
-    private static VersionedAudioDataSource versionedADS = null;
-    private static MarkerFile markerFile = new MarkerFile( null );
-    private static IEffect last_applied_effect = null;
-    private static List< IEffect > effectList = new ArrayList<>();
+
     private static int default_cache_size = 44100;
     private static int default_cache_page_size = 2048;
-    private static String temp_folder = "D:\\";
     private static String python_classifier_script_path = "D:\\git\\Licenta\\Discuri\\mlp_prediction_server.py";
     private static String python_classifier_mlp_path = "D:\\git\\Licenta\\Discuri\\pickle.jar";
     private static String python_classifier_scaler_path = "D:\\git\\Licenta\\Discuri\\pickle4scale.jar";
     private static String project_files_path = "C:\\Users\\Alex\\Desktop\\proj_files\\";
 
-    public static void loadAudioFile( String filePath ) throws DataSourceException
-    {
-        if( versionedADS != null )
-        {
-            versionedADS.dispose();
-        }
-
-        versionedADS = new VersionedAudioDataSource( filePath );
-    }
-
-    public static VersionedAudioDataSource getVersionedADS()
-    {
-        return versionedADS;
-    }
-
-    public static void loadMarkerFile( String path ) throws FileNotFoundException, ParseException
-    {
-        markerFile = MarkerFile.fromFile( path );
-    }
-
-    public static MarkerFile getMarkerFile()
-    {
-        return markerFile;
-    }
-
-    public static void saveMarkerFile( String path ) throws IOException
-    {
-        markerFile.writeMarkingsToFile( new FileWriter( path ) );
-    }
-
-    public static void setLast_applied_effect( IEffect last_applied_effect )
-    {
-        ProjectStatics.last_applied_effect = last_applied_effect;
-    }
-
-    public static IEffect getLast_applied_effect()
-    {
-        return last_applied_effect;
-    }
-
-    public static void registerEffect( IEffect effect )
-    {
-        effectList.add( effect );
-    }
-
-    public static List< IEffect > getEffectList()
-    {
-        return effectList;
-    }
+    final public static Color signal_color = Color.BLUE;
+    final public static Color other_signal_color = Color.GREEN;
+    final public static Color marked_signal_color = Color.RED;
 
     public static int getDefault_cache_page_size()
     {
@@ -89,9 +40,9 @@ public class ProjectStatics
         return default_cache_size;
     }
 
-    public static String getTemp_folder()
+    public static String get_test_files_path()
     {
-        return temp_folder;
+        return "D:\\";
     }
 
     public static String getPython_classifier_script_path()
@@ -109,7 +60,7 @@ public class ProjectStatics
         return python_classifier_scaler_path;
     }
 
-    public static String getProject_files_path()
+    public static String get_temp_files_path()
     {
         return project_files_path;
     }

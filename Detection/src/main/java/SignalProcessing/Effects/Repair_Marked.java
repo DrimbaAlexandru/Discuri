@@ -3,7 +3,7 @@ package SignalProcessing.Effects;
 import Exceptions.DataSourceException;
 import AudioDataSource.IAudioDataSource;
 import MarkerFile.Marking;
-import ProjectStatics.ProjectStatics;
+import ProjectStatics.ProjectManager;
 import Utils.Interval;
 
 import java.util.Arrays;
@@ -29,7 +29,7 @@ public class Repair_Marked implements IEffect
         int end = Math.min( dataSource.get_sample_number(), interval.r );
         Repair effect = new Repair();
         Interval i = new Interval( 0, 0 );
-        List< Marking > markings = ProjectStatics.getMarkerFile().get_all_markings( interval );
+        List< Marking > markings = ProjectManager.getMarkerFile().get_all_markings( interval );
         int second = 0;
 
         for( Marking m : markings )

@@ -60,7 +60,7 @@ class FileToProjectMapping
 
 class ProjectFilesManager
 {
-    public static String base_path = ProjectStatics.getProject_files_path();
+    public static String base_path = ProjectStatics.get_temp_files_path();
 
     private static int file_id = 1;
 
@@ -290,13 +290,13 @@ public class AudioDataSourceVersion implements IAudioDataSource
         {
             if( read_cache != null )
             {
-                Cached_ADS_Manager.release_use( read_file_path );
+                Cached_ADS_Manager.release_use( read_file_path, true );
                 read_cache = null;
                 read_file_path = null;
             }
             if( write_cache != null )
             {
-                Cached_ADS_Manager.release_use( write_file_path );
+                Cached_ADS_Manager.release_use( write_file_path, true );
                 write_cache = null;
                 write_file_path = null;
             }
@@ -349,7 +349,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
             if( read_cache == null || !read_file_path.equals( map.file_name ) )
             {
-                Cached_ADS_Manager.release_use( read_file_path );
+                Cached_ADS_Manager.release_use( read_file_path, false );
                 read_file_path = map.file_name;
                 read_cache = Cached_ADS_Manager.get_cache( read_file_path );
             }
@@ -409,7 +409,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
                 IFileAudioDataSource rwFileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 2 );
                 rwFileAudioSource.close();
 
-                Cached_ADS_Manager.release_use( write_file_path );
+                Cached_ADS_Manager.release_use( write_file_path, false );
                 write_file_path = rwFileAudioSource.getFile_path();
                 write_cache = Cached_ADS_Manager.get_cache( write_file_path );
             }

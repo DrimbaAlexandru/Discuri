@@ -22,7 +22,7 @@ import java.util.Random;
 public class AnotherCachedAudioDataSourceTest
 {
     IFileAudioDataSource dataSource;
-    String temp_file_path = ProjectStatics.getTemp_folder() + "temp.wav";
+    String temp_file_path = ProjectStatics.get_test_files_path() + "temp.wav";
     AudioSamplesWindow in_file_data;
     int page_size = 100;
     int nr_of_pages = 10;

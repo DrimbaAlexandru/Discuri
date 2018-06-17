@@ -3,6 +3,7 @@ import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import MarkerFile.MarkerFile;
 
+import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -21,7 +22,7 @@ public class MarkerFileGenerator
             int i, j, k;
             boolean mark;
             boolean duplicate_L_to_R = true;
-            MarkerFile mf = new MarkerFile( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark l " + String.format( "%.4f", threshold ) + ".txt" );
+            MarkerFile mf = new MarkerFile();
             AudioSamplesWindow win;
 
             if( wav.get_channel_number() > 2 )
@@ -66,7 +67,7 @@ public class MarkerFileGenerator
                     }
                 }
             }
-            mf.writeMarkingsToFile();
+            mf.writeMarkingsToFile( new FileWriter( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark l " + String.format( "%.4f", threshold ) + ".txt" ) );
         }
         catch( DataSourceException e )
         {

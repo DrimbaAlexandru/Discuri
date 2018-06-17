@@ -7,7 +7,7 @@ import Exceptions.DataSourceException;
  */
 public class ADS_Utils
 {
-    public static int buffer_size = 16384;
+    public static int buffer_size = 1024 * 1024;
 
     public static void copyToADS( IAudioDataSource source, IAudioDataSource destination ) throws DataSourceException
     {

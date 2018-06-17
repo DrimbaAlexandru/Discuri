@@ -20,7 +20,7 @@ public class Cached_ADS_Manager
 {
     private static HashMap< String, MyPair< CachedAudioDataSource, Integer > > map = new HashMap<>();
     private static HashMap< CachedAudioDataSource, Long > to_be_closed = new HashMap<>();
-    private static final long close_delay_ms = 1000;
+    private static final long close_delay_ms = 5000;
 
     public static CachedAudioDataSource get_cache( String filePath ) throws DataSourceException
     {
@@ -74,7 +74,7 @@ public class Cached_ADS_Manager
         }
     }
 
-    public static void release_use( String filePath ) throws DataSourceException
+    public static void release_use( String filePath, boolean immediate ) throws DataSourceException
     {
         MyPair< CachedAudioDataSource, Integer > pair = map.get( filePath );
         if( pair != null )
@@ -82,7 +82,14 @@ public class Cached_ADS_Manager
             pair.setRight( pair.getRight() - 1 );
             if( pair.getRight() == 0 )
             {
-                to_be_closed.put( pair.getLeft(), System.currentTimeMillis() );
+                if( immediate )
+                {
+                    to_be_closed.put( pair.getLeft(), System.currentTimeMillis() - close_delay_ms );
+                }
+                else
+                {
+                    to_be_closed.put( pair.getLeft(), System.currentTimeMillis() );
+                }
                 map.remove( filePath );
             }
             if( pair.getRight() < 0 )
