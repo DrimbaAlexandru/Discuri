@@ -68,4 +68,17 @@ public class Fourier
         }
         return x;
     }
+
+    public static Complex one_freq_component( double[] signal, int start_offset, int length, double frequency, int sample_rate )
+    {
+        double period = Math.PI * 2 / ( sample_rate / frequency );
+        double cos_comp = 0, sin_comp = 0;
+        int i;
+        for( i = 0; i < length; i++ )
+        {
+            cos_comp += signal[ start_offset + i ] * Math.cos( i * period );
+            sin_comp += signal[ start_offset + i ] * Math.sin( i * period );
+        }
+        return new Complex( cos_comp, sin_comp );
+    }
 }

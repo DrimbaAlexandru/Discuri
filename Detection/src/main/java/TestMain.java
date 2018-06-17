@@ -354,14 +354,15 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 res p1.wav" );
-            CachedAudioDataSource dest = new CachedAudioDataSource( new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 res p2.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() ), 50000, 2048 );
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 10.wav" );
+            CachedAudioDataSource dest = new CachedAudioDataSource( new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 10 pass 2.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() ), 50000, 2048 );
             ADS_Utils.copyToADS( wav, dest );
             ProjectStatics.loadMarkerFile( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
             Multi_Band_Repair_Marked repair_marked = new Multi_Band_Repair_Marked( 511, 512, 16 );
             repair_marked.getBand_cutoffs().add( 2000 );
-            //repair_marked.getBand_cutoffs().add( 500 );
-            repair_marked.setRepair_residue( true );
+            repair_marked.getBand_cutoffs().add( 500 );
+            //repair_marked.setRepair_residue( true );
+            repair_marked.setCompare_with_direct_repair( true );
             /*Repair_in_memory repair_marked = new Repair_in_memory();
             repair_marked.setBandpass_cutoff_frqs( 2000, -1 );
             repair_marked.setWork_on_band_pass( true );*/
