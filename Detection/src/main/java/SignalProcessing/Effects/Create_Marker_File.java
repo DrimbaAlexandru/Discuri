@@ -167,12 +167,6 @@ public class Create_Marker_File implements IEffect
     private int side_extend = 0;
 
     @Override
-    public String getName()
-    {
-        return "Create marker file";
-    }
-
-    @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         Interval applying_interval = new Interval( interval.l, interval.get_length() );
@@ -232,6 +226,12 @@ public class Create_Marker_File implements IEffect
             }
             i += win.get_length() - nn_input_size + 1;
         }
+    }
+
+    @Override
+    public double getProgress()
+    {
+        return 0;
     }
 
     public void setThreshold( double threshold )

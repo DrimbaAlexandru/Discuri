@@ -32,6 +32,8 @@ public class Repair_in_memory implements IEffect
     private boolean work_on_position_domain = false;
     private boolean work_on_band_pass = false;
 
+    private double progress = 0;
+
     public Repair_in_memory()
     {
         this( 2000, -1, 1023, 511, 512, 16 );
@@ -59,14 +61,9 @@ public class Repair_in_memory implements IEffect
     }
 
     @Override
-    public String getName()
-    {
-        return "Repair in memory";
-    }
-
-    @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
+        progress = 0;
         /*
             Local variables.
             Filter definitions
@@ -112,13 +109,14 @@ public class Repair_in_memory implements IEffect
         FIR_Filter fir_filter = new FIR_Filter();
         Equalizer equalizer = new Equalizer();
         IIR_with_centered_FIR iir_with_centered_fir = new IIR_with_centered_FIR();
-        Repair repair = new Repair();
+        Repair_One repairOne = new Repair_One();
 
         /*
             Indexes and other shit
         */
         int i;
         int second;
+        int marking_index = 0;
         //side length e numarul de sample-uri necesar la dreapta si la stanga selectiei pentru repair, necesare la high-pass si riaa
         final int side_length = Math.max( ( work_on_band_pass ) ? high_pass_length / 2 : 0, ( work_on_position_domain ) ? riaa_length / 2 : 0 );
 
@@ -152,8 +150,8 @@ public class Repair_in_memory implements IEffect
                 Interval overall_required_interval;
                 Interval prediction_required_interval;
 
-                repair.set_fetch_ratio( fetch_ratio );
-                repair.setAffected_channels( Arrays.asList( marking.getChannel() ) );
+                repairOne.set_fetch_ratio( fetch_ratio );
+                repairOne.setAffected_channels( Arrays.asList( marking.getChannel() ) );
                 prediction_required_interval = new Interval( repair_interval.l - fetch_ratio * repair_interval.get_length(), repair_interval.r + fetch_ratio * repair_interval.get_length(), false );
                 overall_required_interval = new Interval( prediction_required_interval.l - side_length, prediction_required_interval.r + side_length, false );
                 overall_required_interval.limit( 0, dataSource.get_sample_number() );
@@ -311,7 +309,7 @@ public class Repair_in_memory implements IEffect
                         }
                     }
 
-                    repair.apply( high_pass, high_pass, repair_interval );
+                    repairOne.apply( high_pass, high_pass, repair_interval );
                     high_pass_win = high_pass.get_samples( repair_interval.l, repair_interval.get_length() );
 
                     for( int k2 = 0; k2 < dataSource.get_channel_number(); k2++ )
@@ -325,7 +323,7 @@ public class Repair_in_memory implements IEffect
                 }
                 else
                 {
-                    repair.apply( workADS, repair_dest, repair_interval );
+                    repairOne.apply( workADS, repair_dest, repair_interval );
                 }
 
                 //Save the repaired samples the the DD
@@ -356,12 +354,20 @@ public class Repair_in_memory implements IEffect
                         throw ex;
                 }
             }
+            marking_index++;
+            progress = 1.0 * marking_index / repair_intervals.size();
             if( repair_interval.l / dataSource.get_sample_rate() > second )
             {
                 second = repair_interval.l / dataSource.get_sample_rate();
                 System.out.println( "Repairing at second " + second );
             }
         }
+    }
+
+    @Override
+    public double getProgress()
+    {
+        return progress;
     }
 
     public void setBandpass_cutoff_frqs( int low_cutoff_frq, int high_cutoff_frq )

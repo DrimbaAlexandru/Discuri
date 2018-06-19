@@ -13,13 +13,8 @@ import Utils.Interval;
 public class FIR_Filter implements IEffect
 {
     private FIR filter = null;
-    private int max_chunk_size = 1024;
-
-    @Override
-    public String getName()
-    {
-        return "FIR Filter";
-    }
+    private int max_chunk_size = 32768;
+    private double progress = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -42,6 +37,7 @@ public class FIR_Filter implements IEffect
 
         interval.r = Math.min( dataSource.get_sample_number(), interval.r );
         interval.l = Math.max( 0, interval.l );
+        progress = 0;
 
         for( i = interval.r; i > interval.l; )
         {
@@ -65,7 +61,14 @@ public class FIR_Filter implements IEffect
             }
             dataDest.put_samples( win );
             i -= applying_range.get_length();
+            progress = 1.0 * ( interval.r - i ) / interval.get_length();
         }
+    }
+
+    @Override
+    public double getProgress()
+    {
+        return progress;
     }
 
     public void setFilter( FIR filter )

@@ -148,7 +148,7 @@ public class TestMain {
 
             WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
 
-            ADS_Utils.copyToADS( cache, out );
+            new Copy_to_ADS().apply( cache, out, new Interval( 0, cache.get_sample_number() ) );
 
             //Cached_ADS_Manager.flush_all_caches();
 
@@ -299,16 +299,16 @@ public class TestMain {
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
             WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
-            ADS_Utils.copyToADS( wav, dest );
+            new Copy_to_ADS().apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
             long st = System.currentTimeMillis();
             Interval r = new Interval( 20000, 1000 );
             float ratio = 20;
-            Repair repair = new Repair();
-            repair.set_fetch_ratio( ratio );
+            Repair_One repairOne = new Repair_One();
+            repairOne.set_fetch_ratio( ratio );
             ArrayList< Integer > ch = new ArrayList<>();
             ch.add( 0 );
-            repair.setAffected_channels( ch );
-            repair.apply( wav, dest, r );
+            repairOne.setAffected_channels( ch );
+            repairOne.apply( wav, dest, r );
             System.out.println( "Total time: " + ( System.currentTimeMillis() - st ) + "ms " );
             wav.close();
         }
@@ -324,7 +324,7 @@ public class TestMain {
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\4p.wav" );
             WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\predict.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
-            ADS_Utils.copyToADS( wav, dest );
+            new Copy_to_ADS().apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
             long st = System.currentTimeMillis();
             int fit_start = 85000;
             int prediction_length = 44100 * 10;
@@ -350,13 +350,13 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main15( String[] args )
     {
         try
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 10.wav" );
             CachedAudioDataSource dest = new CachedAudioDataSource( new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 10 pass 2.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() ), 50000, 2048 );
-            ADS_Utils.copyToADS( wav, dest );
+            new Copy_to_ADS().apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
             ProjectManager.load_marker_file( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
             Multi_Band_Repair_Marked repair_marked = new Multi_Band_Repair_Marked( 511, 512, 16 );
             repair_marked.getBand_cutoffs().add( 2000 );
@@ -381,6 +381,26 @@ public class TestMain {
         catch( ParseException e )
         {
             e.printStackTrace();
+        }
+    }
+
+    public static void main( String[] args )
+    {
+        try
+        {
+            try
+            {
+                System.out.println( 1 );
+                throw new DataSourceException( "Exceptie" );
+            }
+            finally
+            {
+                System.out.println( 3 );
+            }
+        }
+        catch( Exception e )
+        {
+            System.out.println( 4 );
         }
     }
 }

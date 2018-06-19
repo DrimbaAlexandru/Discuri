@@ -12,7 +12,7 @@
    <children>
       <Button fx:id="btn_cancel" layoutX="149.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="40.0" />
       <Button fx:id="btn_apply" layoutX="36.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Apply" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="40.0" />
-      <CheckBox fx:id="chk_use_direct_repair" layoutX="20.0" layoutY="125.0" mnemonicParsing="false" text="Use direct repair if favorable" AnchorPane.leftAnchor="20.0">
+      <CheckBox fx:id="chk_use_direct_repair" layoutX="20.0" layoutY="125.0" mnemonicParsing="false" text="Use direct repairOne if favorable" AnchorPane.leftAnchor="20.0">
          <padding>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
          </padding>

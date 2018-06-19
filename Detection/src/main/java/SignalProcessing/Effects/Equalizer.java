@@ -14,14 +14,9 @@ import Utils.Interval;
 public class Equalizer implements IEffect
 {
     private FIR fir_filter = null;
-    private int max_chunk_size = 1024;
+    private int max_chunk_size = 32768;
     private final static double[] identity_FIR_coeffs = { 1 };
-
-    @Override
-    public String getName()
-    {
-        return "Equalizer";
-    }
+    private double progress = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -40,7 +35,7 @@ public class Equalizer implements IEffect
 
         final boolean isInPlace = ( dataDest == dataSource );
         double[][] prev_left_samples = null;
-        double[][] flusing_buffer = new double[ dataSource.get_channel_number() ][ max_chunk_size ];
+        double[][] flushing_buffer = new double[ dataSource.get_channel_number() ][ max_chunk_size ];
         final Equalizer_FIR equalizer_fir = new Equalizer_FIR( fir_filter );
         if( isInPlace )
         {
@@ -59,6 +54,7 @@ public class Equalizer implements IEffect
         interval.l = Math.max( 0, interval.l );
 
         i = interval.l;
+        progress = 0;
 
         first_needed_sample_index = i - buf_len;
         first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
@@ -95,12 +91,13 @@ public class Equalizer implements IEffect
         {
             for( j = 0; j < applying_range.get_length(); j++ )
             {
-                flusing_buffer[ k ][ j ] = win.getSamples()[ k ][ applying_range.l + j ];
+                flushing_buffer[ k ][ j ] = win.getSamples()[ k ][ applying_range.l + j ];
             }
         }
-        dataDest.put_samples( new AudioSamplesWindow( flusing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
+        dataDest.put_samples( new AudioSamplesWindow( flushing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
 
         i += applying_range.get_length();
+        progress = 1.0 * ( i - interval.l ) / interval.get_length();
 
         for( ; i < interval.r; )
         {
@@ -144,13 +141,20 @@ public class Equalizer implements IEffect
             {
                 for( j = 0; j < applying_range.get_length(); j++ )
                 {
-                    flusing_buffer[ k ][ j ] = win.getSamples()[ k ][ applying_range.l + j ];
+                    flushing_buffer[ k ][ j ] = win.getSamples()[ k ][ applying_range.l + j ];
                 }
             }
-            dataDest.put_samples( new AudioSamplesWindow( flusing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
+            dataDest.put_samples( new AudioSamplesWindow( flushing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
 
             i += applying_range.get_length();
+            progress = 1.0 * ( i - interval.l ) / interval.get_length();
         }
+    }
+
+    @Override
+    public double getProgress()
+    {
+        return progress;
     }
 
     public void setFilter( FIR filter )

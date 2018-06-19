@@ -31,6 +31,7 @@ public class Multi_Band_Repair_Marked implements IEffect
     final private double freq_compare_threshold = 8;
     final private int freq_compare_side_length_ratio = 2;
     private boolean compare_with_direct_repair = false;
+    private double progress = 0;
 
     public Multi_Band_Repair_Marked()
     {
@@ -46,12 +47,6 @@ public class Multi_Band_Repair_Marked implements IEffect
     }
 
     @Override
-    public String getName()
-    {
-        return "Repair marked in multiband";
-    }
-
-    @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         if( dataSource == dataDest )
@@ -59,6 +54,7 @@ public class Multi_Band_Repair_Marked implements IEffect
             throw new DataSourceException( "Data Source and Data Dest cannot be the same", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
+        progress = 0;
         band_cutoffs.sort( Comparator.reverseOrder() );
         /*
             Local variables.
@@ -108,13 +104,14 @@ public class Multi_Band_Repair_Marked implements IEffect
         * Effects
         */
         final Equalizer equalizer = new Equalizer();
-        final Repair repair = new Repair();
-        repair.set_fetch_ratio( fetch_ratio );
+        final Repair_One repairOne = new Repair_One();
+        repairOne.set_fetch_ratio( fetch_ratio );
         /*
             Indexes and other shit
         */
         int i;
         int second;
+        int marking_index = 0;
         //side length e numarul de sample-uri necesar la dreapta si la stanga selectiei pentru repair, necesare la band-pass
         final int side_length = band_pass_filter_length / 2;
         boolean repair_direct;
@@ -142,7 +139,7 @@ public class Multi_Band_Repair_Marked implements IEffect
             try
             {
                 Interval interval_required_for_prediction = new Interval( repair_interval.l - fetch_ratio * repair_interval.get_length(), repair_interval.r + fetch_ratio * repair_interval.get_length(), false );
-                repair.setAffected_channels( Arrays.asList( marking.getChannel() ) );
+                repairOne.setAffected_channels( Arrays.asList( marking.getChannel() ) );
 
                 if( interval_required_for_prediction.l < 0 || interval_required_for_prediction.r > dataSource.get_sample_number() )
                 {
@@ -213,7 +210,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                     //Begin the repair process
                     if( repair_residue )
                     {
-                        repair.apply( workDS[ nr_of_bands ], repair_dest, repair_interval );
+                        repairOne.apply( workDS[ nr_of_bands ], repair_dest, repair_interval );
                         requested_repaired = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
                     }
                     else
@@ -224,7 +221,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                     //System.out.println( "----" );
                     for( i = 0; i < nr_of_bands; i++ )
                     {
-                        repair.apply( workDS[ i ], repair_dest, repair_interval );
+                        repairOne.apply( workDS[ i ], repair_dest, repair_interval );
                         repaired = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
                         for( int j = repair_interval.l; j < repair_interval.r; j++ )
                         {
@@ -240,7 +237,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                 else
                 {
                     repaired = dataDest.get_samples( repair_interval.l, repair_interval.get_length() );
-                    repair.apply( dataSource, repair_dest, repair_interval );
+                    repairOne.apply( dataSource, repair_dest, repair_interval );
                     AudioSamplesWindow direct_repaired = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
                     repaired.getSamples()[ marking.getChannel() ] = direct_repaired.getSamples()[ marking.getChannel() ];
                     dataDest.put_samples( repaired );
@@ -258,12 +255,20 @@ public class Multi_Band_Repair_Marked implements IEffect
                         throw ex;
                 }
             }
+            marking_index++;
+            progress = 1.0 * marking_index / repair_intervals.size();
             if( repair_interval.l / dataSource.get_sample_rate() > second )
             {
                 second = repair_interval.l / dataSource.get_sample_rate();
                 System.out.println( "Repairing at second " + second );
             }
         }
+    }
+
+    @Override
+    public double getProgress()
+    {
+        return progress;
     }
 
     public ArrayList< Integer > getBand_cutoffs()

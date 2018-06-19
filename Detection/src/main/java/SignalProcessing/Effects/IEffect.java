@@ -9,7 +9,6 @@ import Utils.Interval;
  */
 public interface IEffect
 {
-    String getName();
     void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException;
-    //double getProgress();
+    double getProgress();
 }

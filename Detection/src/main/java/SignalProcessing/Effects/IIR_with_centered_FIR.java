@@ -18,12 +18,7 @@ public class IIR_with_centered_FIR implements IEffect
     private FIR fir_filter = null;
     private int max_chunk_size = 1024;
     private final static double[] identity_FIR_coeffs = { 1 };
-
-    @Override
-    public String getName()
-    {
-        return "Centered IIR Filter";
-    }
+    private double progress = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -63,6 +58,7 @@ public class IIR_with_centered_FIR implements IEffect
         interval.l = Math.max( 0, interval.l );
 
         i = interval.l;
+        progress = 0;
 
         first_needed_sample_index = i - max_filter_len;
         first_fetchable_sample_index = Math.max( 0, first_needed_sample_index );
@@ -107,6 +103,7 @@ public class IIR_with_centered_FIR implements IEffect
         }
         dataDest.put_samples( win );
         i += applying_range.get_length();
+        progress = 1.0 * ( i - interval.l ) / interval.get_length();
 
         for( ; i < interval.r; )
         {
@@ -158,7 +155,14 @@ public class IIR_with_centered_FIR implements IEffect
             }
             dataDest.put_samples( win );
             i += applying_range.get_length();
+            progress = 1.0 * ( i - interval.l ) / interval.get_length();
         }
+    }
+
+    @Override
+    public double getProgress()
+    {
+        return progress;
     }
 
     public void setFilter( IIR filter )

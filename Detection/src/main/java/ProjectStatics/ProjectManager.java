@@ -11,6 +11,7 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import MarkerFile.MarkerFile;
 import MarkerFile.Marking;
+import SignalProcessing.Effects.Copy_to_ADS;
 import SignalProcessing.Effects.IEffect;
 import Utils.Interval;
 
@@ -18,6 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by Alex on 17.06.2018.
@@ -28,8 +32,29 @@ public class ProjectManager
     private static MarkerFile markerFile = new MarkerFile();
     private static CachedAudioDataSource cache = null;
 
+    private static ReentrantLock mutex = new ReentrantLock();
+
+    public static void lock_access()
+    {
+        mutex.lock();
+    }
+
+    public static void release_access()
+    {
+        mutex.unlock();
+    }
+
+    public static void check_thread_access() throws DataSourceException
+    {
+        if( !mutex.isHeldByCurrentThread() || mutex.hasQueuedThreads() )
+        {
+            throw new DataSourceException( "Concurrency exception! The thread " + Thread.currentThread().getName() + " tried to access the ProjectManager without holding its mutex", DataSourceExceptionCause.CONCURRENCY_VIOLATION );
+        }
+    }
+
     public static void new_project_from_audio_file( String filepath ) throws DataSourceException
     {
+        check_thread_access();
         if( versionedADS != null )
         {
             cache.flushAll();
@@ -49,6 +74,7 @@ public class ProjectManager
 
     public static void apply_effect( IEffect effect, Interval interval ) throws DataSourceException
     {
+        check_thread_access();
         if( versionedADS == null )
         {
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
@@ -63,6 +89,7 @@ public class ProjectManager
 
     public static void undo() throws DataSourceException
     {
+        check_thread_access();
         if( versionedADS == null )
         {
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
@@ -73,6 +100,7 @@ public class ProjectManager
 
     public static void redo() throws DataSourceException
     {
+        check_thread_access();
         if( versionedADS == null )
         {
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
@@ -83,57 +111,66 @@ public class ProjectManager
 
     public static void export_project( String filepath ) throws DataSourceException
     {
+        check_thread_access();
         if( versionedADS == null )
         {
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
         }
         IAudioDataSource file = FileAudioSourceFactory.createFile( filepath, cache.get_channel_number(), cache.get_sample_rate(), 2 );
-        ADS_Utils.copyToADS( cache, file );
+        new Copy_to_ADS().apply( cache, file, new Interval( 0, cache.get_sample_number() ) );
         file.close();
     }
 
-    public static void clear_all_markings()
+    public static void clear_all_markings() throws DataSourceException
     {
+        check_thread_access();
         markerFile.clear_all_markings();
     }
 
-    public static void load_marker_file( String filepath ) throws FileNotFoundException, ParseException
+    public static void load_marker_file( String filepath ) throws FileNotFoundException, ParseException, DataSourceException
     {
+        check_thread_access();
         markerFile.add_from_file( filepath );
     }
 
-    public static void export_marker_file( String filepath ) throws IOException
+    public static void export_marker_file( String filepath ) throws IOException, DataSourceException
     {
+        check_thread_access();
         markerFile.writeMarkingsToFile( new FileWriter( filepath ) );
     }
 
-    public static void add_marking( Marking m )
+    public static void add_marking( Marking m ) throws DataSourceException
     {
+        check_thread_access();
         markerFile.addMark( m.get_first_marked_sample(), m.get_last_marked_sample(), m.getChannel() );
     }
 
-    public static void remove_marking( Marking m )
+    public static void remove_marking( Marking m ) throws DataSourceException
     {
+        check_thread_access();
         markerFile.deleteMark( m.get_first_marked_sample(), m.get_last_marked_sample(), m.getChannel() );
     }
 
     public static void discard_project() throws DataSourceException
     {
-        Cached_ADS_Manager.finish_all_caches();
+        check_thread_access();
         if( versionedADS != null )
         {
             cache.flushAll();
             versionedADS.dispose();
         }
+        Cached_ADS_Manager.finish_all_caches();
     }
 
-    public static CachedAudioDataSource getCache()
+    public static CachedAudioDataSource getCache() throws DataSourceException
     {
+        check_thread_access();
         return cache;
     }
 
-    public static MarkerFile getMarkerFile()
+    public static MarkerFile getMarkerFile() throws DataSourceException
     {
+        check_thread_access();
         return markerFile;
     }
 }

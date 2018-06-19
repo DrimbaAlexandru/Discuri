@@ -15,12 +15,6 @@ public class Left_Shift implements IEffect
     private int amount = 0;
 
     @Override
-    public String getName()
-    {
-        return "Left shift";
-    }
-
-    @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
     {
         if( amount < 0 )
@@ -59,6 +53,12 @@ public class Left_Shift implements IEffect
             dataDest.put_samples( win );
             i += temp_len - amount;
         }
+    }
+
+    @Override
+    public double getProgress()
+    {
+        return 0;
     }
 
     public void setMax_chunk_size( int max_chunk_size )

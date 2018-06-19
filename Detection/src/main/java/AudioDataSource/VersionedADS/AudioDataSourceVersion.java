@@ -20,7 +20,6 @@ import java.util.TreeMap;
 
 import static Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static java.nio.file.Files.deleteIfExists;
-import static java.nio.file.Files.write;
 
 /**
  * Created by Alex on 12.12.2017.
@@ -92,9 +91,14 @@ class ProjectFilesManager
             file_references.remove( file );
             try
             {
+                Cached_ADS_Manager.instant_release_file( file );
                 deleteIfExists( new File( file ).toPath() );
             }
             catch( IOException e )
+            {
+                e.printStackTrace();
+            }
+            catch( DataSourceException e )
             {
                 e.printStackTrace();
             }
@@ -290,13 +294,13 @@ public class AudioDataSourceVersion implements IAudioDataSource
         {
             if( read_cache != null )
             {
-                Cached_ADS_Manager.release_use( read_file_path, true );
+                Cached_ADS_Manager.release_use( read_file_path );
                 read_cache = null;
                 read_file_path = null;
             }
             if( write_cache != null )
             {
-                Cached_ADS_Manager.release_use( write_file_path, true );
+                Cached_ADS_Manager.release_use( write_file_path );
                 write_cache = null;
                 write_file_path = null;
             }
@@ -349,7 +353,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
             if( read_cache == null || !read_file_path.equals( map.file_name ) )
             {
-                Cached_ADS_Manager.release_use( read_file_path, false );
+                Cached_ADS_Manager.release_use( read_file_path );
                 read_file_path = map.file_name;
                 read_cache = Cached_ADS_Manager.get_cache( read_file_path );
             }
@@ -409,7 +413,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
                 IFileAudioDataSource rwFileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 2 );
                 rwFileAudioSource.close();
 
-                Cached_ADS_Manager.release_use( write_file_path, false );
+                Cached_ADS_Manager.release_use( write_file_path );
                 write_file_path = rwFileAudioSource.getFile_path();
                 write_cache = Cached_ADS_Manager.get_cache( write_file_path );
             }

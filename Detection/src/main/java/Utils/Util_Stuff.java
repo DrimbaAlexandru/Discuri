@@ -5,19 +5,6 @@ package Utils;
  */
 public class Util_Stuff
 {
-    public static < T > boolean memeq( T array[], int offset, int length, T value )
-    {
-        int i;
-        for(i=offset;i<offset+length;i++)
-        {
-            if( !array[ i ].equals( value ) )
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static int next_power_of_two( double val )
     {
         int p = 1;
