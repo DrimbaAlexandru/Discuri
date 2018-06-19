@@ -9,7 +9,7 @@ import javafx.stage.Window;
  */
 public interface Effect_UI_Component
 {
-    void show( Window parent );
+    void show( Window parent ) throws DataSourceException;
 
     IEffect get_prepared_effect();
 

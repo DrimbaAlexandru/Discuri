@@ -7,12 +7,11 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="250.0" prefWidth="250.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Button fx:id="btn_cancel" layoutX="149.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="40.0" />
       <Button fx:id="btn_apply" layoutX="36.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Apply" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="40.0" />
-      <CheckBox fx:id="chk_use_direct_repair" layoutX="20.0" layoutY="125.0" mnemonicParsing="false" text="Use direct repairOne if favorable" AnchorPane.leftAnchor="20.0">
+      <CheckBox fx:id="chk_use_direct_repair" layoutX="20.0" layoutY="125.0" mnemonicParsing="false" text="Use direct repair if favorable" AnchorPane.leftAnchor="20.0">
          <padding>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
          </padding>
@@ -22,7 +21,7 @@
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
          </padding>
       </CheckBox>
-      <CheckBox fx:id="chk_8000_cut" layoutX="14.0" layoutY="23.0" mnemonicParsing="false" text="8000Hz cutoff" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="40.0">
+      <CheckBox fx:id="chk_6000_cut" layoutX="14.0" layoutY="23.0" mnemonicParsing="false" text="6000Hz cutoff" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="40.0">
          <padding>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
          </padding>

@@ -4,12 +4,12 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.IEffect;
+import SignalProcessing.Effects.Multi_Band_Repair_Marked;
 import SignalProcessing.Filters.FIR;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -18,12 +18,16 @@ import javafx.stage.Window;
 import java.io.IOException;
 
 /**
- * Created by Alex on 17.06.2018.
+ * Created by Alex on 19.06.2018.
  */
-public class Amplify_Dialog implements Effect_UI_Component
+public class Repair_Marked_Dialog implements Effect_UI_Component
 {
     @FXML
-    private TextField txt_gain;
+    private Label lbl_lp_coeffs;
+    @FXML
+    private CheckBox chk_6000_cut, chk_2000_cut,chk_500_cut,chk_repair_residue, chk_use_direct_repair;
+    @FXML
+    private Slider slider_lp_coeffs;
     @FXML
     private Button btn_apply, btn_cancel;
 
@@ -31,14 +35,14 @@ public class Amplify_Dialog implements Effect_UI_Component
     private Stage onTop = new Stage();
     private DataSourceException close_exception = null;
 
-    private Equalizer effect = null;
+    private Multi_Band_Repair_Marked effect = null;
 
     @Override
     public void show( Window parent ) throws DataSourceException
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
-        l.setLocation( getClass().getClassLoader().getResource( "amplify_UI.fxml" ) );
+        l.setLocation( getClass().getClassLoader().getResource( "repair_UI.fxml" ) );
         try
         {
             main_layout = l.load();
@@ -51,17 +55,32 @@ public class Amplify_Dialog implements Effect_UI_Component
         {
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
+
+        lbl_lp_coeffs.setText( "" + ( int )slider_lp_coeffs.getValue() );
+        slider_lp_coeffs.setOnMouseDragged( ev ->
+                                      {
+                                          lbl_lp_coeffs.setText( "" + ( int )slider_lp_coeffs.getValue() );
+                                      } );
         btn_apply.setOnAction( ( ev ) ->
                                {
-                                   effect = new Equalizer();
-                                   double amplification = 0;
                                    try
                                    {
-                                       amplification = Double.parseDouble( txt_gain.getText() );
-                                       amplification = Math.pow( 2, amplification / 6 );
-                                       double[] fir = new double[]{ amplification };
-                                       effect = new Equalizer();
-                                       effect.setFilter( new FIR( fir, 1 ) );
+                                       effect = new Multi_Band_Repair_Marked();
+                                       if( chk_500_cut.isSelected() )
+                                       {
+                                           effect.getBand_cutoffs().add( 500 );
+                                       }
+                                       if( chk_2000_cut.isSelected() )
+                                       {
+                                           effect.getBand_cutoffs().add( 2000 );
+                                       }
+                                       if( chk_6000_cut.isSelected() )
+                                       {
+                                           effect.getBand_cutoffs().add( 6000 );
+                                       }
+                                       effect.setRepair_residue( chk_repair_residue.isSelected() );
+                                       effect.setCompare_with_direct_repair( chk_use_direct_repair.isSelected() );
+                                       effect.setFetch_ratio( ( int )slider_lp_coeffs.getValue() );
                                    }
                                    catch( Exception e )
                                    {
@@ -87,7 +106,7 @@ public class Amplify_Dialog implements Effect_UI_Component
         return effect;
     }
 
-    public Amplify_Dialog()
+    public Repair_Marked_Dialog()
     {
     }
 
@@ -97,3 +116,4 @@ public class Amplify_Dialog implements Effect_UI_Component
         return close_exception;
     }
 }
+

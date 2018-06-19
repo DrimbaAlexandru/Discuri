@@ -25,11 +25,11 @@ public class Multi_Band_Repair_Marked implements IEffect
     final private int band_pass_filter_length;
     private ArrayList< Integer > band_cutoffs = new ArrayList<>();
     final private int max_repair_size;
-    final private int fetch_ratio;
-    final private int buffer_size;
+    private int fetch_ratio;
+    private int buffer_size;
     private boolean repair_residue = false;
-    final private double freq_compare_threshold = 8;
-    final private int freq_compare_side_length_ratio = 2;
+    final private double freq_compare_threshold = 10;
+    final private int freq_compare_side_length_ratio = 1;
     private boolean compare_with_direct_repair = false;
     private double progress = 0;
 
@@ -110,7 +110,6 @@ public class Multi_Band_Repair_Marked implements IEffect
             Indexes and other shit
         */
         int i;
-        int second;
         int marking_index = 0;
         //side length e numarul de sample-uri necesar la dreapta si la stanga selectiei pentru repair, necesare la band-pass
         final int side_length = band_pass_filter_length / 2;
@@ -130,8 +129,6 @@ public class Multi_Band_Repair_Marked implements IEffect
                                {
                                    return -( i2.getInterval().l - i2.getInterval().get_length() * fetch_ratio ) + ( i1.getInterval().l - i1.getInterval().get_length() * fetch_ratio );
                                } );
-
-        second = -1;
 
         for( Marking marking : repair_intervals )
         {
@@ -157,10 +154,6 @@ public class Multi_Band_Repair_Marked implements IEffect
                     AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - rep_len * freq_compare_side_length_ratio, rep_len * ( 2 * freq_compare_side_length_ratio + 1 ) );
                     double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * freq_compare_side_length_ratio, rep_len, rep_len * freq_compare_side_length_ratio, dataSource.get_sample_rate(), band_cutoffs.get( band_cutoffs.size() - 1 ) );
                     repair_direct = ( spike_ratio > freq_compare_threshold );
-                    if( repair_direct )
-                    {
-                        System.out.println( "Direct repair at " + repair_interval + " with spike ratio of " + spike_ratio );
-                    }
                 }
 
                 //Calculate the requested repair OR the direct repair
@@ -257,11 +250,6 @@ public class Multi_Band_Repair_Marked implements IEffect
             }
             marking_index++;
             progress = 1.0 * marking_index / repair_intervals.size();
-            if( repair_interval.l / dataSource.get_sample_rate() > second )
-            {
-                second = repair_interval.l / dataSource.get_sample_rate();
-                System.out.println( "Repairing at second " + second );
-            }
         }
     }
 
@@ -293,5 +281,11 @@ public class Multi_Band_Repair_Marked implements IEffect
     public void setCompare_with_direct_repair( boolean compare_with_direct_repair )
     {
         this.compare_with_direct_repair = compare_with_direct_repair;
+    }
+
+    public void setFetch_ratio( int fetch_ratio )
+    {
+        this.fetch_ratio = fetch_ratio;
+        buffer_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + band_pass_filter_length;
     }
 }

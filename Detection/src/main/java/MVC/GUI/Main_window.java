@@ -4,6 +4,7 @@ import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
 import MVC.GUI.UI_Components.Effect_Input_Dialogs.Amplify_Dialog;
 import MVC.GUI.UI_Components.Effect_Input_Dialogs.Effect_UI_Component;
+import MVC.GUI.UI_Components.Effect_Input_Dialogs.Repair_Marked_Dialog;
 import MVC.GUI.UI_Components.Effect_Progress_Bar_Dialog;
 import MVC.GUI.UI_Components.Export_Progress_Bar_Dialog;
 import ProjectStatics.*;
@@ -279,14 +280,14 @@ public class Main_window
             }
 
             //Update the visible_samples
-            if( window_size_changed || selection_changed )
+            if( window_size_changed || displayed_interval_changed )
             {
 
-                if( !visible_samples_interval.includes( new Interval( first_sample_index, window_size ) ) )
+                if( !visible_samples_interval.includes( new Interval( first_sample_index, window_size ) ) || ( window_size_changed  ) )
                 {
                     visible_samples = ProjectManager.getCache().get_resized_samples( first_sample_index, window_size, display_window_size );
-                    visible_samples_interval.l = visible_samples.get_first_sample_index();
-                    visible_samples_interval.r = visible_samples.get_after_last_sample_index();
+                    visible_samples_interval.l = first_sample_index;
+                    visible_samples_interval.r = first_sample_index + window_size;
                 }
 
                 window_size_changed = false;
@@ -530,7 +531,7 @@ public class Main_window
                                            {
                                                set_first_sample_index( ( int )time_scroll.getValue() );
                                            } );
-            time_scroll.setOnDragDone( e ->
+            time_scroll.setOnMouseDragOver( e ->
                                        {
                                            set_first_sample_index( ( int )time_scroll.getValue() );
                                        } );
@@ -645,14 +646,13 @@ public class Main_window
             menu_effects.getItems().add( mi );
             mi.setOnAction( ev ->
                             {
-                                try
-                                {
                                     start_effect_with_UI( new Amplify_Dialog() );
-                                }
-                                catch( IOException | DataSourceException e )
-                                {
-                                    treatException( e );
-                                }
+                            } );
+            mi = new MenuItem( "Repair selected markings" );
+            menu_effects.getItems().add( mi );
+            mi.setOnAction( ev ->
+                            {
+                                start_effect_with_UI( new Repair_Marked_Dialog() );
                             } );
 
         }
@@ -853,15 +853,23 @@ public class Main_window
 
     private void start_effect_with_UI( Effect_UI_Component component )
     {
-        component.show( localScene.getWindow() );
-        if( component.get_close_exception() != null )
+        try
         {
-            treatException( component.get_close_exception() );
+            component.show( localScene.getWindow() );
+            if( component.get_close_exception() != null )
+            {
+                throw component.get_close_exception();
+            }
+            else
+            {
+                apply_effect( component.get_prepared_effect(), false );
+            }
         }
-        else
+        catch( DataSourceException e )
         {
-            apply_effect( component.get_prepared_effect(), false );
+            treatException( e );
         }
+
     }
 }
 

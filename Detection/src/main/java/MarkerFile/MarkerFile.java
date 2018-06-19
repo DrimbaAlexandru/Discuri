@@ -162,6 +162,7 @@ public class MarkerFile
         {
             return false;
         }
+        set.moveCursorOnOrAfter( sample );
         return set.getCurrent() != null && set.getCurrent().contains( sample );
     }
 
