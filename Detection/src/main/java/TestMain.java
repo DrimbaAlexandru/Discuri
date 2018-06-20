@@ -357,7 +357,7 @@ public class TestMain {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth inv riaa.wav" );
             CachedAudioDataSource dest = new CachedAudioDataSource( new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 8.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() ), 50000, 2048 );
             new Copy_to_ADS().apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
-            ProjectManager.load_marker_file( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
+            ProjectManager.add_from_marker_file( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
             Multi_Band_Repair_Marked repair_marked = new Multi_Band_Repair_Marked( 511, 512, 16 );
             repair_marked.getBand_cutoffs().add( 2000 );
             repair_marked.getBand_cutoffs().add( 500 );

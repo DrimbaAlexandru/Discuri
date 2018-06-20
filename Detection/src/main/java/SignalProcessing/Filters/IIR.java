@@ -16,6 +16,8 @@ public class IIR
     private int fb_coeff_nr;    // Q+1 in formula
     private double[] fb;        // a in formula
 
+    public final static IIR integration_IIR = new IIR( FIR.identity_FIR.getFf(), FIR.identity_FIR.getFf_coeff_nr(), new double[]{ 1, -1 }, 2 );
+
     public void apply( double[] x, Interval range, boolean use_input_as_output_start ) throws DataSourceException
     {
         FIR fir = new FIR( ff, ff_coeff_nr );
@@ -59,35 +61,6 @@ public class IIR
         fb = new double[ fb_tap_nr ];
         fb_coeff_nr = fb_tap_nr;
         System.arraycopy( fb_coeffs, 0, fb, 0, fb_tap_nr );
-    }
-
-    public static FIR fromFreqResponse( double[] x, int NyqFreq, int k )
-    {
-        Complex frq[] = new Complex[ NyqFreq * 2 ];
-        double filter[] = new double[ NyqFreq * 2 + 1 ];
-        int i;
-        for( i = 0; i <= NyqFreq; i++ )
-        {
-            if( i % 2 == 0 )
-            {
-                frq[ i ] = new Complex( x[ i ], 0 );
-            }
-            else
-            {
-                frq[ i ] = new Complex( -x[ i ], 0 );
-            }
-        }
-        for( i = NyqFreq + 1; i < NyqFreq * 2; i++ )
-        {
-            frq[ i ] = new Complex( 0, 0 );
-        }
-        frq = Fourier.IFFT( frq, NyqFreq * 2 );
-        for( i = 0; i < NyqFreq * 2; i++ )
-        {
-            filter[ i ] = frq[ i ].r();
-        }
-        filter[ NyqFreq * 2 ] = frq[ 0 ].r();
-        return new FIR( filter, NyqFreq * 2 + 1 );
     }
 
     public int getFf_coeff_nr()

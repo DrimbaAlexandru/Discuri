@@ -36,15 +36,14 @@
             <items>
                   <MenuItem fx:id="menu_open_file" mnemonicParsing="false" text="Open file..." />
                   <MenuItem fx:id="menu_export" mnemonicParsing="false" text="Export project" />
-                  <MenuItem fx:id="menu_load_marker" mnemonicParsing="false" text="Load marker file" />
-                  <MenuItem fx:id="menu_save_marker" mnemonicParsing="false" text="Save marker file" />
               <MenuItem mnemonicParsing="false" text="Close" />
             </items>
           </Menu>
-          <Menu id="menu_edit" mnemonicParsing="false" text="Edit">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Delete" />
-            </items>
+          <Menu id="menu_edit" fx:id="menu_markings" mnemonicParsing="false" text="Markings">
+               <items>
+                  <MenuItem fx:id="menu_load_marker" mnemonicParsing="false" text="Add markings from file" />
+                  <MenuItem fx:id="menu_save_marker" mnemonicParsing="false" text="Export markings to file" />
+               </items>
           </Menu>
           <Menu id="menu_effects" fx:id="menu_effects" mnemonicParsing="false" text="Effects" />
         </menus>

@@ -24,6 +24,12 @@ public class FIR
     private int ff_coeff_nr;
     private double[] ff;
 
+    private static final double[] riaa_points = { 20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000, 25000, 48000 };
+    private static final double[] riaa_resp = { 19.274, 18.954, 18.516, 17.792, 16.946, 15.852, 14.506, 13.088, 11.563, 9.809, 8.219, 6.677, 5.179, 3.784, 2.648, 1.642, 0.751, 0, -0.744, -1.643, -2.589, -3.700, -5.038, -6.605, -8.210, -9.980, -11.894, -13.734, -15.609, -17.708, -19.620, -21.542, -27.187 };
+
+    public final static FIR derivation_FIR = new FIR( new double[]{ 1, -1 }, 2 );
+    public final static FIR identity_FIR = new FIR( new double[]{ 1 }, 1 );
+
     public void apply( double[] x, Interval range ) throws DataSourceException
     {
 
@@ -169,13 +175,10 @@ public class FIR
 
     public static MyPair< double[], double[] > get_RIAA_response()
     {
-        final double[] riaa_points = { 20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000, 25000, 48000 };
-        final double[] riaa_resp = { 19.274, 18.954, 18.516, 17.792, 16.946, 15.852, 14.506, 13.088, 11.563, 9.809, 8.219, 6.677, 5.179, 3.784, 2.648, 1.642, 0.751, 0, -0.744, -1.643, -2.589, -3.700, -5.038, -6.605, -8.210, -9.980, -11.894, -13.734, -15.609, -17.708, -19.620, -21.542, -27.187 };
-        assert riaa_points.length == riaa_resp.length;
         return new MyPair<>( Arrays.copyOf( riaa_points, riaa_points.length ), Arrays.copyOf( riaa_resp, riaa_resp.length ) );
     }
 
-    public static MyPair< double[], double[] > get_inverse_RIAA_response() throws DataSourceException
+    public static MyPair< double[], double[] > get_inverse_RIAA_response()
     {
         MyPair< double[], double[] > resp = get_RIAA_response();
         double[] resp_ref = resp.getRight();

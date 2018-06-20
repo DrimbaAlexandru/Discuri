@@ -124,7 +124,7 @@ public class ProjectManager
         markerFile.clear_all_markings();
     }
 
-    public static void load_marker_file( String filepath ) throws FileNotFoundException, ParseException, DataSourceException
+    public static void add_from_marker_file( String filepath ) throws FileNotFoundException, ParseException, DataSourceException
     {
         check_thread_access();
         markerFile.add_from_file( filepath );

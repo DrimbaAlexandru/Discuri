@@ -4,11 +4,14 @@ import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
 import MVC.GUI.UI_Components.Effect_Input_Dialogs.Amplify_Dialog;
 import MVC.GUI.UI_Components.Effect_Input_Dialogs.Effect_UI_Component;
+import MVC.GUI.UI_Components.Effect_Input_Dialogs.Equalizer_Dialog;
 import MVC.GUI.UI_Components.Effect_Input_Dialogs.Repair_Marked_Dialog;
 import MVC.GUI.UI_Components.Effect_Progress_Bar_Dialog;
 import MVC.GUI.UI_Components.Export_Progress_Bar_Dialog;
 import ProjectManager.*;
 import SignalProcessing.Effects.*;
+import SignalProcessing.Filters.FIR;
+import SignalProcessing.Filters.IIR;
 import Utils.Interval;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -78,6 +81,7 @@ public class Main_window
 
     private int sample_number;
     private int channel_number;
+    private int sample_rate;
 
     /*--------------------------------
     GUI related variables
@@ -176,10 +180,10 @@ public class Main_window
             window_size = Math.min( window_size, sample_number );
             window_size_changed = true;
         }
-        if( channel_number != ProjectManager.getCache().get_channel_number() )
-        {
-            channel_number = ProjectManager.getCache().get_channel_number();
-        }
+
+        channel_number = ProjectManager.getCache().get_channel_number();
+        sample_rate = ProjectManager.getCache().get_sample_rate();
+
         selection_changed = true;
         displayed_interval_changed = true;
         visible_samples_interval.l = 0;
@@ -356,24 +360,8 @@ public class Main_window
     Description: Update selection related UI controls
     ----------------------------------------*/
 
-    private void refreshSelection() throws DataSourceException
+    private void refreshSelection()
     {
-        final int sample_rate;
-
-        ProjectManager.lock_access();
-        try
-        {
-            if( ProjectManager.getCache() == null )
-            {
-                return;
-            }
-            sample_rate = ProjectManager.getCache().get_sample_rate();
-        }
-        finally
-        {
-            ProjectManager.release_access();
-        }
-
         final int sel_len = selection.get_length();
         final int sel_start_seconds = selection.l / sample_rate;
         final int sel_start_milliseconds = ( selection.l % sample_rate * 1000 ) / sample_rate;
@@ -444,7 +432,7 @@ public class Main_window
                                               try
                                               {
                                                   ProjectManager.lock_access();
-                                                  ProjectManager.load_marker_file( path );
+                                                  ProjectManager.add_from_marker_file( path );
                                               }
                                               catch( FileNotFoundException | ParseException | DataSourceException e1 )
                                               {
@@ -648,11 +636,37 @@ public class Main_window
                             {
                                     start_effect_with_UI( new Amplify_Dialog() );
                             } );
+
             mi = new MenuItem( "Repair selected markings" );
             menu_effects.getItems().add( mi );
             mi.setOnAction( ev ->
                             {
                                 start_effect_with_UI( new Repair_Marked_Dialog() );
+                            } );
+
+            mi = new MenuItem( "Equalizer" );
+            menu_effects.getItems().add( mi );
+            mi.setOnAction( ev ->
+                            {
+                                start_effect_with_UI( new Equalizer_Dialog( sample_rate ) );
+                            } );
+
+            mi = new MenuItem( "Discrete derivation" );
+            menu_effects.getItems().add( mi );
+            mi.setOnAction( ev ->
+                            {
+                                FIR_Filter effect = new FIR_Filter();
+                                effect.setFilter( FIR.derivation_FIR );
+                                apply_effect( effect, false );
+                            } );
+
+            mi = new MenuItem( "Discrete integration" );
+            menu_effects.getItems().add( mi );
+            mi.setOnAction( ev ->
+                            {
+                                IIR_Filter effect = new IIR_Filter();
+                                effect.setFilter( IIR.integration_IIR );
+                                apply_effect( effect, false );
                             } );
 
         }
