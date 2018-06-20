@@ -7,15 +7,14 @@ import java.util.function.Function;
  */
 public class Windowing
 {
-    public static void apply( double[] samples, int start_offset,int len, Function< Double, Double > window_function )
+    public static void apply( double[] samples, int start_offset, int len, Function< Double, Double > window_function )
     {
         if( len == 0 )
         {
             return;
         }
         int i;
-        samples[ start_offset ] *= window_function.apply( 0.0 );
-        for( i = 1; i < len; i++ )
+        for( i = 0; i < len; i++ )
         {
             samples[ start_offset + i ] *= window_function.apply( ( double )i / ( len - 1 ) );
         }

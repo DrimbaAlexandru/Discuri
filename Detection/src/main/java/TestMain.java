@@ -1,10 +1,9 @@
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.CachedADS.CachedAudioDataSource;
-import AudioDataSource.ADS_Utils;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
-import ProjectStatics.*;
+import ProjectManager.*;
 import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;

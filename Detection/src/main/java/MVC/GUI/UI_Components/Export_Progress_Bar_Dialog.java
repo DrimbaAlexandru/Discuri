@@ -5,7 +5,7 @@ import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.IAudioDataSource;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
-import ProjectStatics.ProjectManager;
+import ProjectManager.ProjectManager;
 import SignalProcessing.Effects.Copy_to_ADS;
 import SignalProcessing.Effects.IEffect;
 import Utils.Interval;

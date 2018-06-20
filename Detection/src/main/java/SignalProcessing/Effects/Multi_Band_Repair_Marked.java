@@ -7,7 +7,7 @@ import AudioDataSource.MemoryADS.SingleBlockADS;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import MarkerFile.Marking;
-import ProjectStatics.ProjectManager;
+import ProjectManager.ProjectManager;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Interval;

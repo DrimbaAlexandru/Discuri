@@ -5,7 +5,7 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
-import ProjectStatics.ProjectStatics;
+import ProjectManager.ProjectStatics;
 import Utils.MyPair;
 
 import java.util.ArrayList;

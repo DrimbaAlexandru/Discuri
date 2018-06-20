@@ -8,7 +8,7 @@ import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
-import ProjectStatics.ProjectStatics;
+import ProjectManager.ProjectStatics;
 import Utils.Interval;
 
 import java.io.File;

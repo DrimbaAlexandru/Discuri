@@ -7,7 +7,7 @@ import MVC.GUI.UI_Components.Effect_Input_Dialogs.Effect_UI_Component;
 import MVC.GUI.UI_Components.Effect_Input_Dialogs.Repair_Marked_Dialog;
 import MVC.GUI.UI_Components.Effect_Progress_Bar_Dialog;
 import MVC.GUI.UI_Components.Export_Progress_Bar_Dialog;
-import ProjectStatics.*;
+import ProjectManager.*;
 import SignalProcessing.Effects.*;
 import Utils.Interval;
 import javafx.application.Platform;
@@ -311,7 +311,7 @@ public class Main_window
             for( i = 0; i < display_window_size - 1; i++ )
             {
             /* Draw L channel */
-                if( channel_number >= 0 )
+                if( channel_number >= 1 )
                 {
                     if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 0 ) )
                     {
@@ -324,7 +324,7 @@ public class Main_window
                     gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2, ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
                 }
             /* Draw R channel */
-                if( channel_number >= 1 )
+                if( channel_number >= 2 )
                 {
                     if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 1 ) )
                     {

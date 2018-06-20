@@ -56,11 +56,11 @@ public class Repair_One implements IEffect
 
             lp1.predict_forward( flp, side_fetch_size, side_fetch_size + interval.get_length() );
             step++;
-            progress = ( 1.0 * step / ( 2 * affected_channels.size() ) );
+            progress = ( 1.0 * step / ( 4 * affected_channels.size() ) );
 
             lp2.predict_backward( blp, interval.get_length(), 0 );
             step++;
-            progress = ( 1.0 * step / ( 2 * affected_channels.size() ) );
+            progress = ( 1.0 * step / ( 4 * affected_channels.size() ) );
 
             Windowing.apply( flp, side_fetch_size, interval.get_length(), Windowing.cos_sq_window );
             Windowing.apply( blp, 0, interval.get_length(), Windowing.inv_cos_sq_window );

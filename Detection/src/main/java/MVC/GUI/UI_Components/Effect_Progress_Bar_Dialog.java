@@ -1,7 +1,7 @@
 package MVC.GUI.UI_Components;
 
 import Exceptions.DataSourceException;
-import ProjectStatics.ProjectManager;
+import ProjectManager.ProjectManager;
 import SignalProcessing.Effects.IEffect;
 import Utils.Interval;
 import javafx.application.Platform;

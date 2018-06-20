@@ -4,7 +4,7 @@ import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.FileADS.WAVFileAudioSource;
-import ProjectStatics.ProjectStatics;
+import ProjectManager.ProjectStatics;
 import Utils.Interval;
 import org.junit.After;
 import org.junit.Assert;
