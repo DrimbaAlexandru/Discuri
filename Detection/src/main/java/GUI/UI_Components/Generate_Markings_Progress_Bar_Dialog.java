@@ -1,7 +1,8 @@
-package MVC.GUI.UI_Components;
+package GUI.UI_Components;
 
 import Exceptions.DataSourceException;
-import ProjectManager.ProjectManager;
+import ProjectManager.*;
+import SignalProcessing.Effects.Create_Marker_File;
 import SignalProcessing.Effects.IEffect;
 import Utils.Interval;
 import javafx.application.Platform;
@@ -17,10 +18,7 @@ import javafx.stage.Window;
 
 import java.io.IOException;
 
-/**
- * Created by Alex on 18.06.2018.
- */
-public class Effect_Progress_Bar_Dialog
+public class Generate_Markings_Progress_Bar_Dialog
 {
     @FXML
     private ProgressIndicator progress_bar;
@@ -40,7 +38,7 @@ public class Effect_Progress_Bar_Dialog
         try
         {
             ProjectManager.lock_access();
-            ProjectManager.apply_effect( effect, applying_interval );
+            ProjectManager.generate_markings( ( Create_Marker_File )effect, applying_interval );
         }
         catch( DataSourceException e )
         {
@@ -48,9 +46,9 @@ public class Effect_Progress_Bar_Dialog
         }
         finally
         {
+            finished_working = true;
             ProjectManager.release_access();
         }
-        finished_working = true;
     }
 
     private void UI_updater_thread()
@@ -103,18 +101,18 @@ public class Effect_Progress_Bar_Dialog
         onTop.showAndWait();
     }
 
-    public Effect_Progress_Bar_Dialog( IEffect effect, Interval interval ) throws IOException, DataSourceException
+    public Generate_Markings_Progress_Bar_Dialog( Interval applying_interval ) throws IOException, DataSourceException
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
-        l.setLocation( getClass().getClassLoader().getResource( "progress_bar.fxml" ) );
+        l.setLocation( ProjectStatics.getFxml_files_path( "progress_bar.fxml" ) );
         main_layout = l.load();
         if( main_layout == null )
         {
             throw new IOException( "Failed to load FXML file" );
         }
-        this.effect = effect;
-        this.applying_interval = new Interval( interval.l, interval.get_length() );
+        this.applying_interval = new Interval( applying_interval.l, applying_interval.r, false );
+        effect = new Create_Marker_File();
     }
 
     public DataSourceException get_close_exception()

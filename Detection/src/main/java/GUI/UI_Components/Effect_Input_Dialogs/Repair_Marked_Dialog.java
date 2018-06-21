@@ -1,11 +1,10 @@
-package MVC.GUI.UI_Components.Effect_Input_Dialogs;
+package GUI.UI_Components.Effect_Input_Dialogs;
 
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
-import SignalProcessing.Effects.Equalizer;
+import ProjectManager.ProjectStatics;
 import SignalProcessing.Effects.IEffect;
-import SignalProcessing.Filters.FIR;
-import Utils.MyPair;
+import SignalProcessing.Effects.Multi_Band_Repair_Marked;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -16,38 +15,33 @@ import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 /**
- * Created by Alex on 20.06.2018.
+ * Created by Alex on 19.06.2018.
  */
-public class Equalizer_Dialog implements Effect_UI_Component
+public class Repair_Marked_Dialog implements Effect_UI_Component
 {
     @FXML
-    private ChoiceBox< String > ch_eq_curve;
+    private Label lbl_lp_coeffs;
     @FXML
-    private Slider sld_fil_len;
+    private CheckBox chk_6000_cut, chk_2000_cut,chk_500_cut,chk_repair_residue, chk_use_direct_repair;
     @FXML
-    private Label lbl_fil_len;
+    private Slider slider_lp_coeffs;
     @FXML
     private Button btn_apply, btn_cancel;
 
     private Pane main_layout;
     private Stage onTop = new Stage();
     private DataSourceException close_exception = null;
-    private int sample_rate;
-    private int filter_length;
 
-    private Equalizer effect = null;
-
-    private final HashMap< String, MyPair< double[], double[] > > equalization_curves = new HashMap<>();
+    private Multi_Band_Repair_Marked effect = null;
 
     @Override
     public void show( Window parent ) throws DataSourceException
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
-        l.setLocation( getClass().getClassLoader().getResource( "eq_UI.fxml" ) );
+        l.setLocation( ProjectStatics.getFxml_files_path( "repair_UI.fxml" ) );
         try
         {
             main_layout = l.load();
@@ -60,33 +54,32 @@ public class Equalizer_Dialog implements Effect_UI_Component
         {
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
-        ch_eq_curve.getItems().clear();
-        ch_eq_curve.getItems().addAll( equalization_curves.keySet() );
 
-        filter_length = ( ( int )sld_fil_len.getValue() - 1 ) / 2 * 2 + 1;
-        sld_fil_len.setValue( filter_length );
-        lbl_fil_len.setText( filter_length + "" );
-
-        sld_fil_len.setOnMouseDragged( ev ->
-                                       {
-                                           filter_length = ( ( int )sld_fil_len.getValue() - 1 ) / 2 * 2 + 1;
-                                           sld_fil_len.setValue( filter_length );
-                                           lbl_fil_len.setText( filter_length + "" );
-                                       } );
-
+        lbl_lp_coeffs.setText( "" + ( int )slider_lp_coeffs.getValue() );
+        slider_lp_coeffs.setOnMouseDragged( ev ->
+                                      {
+                                          lbl_lp_coeffs.setText( "" + ( int )slider_lp_coeffs.getValue() );
+                                      } );
         btn_apply.setOnAction( ( ev ) ->
                                {
-                                   effect = new Equalizer();
                                    try
                                    {
-                                       if( ch_eq_curve.getValue() == null )
+                                       effect = new Multi_Band_Repair_Marked();
+                                       if( chk_500_cut.isSelected() )
                                        {
-                                           throw new DataSourceException( "No curve was selected", DataSourceExceptionCause.INVALID_USER_INPUT );
+                                           effect.getBand_cutoffs().add( 500 );
                                        }
-                                       MyPair< double[], double[] > resp = equalization_curves.get( ch_eq_curve.getValue() );
-                                       FIR fir = FIR.fromFreqResponse( resp.getLeft(), resp.getRight(), resp.getLeft().length, sample_rate, filter_length );
-                                       effect = new Equalizer();
-                                       effect.setFilter( fir );
+                                       if( chk_2000_cut.isSelected() )
+                                       {
+                                           effect.getBand_cutoffs().add( 2000 );
+                                       }
+                                       if( chk_6000_cut.isSelected() )
+                                       {
+                                           effect.getBand_cutoffs().add( 6000 );
+                                       }
+                                       effect.setRepair_residue( chk_repair_residue.isSelected() );
+                                       effect.setCompare_with_direct_repair( chk_use_direct_repair.isSelected() );
+                                       effect.setFetch_ratio( ( int )slider_lp_coeffs.getValue() );
                                    }
                                    catch( Exception e )
                                    {
@@ -112,12 +105,8 @@ public class Equalizer_Dialog implements Effect_UI_Component
         return effect;
     }
 
-    public Equalizer_Dialog( int project_sample_rate )
+    public Repair_Marked_Dialog()
     {
-        sample_rate = project_sample_rate;
-        filter_length = 511;
-        equalization_curves.put( "RIAA curve", FIR.get_RIAA_response() );
-        equalization_curves.put( "Inverse RIAA curve", FIR.get_inverse_RIAA_response() );
     }
 
     @Override

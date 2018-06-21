@@ -1,4 +1,4 @@
-import MVC.GUI.Main_window;
+import GUI.Main_window;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

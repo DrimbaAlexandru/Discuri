@@ -69,7 +69,7 @@ class Classify_In_Python
                     proc = null;
                     throw new DataSourceException( "Python error message larger than buffer", DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
                 }
-
+                System.out.println( "Python script started" );
                 buffer.clear();
                 readBytes( len, err );
                 buffer.rewind();
@@ -187,7 +187,7 @@ public class Create_Marker_File implements IEffect
             temp_len = Math.min( applying_interval.r - i + nn_input_size - 1, chunk_size );
             win = dataSource.get_samples( i - nn_input_size / 2, temp_len );
             predict_start = win.get_first_sample_index() + nn_input_size / 2;
-            System.out.println( "At sample " + i );
+            //System.out.println( "At sample " + i );
             for( int ch = 0; ch < win.get_channel_number(); ch++ )
             {
                 Classify_In_Python.send_double_array( win.get_length(), win.getSamples()[ ch ] );

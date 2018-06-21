@@ -1,19 +1,20 @@
-package MVC.GUI;
+package GUI;
 
 import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
-import MVC.GUI.UI_Components.Effect_Input_Dialogs.Amplify_Dialog;
-import MVC.GUI.UI_Components.Effect_Input_Dialogs.Effect_UI_Component;
-import MVC.GUI.UI_Components.Effect_Input_Dialogs.Equalizer_Dialog;
-import MVC.GUI.UI_Components.Effect_Input_Dialogs.Repair_Marked_Dialog;
-import MVC.GUI.UI_Components.Effect_Progress_Bar_Dialog;
-import MVC.GUI.UI_Components.Export_Progress_Bar_Dialog;
+import GUI.UI_Components.Effect_Input_Dialogs.*;
+import GUI.UI_Components.Effect_Progress_Bar_Dialog;
+import GUI.UI_Components.Export_Progress_Bar_Dialog;
+import GUI.UI_Components.Generate_Markings_Progress_Bar_Dialog;
+import MarkerFile.Marking;
 import ProjectManager.*;
 import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
 import Utils.Interval;
+import com.sun.istack.internal.Nullable;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -29,6 +30,8 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.text.ParseException;
+
+import static Utils.Util_Stuff.remap_to_interval;
 
 /**
  * Created by Alex on 27.03.2017.
@@ -62,9 +65,9 @@ public class Main_window
     @FXML
     private ScrollBar time_scroll;
     @FXML
-    private MenuItem menu_open_file, menu_export, menu_load_marker, menu_save_marker;
+    private MenuItem menu_open_file, menu_export, menu_export_selected, menu_load_marker, menu_save_marker;
     @FXML
-    private Menu menu_effects;
+    private Menu menu_effects, menu_markings;
 
     /*--------------------------------
     Position, selection and audio data variables
@@ -96,18 +99,30 @@ public class Main_window
     private boolean main_canvas_LMB_down_on_zoom;
     private int periodic_window_increment = 0;
 
-    private boolean window_size_changed, selection_changed, displayed_interval_changed; /* Flags for updating selection and samples related GUI components
-
+    private boolean window_size_changed, selection_changed, displayed_interval_changed, markings_changed; /* Flags for updating selection and samples related GUI components
 
     /*************************************************
-    Private Methods
+    UI-related methods
     *************************************************/
 
-    private void showDialog( Alert.AlertType type, String message )
+    private void treatException( Exception e )
+    {
+        e.printStackTrace();
+        if( e instanceof DataSourceException )
+        {
+            showDialog( Alert.AlertType.ERROR, e.getMessage(), ( ( DataSourceException )e ).getDSEcause().name().replace( '_', ' ' ) );
+        }
+        else
+        {
+            showDialog( Alert.AlertType.ERROR, e.getMessage(), "Error" );
+        }
+    }
+
+    private void showDialog( Alert.AlertType type, String message, String title )
     {
         is_updater_suspended = true;
         Alert alert = new Alert( type );
-        alert.setTitle( type.name() );
+        alert.setTitle( title );
         alert.setHeaderText( null );
         alert.setContentText( message );
         alert.showAndWait();
@@ -115,42 +130,13 @@ public class Main_window
     }
 
     /*----------------------------------------
-    Method name: set_first_sample_index
-    Description: Set the value of the first sample index
-                 so it stays within the boundaries.
-    ----------------------------------------*/
-
-    private void set_first_sample_index
-    (
-        int value       /* new value for the first sample index */
-    )
-    {
-        if( first_sample_index != value )
-        {
-            displayed_interval_changed = true;
-        }
-
-        first_sample_index = value;
-        if( first_sample_index >= sample_number - window_size )
-        {
-            first_sample_index = sample_number - window_size - 1;
-        }
-        if( first_sample_index < 0 )
-        {
-            first_sample_index = 0;
-        }
-    } /* set_first_sample_index */
-
-
-    /*----------------------------------------
     Method name: refresh_view()
     Description: Refresh the GUI to match the current
                  position, selection etc.
     ----------------------------------------*/
-
     private void refresh_view() throws DataSourceException
     {
-        if( selection_changed || displayed_interval_changed || window_size_changed )
+        if( selection_changed || displayed_interval_changed || window_size_changed || markings_changed )
         {
             drawSamples();
         }
@@ -160,94 +146,11 @@ public class Main_window
         }
     } /* refresh_view */
 
-
-    /*----------------------------------------
-    Method name: on_data_source_modified()
-    Description: Handle the change of the underlying data source. Make sure to lock the ProjectManager before calling this method
-    ----------------------------------------*/
-    private void on_data_source_changed() throws DataSourceException
-    {
-        if( sample_number != ProjectManager.getCache().get_sample_number() )
-        {
-            sample_number = ProjectManager.getCache().get_sample_number();
-
-            current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
-            sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
-
-            time_scroll.setMin( 0 );
-            time_scroll.setMax( sample_number );
-
-            window_size = Math.min( window_size, sample_number );
-            window_size_changed = true;
-        }
-
-        channel_number = ProjectManager.getCache().get_channel_number();
-        sample_rate = ProjectManager.getCache().get_sample_rate();
-
-        selection_changed = true;
-        displayed_interval_changed = true;
-        visible_samples_interval.l = 0;
-        visible_samples_interval.r = 0;
-    }
-
-
-    /*----------------------------------------
-    Method name: loadWAV()
-    Description: Handle loading of .wav file and initialize
-                 GUI controls' actions
-    ----------------------------------------*/
-
-    private void loadWAV()
-    {
-        /*--------------------------------
-        Local Variables
-        --------------------------------*/
-        FileChooser fc = new FileChooser();
-
-        /*--------------------------------
-        Create "Open File" dialog
-        --------------------------------*/
-        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "WAV Files", "*.wav" ) );
-        File f = fc.showOpenDialog( localScene.getWindow() );
-        String audio_file_path;
-        if( f != null )
-        {
-            audio_file_path = f.getAbsolutePath();
-        }
-        else
-        {
-            /* cancel the initialization if the file open failed */
-            return;
-        }
-
-        try
-        {
-            ProjectManager.lock_access();
-            ProjectManager.new_project_from_audio_file( audio_file_path );
-
-            /*--------------------------------
-            Initialize variables and GUI components
-            --------------------------------*/
-            on_data_source_changed();
-        }
-        catch( Exception e )
-        {
-            treatException( e );
-            showDialog( Alert.AlertType.ERROR, "File load failed. " + e.getMessage() );
-        }
-        finally
-        {
-            ProjectManager.release_access();
-        }
-    } /* loadWAV */
-
-
     /*----------------------------------------
     Method name: drawSamples
     Description: Refresh the audio-samples related
                  GUI components
     ----------------------------------------*/
-
     private void drawSamples()
     {
         /*--------------------------------
@@ -259,21 +162,20 @@ public class Main_window
         final GraphicsContext gc = main_canvas.getGraphicsContext2D();
         Interval visible_selection = new Interval( selection.l, selection.r, false );
         visible_selection.limit( first_sample_index, first_sample_index + window_size );
-        double samples[];
 
-        ProjectManager.lock_access();
-
-        /* Handle no WAV file loaded case */
         try
         {
+            ProjectManager.lock_access();
+
+            /* Handle no WAV file loaded case */
             if( ProjectManager.getCache() == null )
             {
                 return;
             }
 
-        /*--------------------------------
-        Initialize variables
-        --------------------------------*/
+            /*--------------------------------
+            Initialize variables
+            --------------------------------*/
             if( window_size <= display_window_width )
             {
                 display_window_size = window_size;
@@ -297,9 +199,9 @@ public class Main_window
                 window_size_changed = false;
             }
 
-        /*--------------------------------
-        Redraw the canvas
-        --------------------------------*/
+            /*--------------------------------
+            Redraw the canvas
+            --------------------------------*/
             gc.setFill( Color.WHITE );
             gc.fillRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
 
@@ -314,7 +216,7 @@ public class Main_window
 
             for( i = 0; i < display_window_size - 1; i++ )
             {
-            /* Draw L channel */
+                /* Draw L channel */
                 if( channel_number >= 1 )
                 {
                     if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 0 ) )
@@ -327,7 +229,7 @@ public class Main_window
                     }
                     gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2, ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
                 }
-            /* Draw R channel */
+                /* Draw R channel */
                 if( channel_number >= 2 )
                 {
                     if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 1 ) )
@@ -343,6 +245,7 @@ public class Main_window
             }
             main_canvas.getGraphicsContext2D().setFill( Color.BLACK );
             displayed_interval_changed = false;
+            markings_changed = false;
         }
         catch( DataSourceException e )
         {
@@ -354,14 +257,16 @@ public class Main_window
         }
     } /* drawSamples */
 
-
     /*----------------------------------------
     Method name: refreshSelection
     Description: Update selection related UI controls
     ----------------------------------------*/
-
     private void refreshSelection()
     {
+        if( sample_rate == 0 )
+        {
+            return;
+        }
         final int sel_len = selection.get_length();
         final int sel_start_seconds = selection.l / sample_rate;
         final int sel_start_milliseconds = ( selection.l % sample_rate * 1000 ) / sample_rate;
@@ -390,18 +295,16 @@ public class Main_window
         selection_changed = false;
     }
 
-
     /*----------------------------------------
     Method name: Main_window
     Description: Default class constructor. Loads the
                  GUI and starts the application
     ----------------------------------------*/
-
     public Main_window()
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
-        l.setLocation( getClass().getClassLoader().getResource( "fxml_main.fxml" ) );
+        l.setLocation( ProjectStatics.getFxml_files_path( "fxml_main.fxml" ) );
 
         try
         {
@@ -410,109 +313,20 @@ public class Main_window
             display_window_width = ( int )main_canvas.getWidth() - window_left_pad;
             startRefresher();
 
-            menu_open_file.setOnAction( e ->
-                                        {
-                                            loadWAV();
-                                        } );
-            menu_load_marker.setOnAction( e ->
-                                          {
-                                              FileChooser fc = new FileChooser();
-
-                                              fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
-                                              File f = fc.showOpenDialog( localScene.getWindow() );
-                                              String path;
-                                              if( f != null )
-                                              {
-                                                  path = f.getAbsolutePath();
-                                              }
-                                              else
-                                              {
-                                                  return;
-                                              }
-                                              try
-                                              {
-                                                  ProjectManager.lock_access();
-                                                  ProjectManager.add_from_marker_file( path );
-                                              }
-                                              catch( FileNotFoundException | ParseException | DataSourceException e1 )
-                                              {
-                                                  treatException( e1 );
-                                              }
-                                              finally
-                                              {
-                                                  ProjectManager.release_access();
-                                              }
-                                          } );
-
-            menu_save_marker.setOnAction( ev ->
-                                          {
-                                              FileChooser fc = new FileChooser();
-
-                                              fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
-                                              File f = fc.showSaveDialog( null );
-                                              if( f != null )
-                                              {
-                                                  try
-                                                  {
-                                                      ProjectManager.lock_access();
-                                                      ProjectManager.export_marker_file( f.getAbsolutePath() );
-                                                  }
-                                                  catch( IOException | DataSourceException e )
-                                                  {
-                                                      treatException( e );
-                                                  }
-                                                  finally
-                                                  {
-                                                      ProjectManager.release_access();
-                                                  }
-                                              }
-                                          } );
+            menu_open_file.setOnAction( this::on_load_audio );
+            menu_load_marker.setOnAction( this::on_load_marker );
+            menu_save_marker.setOnAction( this::on_export_marker );
             menu_export.setOnAction( ev ->
                                      {
-                                         FileChooser fc = new FileChooser();
-
-                                         fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Audio files", "*.wav" ) );
-                                         File f = fc.showSaveDialog( null );
-                                         if( f != null )
-                                         {
-                                             on_export_project( f.getAbsolutePath(), false );
-                                         }
+                                         on_export_project( false );
                                      } );
+            menu_export_selected.setOnAction( ev ->
+                                              {
+                                                  on_export_project( true );
+                                              } );
 
-            btn_redo.setOnAction( ev ->
-                                  {
-                                      try
-                                      {
-                                          ProjectManager.lock_access();
-                                          ProjectManager.redo();
-                                          on_data_source_changed();
-                                      }
-                                      catch( DataSourceException e )
-                                      {
-                                          treatException( e );
-                                      }
-                                      finally
-                                      {
-                                          ProjectManager.release_access();
-                                      }
-                                  } );
-            btn_undo.setOnAction( ev ->
-                                  {
-                                      try
-                                      {
-                                          ProjectManager.lock_access();
-                                          ProjectManager.undo();
-                                          on_data_source_changed();
-                                      }
-                                      catch( DataSourceException e )
-                                      {
-                                          treatException( e );
-                                      }
-                                      finally
-                                      {
-                                          ProjectManager.release_access();
-                                      }
-                                  } );
+            btn_redo.setOnAction( this::on_redo );
+            btn_undo.setOnAction( this::on_undo );
 
             time_scroll.setUnitIncrement( 1 );
             time_scroll.setOnMouseClicked( e ->
@@ -520,9 +334,9 @@ public class Main_window
                                                set_first_sample_index( ( int )time_scroll.getValue() );
                                            } );
             time_scroll.setOnMouseDragOver( e ->
-                                       {
-                                           set_first_sample_index( ( int )time_scroll.getValue() );
-                                       } );
+                                            {
+                                                set_first_sample_index( ( int )time_scroll.getValue() );
+                                            } );
 
             btn_next_frame.setOnMouseClicked( e ->
                                               {
@@ -632,43 +446,39 @@ public class Main_window
             MenuItem mi;
             mi = new MenuItem( "Amplify" );
             menu_effects.getItems().add( mi );
-            mi.setOnAction( ev ->
-                            {
-                                    start_effect_with_UI( new Amplify_Dialog() );
-                            } );
+            mi.setOnAction( this::on_amplify );
 
             mi = new MenuItem( "Repair selected markings" );
             menu_effects.getItems().add( mi );
-            mi.setOnAction( ev ->
-                            {
-                                start_effect_with_UI( new Repair_Marked_Dialog() );
-                            } );
+            mi.setOnAction( this::on_Repair );
 
             mi = new MenuItem( "Equalizer" );
             menu_effects.getItems().add( mi );
-            mi.setOnAction( ev ->
-                            {
-                                start_effect_with_UI( new Equalizer_Dialog( sample_rate ) );
-                            } );
+            mi.setOnAction( this::on_equalizer );
 
             mi = new MenuItem( "Discrete derivation" );
             menu_effects.getItems().add( mi );
-            mi.setOnAction( ev ->
-                            {
-                                FIR_Filter effect = new FIR_Filter();
-                                effect.setFilter( FIR.derivation_FIR );
-                                apply_effect( effect, false );
-                            } );
+            mi.setOnAction( this::on_derivation );
 
             mi = new MenuItem( "Discrete integration" );
             menu_effects.getItems().add( mi );
-            mi.setOnAction( ev ->
-                            {
-                                IIR_Filter effect = new IIR_Filter();
-                                effect.setFilter( IIR.integration_IIR );
-                                apply_effect( effect, false );
-                            } );
+            mi.setOnAction( this::on_integration );
 
+            mi = new MenuItem( "Mark selection" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_add_marking );
+
+            mi = new MenuItem( "Unmark selection" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_remove_marking );
+
+            mi = new MenuItem( "Clear all markings" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_clear_markings );
+
+            mi = new MenuItem( "Generate markings" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_generate_markings );
         }
         catch( IOException e )
         {
@@ -692,7 +502,7 @@ public class Main_window
         Stage localStage = new Stage();
         Group localroot = new Group();
 
-        localScene = new Scene( localroot, 834, 474, Color.color( 1, 1, 1 ) );
+        localScene = new Scene( localroot, mainLayout.getPrefWidth(), mainLayout.getPrefHeight(), Color.color( 1, 1, 1 ) );
         localStage.setResizable( false );
         localStage.setScene( localScene );
         localroot.getChildren().add( mainLayout );
@@ -722,7 +532,6 @@ public class Main_window
                                           //TBD: Show save/don't save dialog
                                       } );
     } /* run() */
-
 
     private void startRefresher()
     {
@@ -779,9 +588,82 @@ public class Main_window
         th.start();
     }
 
-    private void treatException( Exception e )
+
+    /*************************************************
+     Project control related methods
+     *************************************************/
+
+    /*----------------------------------------
+    Method name: set_first_sample_index
+    Description: Set the value of the first sample index
+                 so it stays within the boundaries.
+    ----------------------------------------*/
+    private void set_first_sample_index( int value )
     {
-        e.printStackTrace();
+        if( first_sample_index != value )
+        {
+            displayed_interval_changed = true;
+        }
+
+        first_sample_index = value;
+        if( first_sample_index >= sample_number - window_size )
+        {
+            first_sample_index = sample_number - window_size - 1;
+        }
+        if( first_sample_index < 0 )
+        {
+            first_sample_index = 0;
+        }
+    } /* set_first_sample_index */
+
+    /*----------------------------------------
+    Method name: on_data_source_modified()
+    Description: Handle the change of the underlying data source. Make sure to lock the ProjectManager before calling this method
+    ----------------------------------------*/
+    private void on_data_source_changed() throws DataSourceException
+    {
+        if( sample_number != ProjectManager.getCache().get_sample_number() )
+        {
+            sample_number = ProjectManager.getCache().get_sample_number();
+
+            current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
+            sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
+
+            time_scroll.setMin( 0 );
+            time_scroll.setMax( sample_number );
+
+            window_size = Math.min( window_size, sample_number );
+            window_size_changed = true;
+        }
+
+        channel_number = ProjectManager.getCache().get_channel_number();
+        sample_rate = ProjectManager.getCache().get_sample_rate();
+
+        selection_changed = true;
+        displayed_interval_changed = true;
+        visible_samples_interval.l = 0;
+        visible_samples_interval.r = 0;
+    }
+
+    private void start_effect_with_UI( Effect_UI_Component component )
+    {
+        try
+        {
+            component.show( localScene.getWindow() );
+            if( component.get_close_exception() != null )
+            {
+                throw component.get_close_exception();
+            }
+            else
+            {
+                apply_effect( component.get_prepared_effect(), false );
+            }
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+
     }
 
     private void apply_effect( IEffect effect, boolean allow_zero_selection )
@@ -804,26 +686,6 @@ public class Main_window
             }
         }
         apply_effect( effect, interval );
-    }
-
-    private void on_export_project( String path, boolean only_export_selection )
-    {
-        try
-        {
-            Export_Progress_Bar_Dialog exporter = new Export_Progress_Bar_Dialog( path, only_export_selection ? selection : new Interval( 0, Integer.MAX_VALUE ) );
-            is_updater_suspended = true;
-            exporter.show( localScene.getWindow() );
-            if( exporter.get_close_exception() != null )
-            {
-                throw exporter.get_close_exception();
-            }
-            displayed_interval_changed = true;
-        }
-        catch( DataSourceException | IOException e )
-        {
-            treatException( e );
-        }
-        is_updater_suspended = false;
     }
 
     private void apply_effect( IEffect effect, Interval interval )
@@ -860,35 +722,275 @@ public class Main_window
         is_updater_suspended = false;
     }
 
-    private int remap_to_interval( int x, int a1, int b1, int a2, int b2 )
-    {
-        return ( x - a1 ) * ( b2 - a2 ) / ( b1 - a1 ) + a2;
-    }
+    /*----------------------------------------
+    Method name: on_load_audio()
+    Description: Handle loading of .wav file and initialize
+                 GUI controls' actions
+    ----------------------------------------*/
 
-    private void start_effect_with_UI( Effect_UI_Component component )
+    private void on_load_audio( @Nullable ActionEvent ev )
     {
+        /*--------------------------------
+        Local Variables
+        --------------------------------*/
+        FileChooser fc = new FileChooser();
+
+        /*--------------------------------
+        Create "Open File" dialog
+        --------------------------------*/
+        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "WAV Files", "*.wav" ) );
+        File f = fc.showOpenDialog( localScene.getWindow() );
+        String audio_file_path;
+        if( f != null )
+        {
+            audio_file_path = f.getAbsolutePath();
+        }
+        else
+        {
+            /* cancel the initialization if the file open failed */
+            return;
+        }
+
         try
         {
-            component.show( localScene.getWindow() );
-            if( component.get_close_exception() != null )
+            ProjectManager.lock_access();
+            ProjectManager.new_project_from_audio_file( audio_file_path );
+
+            /*--------------------------------
+            Initialize variables and GUI components
+            --------------------------------*/
+            on_data_source_changed();
+        }
+        catch( Exception e )
+        {
+            treatException( e );
+            //showDialog( Alert.AlertType.ERROR, "File load failed. " + e.getMessage() );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+        }
+    } /* on_load_audio */
+
+    private void on_export_project( boolean only_export_selection )
+    {
+        FileChooser fc = new FileChooser();
+
+        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Audio files", "*.wav" ) );
+        File f = fc.showSaveDialog( null );
+        if( f != null )
+        {
+            try
             {
-                throw component.get_close_exception();
+                Export_Progress_Bar_Dialog exporter = new Export_Progress_Bar_Dialog( f.getAbsolutePath(), only_export_selection && selection.get_length() > 0 ? selection : new Interval( 0, sample_number ) );
+                is_updater_suspended = true;
+                exporter.show( localScene.getWindow() );
+                if( exporter.get_close_exception() != null )
+                {
+                    throw exporter.get_close_exception();
+                }
+                displayed_interval_changed = true;
             }
-            else
+            catch( DataSourceException | IOException e )
             {
-                apply_effect( component.get_prepared_effect(), false );
+                treatException( e );
+            }
+            is_updater_suspended = false;
+        }
+    }
+
+    private void on_load_marker( @Nullable ActionEvent ev )
+    {
+        FileChooser fc = new FileChooser();
+
+        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
+        File f = fc.showOpenDialog( localScene.getWindow() );
+        String path;
+        if( f != null )
+        {
+            path = f.getAbsolutePath();
+        }
+        else
+        {
+            return;
+        }
+        try
+        {
+            ProjectManager.lock_access();
+            ProjectManager.add_from_marker_file( path );
+        }
+        catch( FileNotFoundException | ParseException | DataSourceException e1 )
+        {
+            treatException( e1 );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+            markings_changed = true;
+        }
+    }
+
+    private void on_export_marker( @Nullable ActionEvent ev )
+    {
+        FileChooser fc = new FileChooser();
+
+        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
+        File f = fc.showSaveDialog( null );
+        if( f != null )
+        {
+            try
+            {
+                ProjectManager.lock_access();
+                ProjectManager.export_marker_file( f.getAbsolutePath() );
+            }
+            catch( IOException | DataSourceException e )
+            {
+                treatException( e );
+            }
+            finally
+            {
+                ProjectManager.release_access();
+            }
+        }
+    }
+
+    private void on_amplify( @Nullable ActionEvent ev )
+    {
+        start_effect_with_UI( new Amplify_Dialog() );
+    }
+
+    private void on_equalizer( @Nullable ActionEvent ev )
+    {
+        start_effect_with_UI( new Equalizer_Dialog( sample_rate ) );
+    }
+
+    private void on_Repair( @Nullable ActionEvent ev )
+    {
+        start_effect_with_UI( new Repair_Marked_Dialog() );
+    }
+
+    private void on_derivation( @Nullable ActionEvent ev )
+    {
+        FIR_Filter effect = new FIR_Filter();
+        effect.setFilter( FIR.derivation_FIR );
+        apply_effect( effect, false );
+    }
+
+    private void on_integration( @Nullable ActionEvent ev )
+    {
+        IIR_Filter effect = new IIR_Filter();
+        effect.setFilter( IIR.integration_IIR );
+        apply_effect( effect, false );
+    }
+
+    private void on_add_marking( @Nullable ActionEvent ev )
+    {
+        if( selection.get_length() <= 0 )
+        {
+            return;
+        }
+        try
+        {
+            ProjectManager.lock_access();
+
+            for( int c = 0; c < channel_number; c++ )
+            {
+                ProjectManager.add_marking( new Marking( selection.l, selection.r, c ) );
             }
         }
         catch( DataSourceException e )
         {
             treatException( e );
         }
+        finally
+        {
+            ProjectManager.release_access();
+            markings_changed = true;
+        }
+    }
 
+    private void on_remove_marking( @Nullable ActionEvent ev )
+    {
+        if( selection.get_length() <= 0 )
+        {
+            return;
+        }
+        try
+        {
+            ProjectManager.lock_access();
+
+            for( int c = 0; c < channel_number; c++ )
+            {
+                ProjectManager.remove_marking( new Marking( selection.l, selection.r, c ) );
+            }
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+            markings_changed = true;
+        }
+    }
+
+    private void on_undo( @Nullable ActionEvent ev )
+    {
+        try
+        {
+            ProjectManager.lock_access();
+            ProjectManager.undo();
+            on_data_source_changed();
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+        }
+    }
+
+    private void on_redo( @Nullable ActionEvent ev )
+    {
+        try
+        {
+            ProjectManager.lock_access();
+            ProjectManager.redo();
+            on_data_source_changed();
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+        }
+    }
+
+    private void on_generate_markings( @Nullable ActionEvent ev )
+    {
+        start_effect_with_UI( new Generate_Markings_Dialog() );
+        markings_changed = true;
+    }
+
+    private void on_clear_markings( @Nullable ActionEvent ev )
+    {
+        try
+        {
+            ProjectManager.lock_access();
+            ProjectManager.clear_all_markings();
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+        }
     }
 }
-
-/* TODO:
-* - Make get_compact_samples() use more values when computing min/max values; optimize to minimize reads.
-* - Implement get_compact_samples() branch for when sample_number is larger than the cache size.
-* - Add controls for: zoom factor, window size;
- */

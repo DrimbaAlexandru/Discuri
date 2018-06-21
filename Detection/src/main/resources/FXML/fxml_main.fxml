@@ -2,7 +2,6 @@
 
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
@@ -11,9 +10,8 @@
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <ChoiceBox id="choice_channels" fx:id="chc_sample_type" layoutX="604.0" layoutY="36.0" prefWidth="157.0" />
       <Button fx:id="btn_prev_sample" layoutX="70.0" layoutY="36.0" mnemonicParsing="false" text="&lt;" />
       <Button fx:id="btn_next_sample" layoutX="97.0" layoutY="36.0" mnemonicParsing="false" text="&gt;" />
       <ScrollBar fx:id="time_scroll" blockIncrement="1.0" layoutX="40.0" layoutY="414.0" max="0.0" prefHeight="14.0" prefWidth="720.0" visibleAmount="1.0" />
@@ -36,6 +34,7 @@
             <items>
                   <MenuItem fx:id="menu_open_file" mnemonicParsing="false" text="Open file..." />
                   <MenuItem fx:id="menu_export" mnemonicParsing="false" text="Export project" />
+                  <MenuItem fx:id="menu_export_selected" mnemonicParsing="false" text="Export selection" />
               <MenuItem mnemonicParsing="false" text="Close" />
             </items>
           </Menu>

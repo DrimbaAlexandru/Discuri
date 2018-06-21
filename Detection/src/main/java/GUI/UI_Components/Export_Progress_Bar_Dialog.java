@@ -1,11 +1,11 @@
-package MVC.GUI.UI_Components;
+package GUI.UI_Components;
 
 import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.IAudioDataSource;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
-import ProjectManager.ProjectManager;
+import ProjectManager.*;
 import SignalProcessing.Effects.Copy_to_ADS;
 import SignalProcessing.Effects.IEffect;
 import Utils.Interval;
@@ -121,7 +121,7 @@ public class Export_Progress_Bar_Dialog
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
-        l.setLocation( getClass().getClassLoader().getResource( "progress_bar.fxml" ) );
+        l.setLocation( ProjectStatics.getFxml_files_path( "progress_bar.fxml" ) );
         main_layout = l.load();
         if( main_layout == null )
         {

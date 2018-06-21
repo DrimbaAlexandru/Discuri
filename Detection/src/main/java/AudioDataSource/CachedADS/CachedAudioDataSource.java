@@ -4,6 +4,8 @@ import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
+import SignalProcessing.FunctionApproximation.FunctionApproximation;
+import SignalProcessing.FunctionApproximation.LinearInterpolation;
 
 /**
  * Created by Alex on 03.06.2018.
@@ -110,17 +112,9 @@ public class CachedAudioDataSource implements IAudioDataSource
         previ = -1;
         alt = false;
 
-        if( length <= resized_length )
+        if( length == resized_length )
         {
-            win = get_samples( first_sample_index, length );
-
-            for( curi = 0; curi < resized_length; curi++ )
-            {
-                for( j = 0; j < get_channel_number(); j++ )
-                {
-                    samples[ j ][ curi ] = win.getSample( first_sample_index + curi * length / resized_length, j );
-                }
-            }
+            return get_samples( first_sample_index, length );
         }
         else
         {

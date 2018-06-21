@@ -1,4 +1,4 @@
-package MVC.GUI.UI_Components.Effect_Input_Dialogs;
+package GUI.UI_Components.Effect_Input_Dialogs;
 
 import Exceptions.DataSourceException;
 import SignalProcessing.Effects.IEffect;

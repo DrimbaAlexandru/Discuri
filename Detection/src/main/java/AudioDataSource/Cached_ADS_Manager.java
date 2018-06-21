@@ -42,7 +42,7 @@ public class Cached_ADS_Manager
             if( map_pair == null )
             {
                 IFileAudioDataSource ifads = FileAudioSourceFactory.fromFile( filePath );
-                CachedAudioDataSource cads = new CachedAudioDataSource( ifads, ProjectStatics.getDefault_cache_size(), ProjectStatics.getDefault_cache_page_size() );
+                CachedAudioDataSource cads = new CachedAudioDataSource( ifads, ProjectStatics.getTemp_file_cache_size(), ProjectStatics.getTemp_file_cache_page_size() );
                 map_pair = new MyPair< CachedAudioDataSource, Integer >( cads, 1 );
                 map.put( filePath, map_pair );
             }

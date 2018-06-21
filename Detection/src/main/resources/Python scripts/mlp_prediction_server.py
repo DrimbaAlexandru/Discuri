@@ -32,13 +32,13 @@ def print_double_array( array_len, array ):
 err_msgs = []
 
 try:
-    from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-    from sklearn.preprocessing.data import StandardScaler
+    import traceback
     import sys
     import struct
     import pickle
-    import traceback
     import os
+    from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+    from sklearn.preprocessing.data import StandardScaler
 except Exception as e:
     err_msgs.append( traceback.format_exc() )
     send_errors( err_msgs )
