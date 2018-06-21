@@ -14,6 +14,7 @@ import Utils.Interval;
 import com.sun.istack.internal.Nullable;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -26,6 +27,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 import java.io.*;
 import java.text.ParseException;
@@ -43,6 +45,8 @@ public class Main_window
     /*--------------------------------
     FXML variables
     --------------------------------*/
+    Stage localStage = new Stage();
+
     private Pane mainLayout = null;
     private Scene localScene;
     @FXML
@@ -64,7 +68,7 @@ public class Main_window
     @FXML
     private ScrollBar time_scroll;
     @FXML
-    private MenuItem menu_open_file, menu_export, menu_export_selected, menu_load_marker, menu_save_marker;
+    private MenuItem menu_open_file, menu_export, menu_export_selected, menu_load_marker, menu_save_marker, menu_close;
     @FXML
     private Menu menu_effects, menu_markings;
 
@@ -323,6 +327,11 @@ public class Main_window
                                               {
                                                   on_export_project( true );
                                               } );
+            menu_close.setOnAction( ev ->
+                                    {
+                                        on_close_application();
+                                        localStage.close();
+                                    } );
 
             btn_redo.setOnAction( this::on_redo );
             btn_undo.setOnAction( this::on_undo );
@@ -498,7 +507,6 @@ public class Main_window
             return;
         }
 
-        Stage localStage = new Stage();
         Group localroot = new Group();
 
         localScene = new Scene( localroot, mainLayout.getPrefWidth(), mainLayout.getPrefHeight(), Color.color( 1, 1, 1 ) );
@@ -511,25 +519,11 @@ public class Main_window
                                      {
                                          //Handle key shortcuts
                                      } );
-        localStage.setOnCloseRequest( ( e ) ->
+        localStage.setOnCloseRequest( ev ->
                                       {
-                                          run_updater = false;
-                                          try
-                                          {
-                                              Thread.sleep( 100 );
-                                              ProjectManager.lock_access();
-                                              ProjectManager.discard_project();
-                                          }
-                                          catch( DataSourceException | InterruptedException e1 )
-                                          {
-                                              treatException( e1 );
-                                          }
-                                          finally
-                                          {
-                                              ProjectManager.release_access();
-                                          }
-                                          //TBD: Show save/don't save dialog
+                                          on_close_application();
                                       } );
+
     } /* run() */
 
     private void startRefresher()
@@ -992,5 +986,25 @@ public class Main_window
         {
             ProjectManager.release_access();
         }
+    }
+
+    private void on_close_application()
+    {
+        run_updater = false;
+        try
+        {
+            Thread.sleep( 100 );
+            ProjectManager.lock_access();
+            ProjectManager.discard_project();
+        }
+        catch( DataSourceException | InterruptedException e1 )
+        {
+            treatException( e1 );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+        }
+        //TBD: Show save/don't save dialog
     }
 }

@@ -10,7 +10,7 @@
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Button fx:id="btn_prev_sample" layoutX="70.0" layoutY="36.0" mnemonicParsing="false" text="&lt;" />
       <Button fx:id="btn_next_sample" layoutX="97.0" layoutY="36.0" mnemonicParsing="false" text="&gt;" />
@@ -35,7 +35,7 @@
                   <MenuItem fx:id="menu_open_file" mnemonicParsing="false" text="Open file..." />
                   <MenuItem fx:id="menu_export" mnemonicParsing="false" text="Export project" />
                   <MenuItem fx:id="menu_export_selected" mnemonicParsing="false" text="Export selection" />
-              <MenuItem mnemonicParsing="false" text="Close" />
+              <MenuItem fx:id="menu_close" mnemonicParsing="false" text="Close" />
             </items>
           </Menu>
           <Menu id="menu_edit" fx:id="menu_markings" mnemonicParsing="false" text="Markings">
