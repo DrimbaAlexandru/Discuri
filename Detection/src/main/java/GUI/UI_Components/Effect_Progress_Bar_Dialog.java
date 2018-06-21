@@ -67,7 +67,7 @@ public class Effect_Progress_Bar_Dialog
         {
             try
             {
-                Thread.sleep( 50 );
+                Thread.sleep( 200 );
             }
             catch( InterruptedException e )
             {
@@ -83,7 +83,7 @@ public class Effect_Progress_Bar_Dialog
                                } );
             try
             {
-                Thread.sleep( 50 );
+                Thread.sleep( 200 );
             }
             catch( InterruptedException e )
             {

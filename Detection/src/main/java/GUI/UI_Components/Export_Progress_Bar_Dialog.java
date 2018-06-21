@@ -73,7 +73,7 @@ public class Export_Progress_Bar_Dialog
         {
             try
             {
-                Thread.sleep( 50 );
+                Thread.sleep( 200 );
             }
             catch( InterruptedException e )
             {
@@ -89,7 +89,7 @@ public class Export_Progress_Bar_Dialog
                                } );
             try
             {
-                Thread.sleep( 50 );
+                Thread.sleep( 200 );
             }
             catch( InterruptedException e )
             {

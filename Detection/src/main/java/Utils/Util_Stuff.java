@@ -46,7 +46,8 @@ public class Util_Stuff
 
     public static int remap_to_interval( int x, int a1, int b1, int a2, int b2 )
     {
-        return ( x - a1 ) * ( b2 - a2 ) / ( b1 - a1 ) + a2;
+        double ratio = 1.0 * ( b2 - a2 ) / ( b1 - a1 );
+        return ( int )( ( x - a1 ) * ratio ) + a2;
     }
 
     public static void plot_in_matlab( double[] in, int off1, int n, double[] out, int off2, int m )

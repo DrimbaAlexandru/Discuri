@@ -3,6 +3,7 @@ import AudioDataSource.CachedADS.CachedAudioDataSource;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
+import MarkerFile.*;
 import ProjectManager.*;
 import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
@@ -16,9 +17,11 @@ import java.io.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 import static Utils.Util_Stuff.plot_in_matlab;
+import static Utils.Util_Stuff.remap_to_interval;
 
 /**
  * Created by Alex on 08.09.2017.
@@ -349,7 +352,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main15( String[] args )
     {
         try
         {
@@ -388,23 +391,36 @@ public class TestMain {
         }
     }
 
-    public static void main16( String[] args )
+    public static void main( String[] args )
     {
         try
         {
-            try
+            int old_sample_number = 16689280, new_sample_number = 16218931;
+            ProjectManager.lock_access();
+            ProjectManager.add_from_marker_file( "D:\\training sets\\dvorak 4th symph fin mark 0,007.txt" );
+            List< Marking > markings = ProjectManager.getMarkerFile().get_all_markings( new Interval( 0, old_sample_number ) );
+            MarkerFile new_markerfile = new MarkerFile();
+            for( Marking m : markings )
             {
-                System.out.println( 1 );
-                throw new DataSourceException( "Exceptie" );
+                new_markerfile.addMark( remap_to_interval( m.get_first_marked_sample(), 0, old_sample_number, 0, new_sample_number ), remap_to_interval( m.get_last_marked_sample(), 0, old_sample_number, 0, new_sample_number ), m.getChannel() );
             }
-            finally
-            {
-                System.out.println( 3 );
-            }
+            new_markerfile.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\dvorak 4th symph fin mark 96000.txt" ) );
         }
-        catch( Exception e )
+        catch( DataSourceException e )
         {
-            System.out.println( 4 );
+            e.printStackTrace();
+        }
+        catch( ParseException e )
+        {
+            e.printStackTrace();
+        }
+        catch( FileNotFoundException e )
+        {
+            e.printStackTrace();
+        }
+        catch( IOException e )
+        {
+            e.printStackTrace();
         }
     }
 }
