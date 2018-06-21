@@ -34,13 +34,21 @@ public class Effect_Progress_Bar_Dialog
     private IEffect effect;
     private Interval applying_interval;
     private boolean finished_working = false;
+    private final boolean create_new_project_version;
 
     private void worker_thread()
     {
         try
         {
             ProjectManager.lock_access();
-            ProjectManager.apply_effect( effect, applying_interval );
+            if( create_new_project_version )
+            {
+                ProjectManager.apply_effect( effect, applying_interval );
+            }
+            else
+            {
+                ProjectManager.apply_read_only_effect( effect, applying_interval );
+            }
         }
         catch( DataSourceException e )
         {
@@ -103,7 +111,7 @@ public class Effect_Progress_Bar_Dialog
         onTop.showAndWait();
     }
 
-    public Effect_Progress_Bar_Dialog( IEffect effect, Interval interval ) throws IOException, DataSourceException
+    public Effect_Progress_Bar_Dialog( IEffect effect, Interval interval, boolean create_new_project_version ) throws IOException, DataSourceException
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
@@ -115,6 +123,7 @@ public class Effect_Progress_Bar_Dialog
         }
         this.effect = effect;
         this.applying_interval = new Interval( interval.l, interval.get_length() );
+        this.create_new_project_version = create_new_project_version;
     }
 
     public DataSourceException get_close_exception()

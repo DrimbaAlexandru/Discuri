@@ -107,18 +107,6 @@ public class ProjectManager
         cache.setDataSource( versionedADS.get_current_version() );
     }
 
-    public static void export_project( String filepath ) throws DataSourceException
-    {
-        check_thread_access();
-        if( versionedADS == null )
-        {
-            throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
-        }
-        IAudioDataSource file = FileAudioSourceFactory.createFile( filepath, cache.get_channel_number(), cache.get_sample_rate(), 2 );
-        new Copy_to_ADS().apply( cache, file, new Interval( 0, cache.get_sample_number() ) );
-        file.close();
-    }
-
     public static void clear_all_markings() throws DataSourceException
     {
         check_thread_access();
@@ -172,7 +160,7 @@ public class ProjectManager
         return markerFile;
     }
 
-    public static void generate_markings( Create_Marker_File effect, Interval interval ) throws DataSourceException
+    public static void apply_read_only_effect( IEffect effect, Interval interval ) throws DataSourceException
     {
         check_thread_access();
         if( versionedADS == null )

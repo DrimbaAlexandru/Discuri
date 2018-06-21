@@ -5,7 +5,6 @@ import Exceptions.DataSourceException;
 import GUI.UI_Components.Effect_Input_Dialogs.*;
 import GUI.UI_Components.Effect_Progress_Bar_Dialog;
 import GUI.UI_Components.Export_Progress_Bar_Dialog;
-import GUI.UI_Components.Generate_Markings_Progress_Bar_Dialog;
 import MarkerFile.Marking;
 import ProjectManager.*;
 import SignalProcessing.Effects.*;
@@ -645,7 +644,7 @@ public class Main_window
         visible_samples_interval.r = 0;
     }
 
-    private void start_effect_with_UI( Effect_UI_Component component )
+    private void start_effect_with_UI( Effect_UI_Component component, boolean create_new_project_version )
     {
         try
         {
@@ -656,7 +655,7 @@ public class Main_window
             }
             else
             {
-                apply_effect( component.get_prepared_effect(), false );
+                apply_effect( component.get_prepared_effect(), false, create_new_project_version );
             }
         }
         catch( DataSourceException e )
@@ -666,7 +665,7 @@ public class Main_window
 
     }
 
-    private void apply_effect( IEffect effect, boolean allow_zero_selection )
+    private void apply_effect( IEffect effect, boolean allow_zero_selection, boolean create_new_project_version )
     {
         Interval interval = new Interval( selection.l, selection.r, false );
         if( effect == null || interval.get_length() < 0 )
@@ -685,10 +684,10 @@ public class Main_window
                 interval.r = sample_number;
             }
         }
-        apply_effect( effect, interval );
+        apply_effect( effect, interval, create_new_project_version );
     }
 
-    private void apply_effect( IEffect effect, Interval interval )
+    private void apply_effect( IEffect effect, Interval interval, boolean create_new_project_version )
     {
         try
         {
@@ -696,7 +695,7 @@ public class Main_window
             ProjectManager.lock_access();
             ProjectManager.apply_effect( effect, interval );
             */
-            Effect_Progress_Bar_Dialog progress_bar_dialog = new Effect_Progress_Bar_Dialog( effect, interval );
+            Effect_Progress_Bar_Dialog progress_bar_dialog = new Effect_Progress_Bar_Dialog( effect, interval, create_new_project_version );
             is_updater_suspended = true;
             progress_bar_dialog.show( localScene.getWindow() );
             if( progress_bar_dialog.get_close_exception() != null )
@@ -856,31 +855,31 @@ public class Main_window
 
     private void on_amplify( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Amplify_Dialog() );
+        start_effect_with_UI( new Amplify_Dialog(), true );
     }
 
     private void on_equalizer( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Equalizer_Dialog( sample_rate ) );
+        start_effect_with_UI( new Equalizer_Dialog( sample_rate ), true );
     }
 
     private void on_Repair( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Repair_Marked_Dialog() );
+        start_effect_with_UI( new Repair_Marked_Dialog(), true );
     }
 
     private void on_derivation( @Nullable ActionEvent ev )
     {
         FIR_Filter effect = new FIR_Filter();
         effect.setFilter( FIR.derivation_FIR );
-        apply_effect( effect, false );
+        apply_effect( effect, false, true );
     }
 
     private void on_integration( @Nullable ActionEvent ev )
     {
         IIR_Filter effect = new IIR_Filter();
         effect.setFilter( IIR.integration_IIR );
-        apply_effect( effect, false );
+        apply_effect( effect, false, true );
     }
 
     private void on_add_marking( @Nullable ActionEvent ev )
@@ -973,7 +972,7 @@ public class Main_window
 
     private void on_generate_markings( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Generate_Markings_Dialog() );
+        start_effect_with_UI( new Generate_Markings_Dialog(), false );
         markings_changed = true;
     }
 
@@ -983,6 +982,7 @@ public class Main_window
         {
             ProjectManager.lock_access();
             ProjectManager.clear_all_markings();
+            markings_changed = true;
         }
         catch( DataSourceException e )
         {
