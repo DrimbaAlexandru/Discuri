@@ -15,7 +15,7 @@ public class MarkerFileTest
     @Test
     public void get_all_markings() throws Exception
     {
-        MarkerFile mf = new MarkerFile( "" );
+        MarkerFile mf = new MarkerFile( );
         mf.addMark( 500, 599, 1 );
         mf.addMark( 600, 699, 0 );
         mf.addMark( 700, 799, 1 );

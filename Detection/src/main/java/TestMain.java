@@ -391,20 +391,24 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main16( String[] args )
     {
         try
         {
-            int old_sample_number = 16689280, new_sample_number = 16218931;
+            int old_sample_number = 31603840, new_sample_number = 30576471;
             ProjectManager.lock_access();
-            ProjectManager.add_from_marker_file( "D:\\training sets\\dvorak 4th symph fin mark 0,007.txt" );
+            System.out.println( "Reading" );
+            ProjectManager.add_from_marker_file( "D:\\training sets\\Shostakovich - Simfoniya nr. 10 2 chast mark 0,0200.txt" );
             List< Marking > markings = ProjectManager.getMarkerFile().get_all_markings( new Interval( 0, old_sample_number ) );
             MarkerFile new_markerfile = new MarkerFile();
+            System.out.println( "Processing" );
             for( Marking m : markings )
             {
                 new_markerfile.addMark( remap_to_interval( m.get_first_marked_sample(), 0, old_sample_number, 0, new_sample_number ), remap_to_interval( m.get_last_marked_sample(), 0, old_sample_number, 0, new_sample_number ), m.getChannel() );
             }
-            new_markerfile.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\dvorak 4th symph fin mark 96000.txt" ) );
+            System.out.println( "Writing" );
+            new_markerfile.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark 0,0200.txt" ) );
+            System.out.println( "Done" );
         }
         catch( DataSourceException e )
         {
@@ -423,4 +427,5 @@ public class TestMain {
             e.printStackTrace();
         }
     }
+
 }

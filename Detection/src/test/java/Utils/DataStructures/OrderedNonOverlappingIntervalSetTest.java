@@ -356,4 +356,27 @@ public class OrderedNonOverlappingIntervalSetTest
 
     }
 
+    @org.junit.Test
+    /**
+     * Test case #6: Overlapping on adding; testing the intervals are sorted and intervals are compacted
+     * Add intervals: [0,100],[200,300],[100,200]
+     *
+     * Expected set: [0,700)
+     */
+    public void add_TC06() throws Exception
+    {
+        OrderedNonOverlappingIntervalSet set = new OrderedNonOverlappingIntervalSet();
+
+        set.add( new Interval( 0,101,false ) );
+        Assert.assertEquals( set.getSize(), 1 );
+        set.add( new Interval( 201,301,false ) );
+        Assert.assertEquals( set.getSize(), 2 );
+        set.add( new Interval( 100,201,false ) );
+        Assert.assertEquals( set.getSize(), 1 );
+
+        set.moveToPosition( 0 );
+        Assert.assertEquals( set.getCurrent(), new Interval( 0, 301, false ) );
+        set.moveCursorNext();
+        Assert.assertEquals( set.getCurrent(), null );
+    }
 }

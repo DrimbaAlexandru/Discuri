@@ -94,7 +94,7 @@ public class OrderedNonOverlappingIntervalSet
     private void splitCurrent( int splitPoint )
     {
         Interval i = current.getValue();
-        if( i == null || !( splitPoint > i.l && splitPoint < i.r - 1 ) )
+        if( i == null || !( i.l < splitPoint && i.r > splitPoint ) )
         {
             return;
         }
@@ -157,7 +157,7 @@ public class OrderedNonOverlappingIntervalSet
             return;
         }
 
-        if( current.getValue().l < i.l && current.getValue().r - 1 > i.l )
+        if( current.getValue().l < i.l && current.getValue().r > i.l )
         {
             splitCurrent( i.l );
             moveCursorNext();

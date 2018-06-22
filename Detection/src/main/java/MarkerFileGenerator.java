@@ -15,8 +15,8 @@ public class MarkerFileGenerator
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth inv riaa poc.wav" );
-            double threshold = 0.004;
+            WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark pop.wav" );
+            double threshold = 0.0125;
             int side = 3;
             int[] mark_start = new int[]{ -1, -1 };
             int i, j, k;
@@ -41,11 +41,7 @@ public class MarkerFileGenerator
                 }
                 for( k = 0; k < wav.get_channel_number(); k++ )
                 {
-                    mark = false;
-                    for( j = -side; j <= side; j++ )
-                    {
-                        mark = mark || ( Math.abs( win.getSample( i + j, k ) ) >= threshold );
-                    }
+                    mark = ( Math.abs( win.getSample( i, k ) ) >= threshold );
                     if( mark )
                     {
                         if( mark_start[ k ] == -1 )
@@ -57,17 +53,17 @@ public class MarkerFileGenerator
                     {
                         if( mark_start[ k ] != -1 )
                         {
-                            mf.addMark( mark_start[ k ], i - 1, k );
+                            mf.addMark( mark_start[ k ] - side, i - 1 + side, k );
                             if( duplicate_L_to_R && k == 0 )
                             {
-                                mf.addMark( mark_start[ k ], i - 1, 1 );
+                                mf.addMark( mark_start[ k ] - side, i - 1 + side, 1 );
                             }
                             mark_start[ k ] = -1;
                         }
                     }
                 }
             }
-            mf.writeMarkingsToFile( new FileWriter( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark l " + String.format( "%.4f", threshold ) + ".txt" ) );
+            mf.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark pop 2 " + String.format( "%.4f", threshold ) + ".txt" ) );
         }
         catch( DataSourceException e )
         {

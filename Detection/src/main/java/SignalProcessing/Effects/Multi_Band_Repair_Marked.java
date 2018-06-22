@@ -29,7 +29,8 @@ public class Multi_Band_Repair_Marked implements IEffect
     private int buffer_size;
     private boolean repair_residue = false;
     final private double freq_compare_threshold = 10;
-    final private int freq_compare_side_length_ratio = 1;
+    final private int freq_compare_side_length_ratio = 4;
+    private int compare_frequency = 1000;
     private boolean compare_with_direct_repair = false;
     private double progress = 0;
 
@@ -119,7 +120,7 @@ public class Multi_Band_Repair_Marked implements IEffect
             Work
         */
         interval.limit( 0, dataSource.get_sample_number() );
-        if( !repair_residue && nr_of_bands == 0 )
+        if( !repair_residue && nr_of_bands == 0 && !compare_with_direct_repair )
         {
             return;
         }
@@ -129,6 +130,11 @@ public class Multi_Band_Repair_Marked implements IEffect
                                {
                                    return -( i2.getInterval().l - i2.getInterval().get_length() * fetch_ratio ) + ( i1.getInterval().l - i1.getInterval().get_length() * fetch_ratio );
                                } );
+
+        if( nr_of_bands > 0 )
+        {
+            compare_frequency = band_cutoffs.get( band_cutoffs.size() - 1 );
+        }
 
         for( Marking marking : repair_intervals )
         {
@@ -152,7 +158,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                 {
                     int rep_len = repair_interval.get_length();
                     AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - rep_len * freq_compare_side_length_ratio, rep_len * ( 2 * freq_compare_side_length_ratio + 1 ) );
-                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * freq_compare_side_length_ratio, rep_len, rep_len * freq_compare_side_length_ratio, dataSource.get_sample_rate(), band_cutoffs.get( band_cutoffs.size() - 1 ) );
+                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * freq_compare_side_length_ratio, rep_len, rep_len * freq_compare_side_length_ratio, dataSource.get_sample_rate(), compare_frequency );
                     repair_direct = ( spike_ratio > freq_compare_threshold );
                 }
 
