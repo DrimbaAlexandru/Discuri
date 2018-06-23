@@ -91,7 +91,6 @@ public class Multi_Band_Repair_Marked implements IEffect
             Data sources
         */
         final SingleBlockADS repair_dest = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), 0, new Interval( 0, 0 ) );
-        final SingleBlockADS direct_repair_dest = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), 0, new Interval( 0, 0 ) );
         //workDS[nr_of_bands] - buffer-ul pentru reziduu
         final InMemoryADS workDS[] = new InMemoryADS[ nr_of_bands + 1 ];
         for( int i = 0; i < nr_of_bands + 1; i++ )
