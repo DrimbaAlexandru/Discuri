@@ -1,7 +1,7 @@
 import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
-import MarkerFile.MarkerFile;
+import MarkerFile.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,10 +15,12 @@ public class MarkerFileGenerator
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark pop.wav" );
-            double threshold = 0.0125;
-            int side = 3;
+            WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark pop.wav" );
+            double threshold = 0.1;
+            int side =  5;
+            int min_distance_markings = 5;
             int[] mark_start = new int[]{ -1, -1 };
+            Marking[] last_marking = new Marking[]{ new Marking( -2 * side, -2 * side, 0 ), new Marking( -2 * side, -2 * side, 1 ) };
             int i, j, k;
             boolean mark;
             boolean duplicate_L_to_R = true;
@@ -53,17 +55,23 @@ public class MarkerFileGenerator
                     {
                         if( mark_start[ k ] != -1 )
                         {
-                            mf.addMark( mark_start[ k ] - side, i - 1 + side, k );
+                            Marking newMarking = new Marking( mark_start[ k ] - side, i - 1 + side, k );
+                            if( newMarking.get_first_marked_sample() - last_marking[ k ].get_last_marked_sample() - 1 < min_distance_markings )
+                            {
+                                newMarking.set_first_marked_sample( last_marking[ k ].get_last_marked_sample() + 1 );
+                            }
+                            last_marking[ k ] = newMarking;
+                            mf.addMark( newMarking.get_first_marked_sample(),newMarking.get_last_marked_sample(), k );
                             if( duplicate_L_to_R && k == 0 )
                             {
-                                mf.addMark( mark_start[ k ] - side, i - 1 + side, 1 );
+                                mf.addMark( newMarking.get_first_marked_sample(),newMarking.get_last_marked_sample(), 1 );
                             }
                             mark_start[ k ] = -1;
                         }
                     }
                 }
             }
-            mf.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark pop 2 " + String.format( "%.4f", threshold ) + ".txt" ) );
+            mf.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark pop s " + side + " m " + min_distance_markings + " " + String.format( "%.4f", threshold ) + ".txt" ) );
         }
         catch( DataSourceException e )
         {

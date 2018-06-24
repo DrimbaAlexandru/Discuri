@@ -28,9 +28,8 @@ public class Multi_Band_Repair_Marked implements IEffect
     private int fetch_ratio;
     private int buffer_size;
     private boolean repair_residue = false;
-    final private double freq_compare_threshold = 10;
+    final private double freq_compare_threshold = 4;
     final private int freq_compare_side_length_ratio = 4;
-    private int compare_frequency = 1000;
     private boolean compare_with_direct_repair = false;
     private double progress = 0;
 
@@ -130,11 +129,6 @@ public class Multi_Band_Repair_Marked implements IEffect
                                    return -( i2.getInterval().l - i2.getInterval().get_length() * fetch_ratio ) + ( i1.getInterval().l - i1.getInterval().get_length() * fetch_ratio );
                                } );
 
-        if( nr_of_bands > 0 )
-        {
-            compare_frequency = band_cutoffs.get( band_cutoffs.size() - 1 );
-        }
-
         for( Marking marking : repair_intervals )
         {
             Interval repair_interval = marking.getInterval();
@@ -157,7 +151,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                 {
                     int rep_len = repair_interval.get_length();
                     AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - rep_len * freq_compare_side_length_ratio, rep_len * ( 2 * freq_compare_side_length_ratio + 1 ) );
-                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * freq_compare_side_length_ratio, rep_len, rep_len * freq_compare_side_length_ratio, dataSource.get_sample_rate(), compare_frequency );
+                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * freq_compare_side_length_ratio, rep_len, rep_len * freq_compare_side_length_ratio );
                     repair_direct = ( spike_ratio > freq_compare_threshold );
                 }
 
@@ -274,12 +268,21 @@ public class Multi_Band_Repair_Marked implements IEffect
         this.repair_residue = repair_residue;
     }
 
-    private double get_freq_spike( double[] samples, int start_offset, int left_len, int mid_len, int right_len, int sample_rate, double freq )
+    private double get_freq_spike( double[] samples, int start_offset, int left_len, int mid_len, int right_len )
     {
-        double left_ampl, mid_ampl, right_ampl;
-        left_ampl = Fourier.one_freq_component( samples, start_offset, left_len, freq, sample_rate ).Ampl();
-        mid_ampl = Fourier.one_freq_component( samples, start_offset + left_len, mid_len, freq, sample_rate ).Ampl();
-        right_ampl = Fourier.one_freq_component( samples, start_offset + left_len + mid_len, right_len, freq, sample_rate ).Ampl();
+        double left_ampl = 0, mid_ampl = 0, right_ampl = 0;
+        for( int i = start_offset; i < start_offset + left_len; i++ )
+        {
+            left_ampl = Math.max( left_ampl, Math.abs( samples[ i ] ) );
+        }
+        for( int i = start_offset + left_len; i < start_offset + left_len + mid_len; i++ )
+        {
+            mid_ampl = Math.max( mid_ampl, Math.abs( samples[ i ] ) );
+        }
+        for( int i = start_offset + left_len + mid_len; i < start_offset + left_len + mid_len + right_len; i++ )
+        {
+            right_ampl = Math.max( right_ampl, Math.abs( samples[ i ] ) );
+        }
         return Math.max( mid_ampl / left_ampl, mid_ampl / right_ampl );
     }
 
