@@ -337,11 +337,13 @@ public class Main_window
             btn_undo.setOnAction( this::on_undo );
 
             time_scroll.setUnitIncrement( 1 );
+            /*
             time_scroll.setOnMouseClicked( e ->
                                            {
                                                set_first_sample_index( ( int )time_scroll.getValue() );
                                            } );
-            time_scroll.setOnMouseDragOver( e ->
+            */
+            time_scroll.setOnMouseReleased( e ->
                                             {
                                                 set_first_sample_index( ( int )time_scroll.getValue() );
                                             } );

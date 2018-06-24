@@ -22,11 +22,11 @@ import java.io.IOException;
 public class Repair_Marked_Dialog implements Effect_UI_Component
 {
     @FXML
-    private Label lbl_lp_coeffs;
+    private Label lbl_lp_coeffs, lbl_spike_thrsh, lbl_drst;
     @FXML
     private CheckBox chk_6000_cut, chk_2000_cut,chk_500_cut,chk_repair_residue, chk_use_direct_repair;
     @FXML
-    private Slider slider_lp_coeffs;
+    private Slider slider_lp_coeffs, slider_spike_thrsh;
     @FXML
     private Button btn_apply, btn_cancel;
 
@@ -56,10 +56,25 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
         }
 
         lbl_lp_coeffs.setText( "" + ( int )slider_lp_coeffs.getValue() );
+        lbl_spike_thrsh.setText( String.format( "%.1f", slider_spike_thrsh.getValue() ) );
+        lbl_drst.setDisable( !chk_use_direct_repair.isSelected() );
+        slider_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
+        lbl_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
+
         slider_lp_coeffs.setOnMouseDragged( ev ->
                                       {
                                           lbl_lp_coeffs.setText( "" + ( int )slider_lp_coeffs.getValue() );
                                       } );
+        slider_spike_thrsh.setOnMouseDragged( ev ->
+                                              {
+                                                  lbl_spike_thrsh.setText( String.format( "%.1f", slider_spike_thrsh.getValue() ) );
+                                              } );
+        chk_use_direct_repair.setOnAction( ev ->
+                                           {
+                                               lbl_drst.setDisable( !chk_use_direct_repair.isSelected() );
+                                               slider_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
+                                               lbl_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
+                                           } );
         btn_apply.setOnAction( ( ev ) ->
                                {
                                    try
@@ -80,6 +95,7 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
                                        effect.setRepair_residue( chk_repair_residue.isSelected() );
                                        effect.setCompare_with_direct_repair( chk_use_direct_repair.isSelected() );
                                        effect.setFetch_ratio( ( int )slider_lp_coeffs.getValue() );
+                                       effect.setpeak_threshold( slider_spike_thrsh.getValue() );
                                    }
                                    catch( Exception e )
                                    {

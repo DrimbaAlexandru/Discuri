@@ -56,4 +56,10 @@ public class Marking
                ( ( ( Marking )obj ).lms == lms ) &&
                ( ( ( Marking )obj ).fms == fms );
     }
+
+    @Override
+    public String toString()
+    {
+        return "[ " + fms + ", " + lms + " ], ch = " + channel;
+    }
 }

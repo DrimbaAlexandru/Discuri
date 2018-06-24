@@ -28,8 +28,8 @@ public class Multi_Band_Repair_Marked implements IEffect
     private int fetch_ratio;
     private int buffer_size;
     private boolean repair_residue = false;
-    final private double freq_compare_threshold = 4;
-    final private int freq_compare_side_length_ratio = 4;
+    private double peak_threshold = 4;
+    final private int peak_side_length_ratio = 12;
     private boolean compare_with_direct_repair = false;
     private double progress = 0;
 
@@ -150,9 +150,13 @@ public class Multi_Band_Repair_Marked implements IEffect
                 if( !repair_direct && compare_with_direct_repair )
                 {
                     int rep_len = repair_interval.get_length();
-                    AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - rep_len * freq_compare_side_length_ratio, rep_len * ( 2 * freq_compare_side_length_ratio + 1 ) );
-                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * freq_compare_side_length_ratio, rep_len, rep_len * freq_compare_side_length_ratio );
-                    repair_direct = ( spike_ratio > freq_compare_threshold );
+                    AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - rep_len * peak_side_length_ratio, rep_len * ( 2 * peak_side_length_ratio + 1 ) );
+                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * peak_side_length_ratio, rep_len, rep_len * peak_side_length_ratio );
+                    repair_direct = ( spike_ratio > peak_threshold );
+                    if( repair_direct )
+                    {
+                        System.out.println( "Direct repair at on interval " + marking + " with ratio = " + spike_ratio );
+                    }
                 }
 
                 //Calculate the requested repair OR the direct repair
@@ -295,5 +299,10 @@ public class Multi_Band_Repair_Marked implements IEffect
     {
         this.fetch_ratio = fetch_ratio;
         buffer_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + band_pass_filter_length;
+    }
+
+    public void setpeak_threshold( double peak_threshold )
+    {
+        this.peak_threshold = peak_threshold;
     }
 }

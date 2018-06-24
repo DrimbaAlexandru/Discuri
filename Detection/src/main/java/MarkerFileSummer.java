@@ -15,13 +15,10 @@ public class MarkerFileSummer
     {
         try
         {
-            MarkerFile mf1 = MarkerFile.fromFile( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003.txt" );
-            MarkerFile mf2 = MarkerFile.fromFile( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark l 0,005.txt" );
-            for( Marking m : mf2.get_all_markings( new Interval( 0, Integer.MAX_VALUE ) ) )
-            {
-                mf1.addMark( m.get_first_marked_sample(), m.get_last_marked_sample(), m.getChannel() );
-            }
-            mf1.writeMarkingsToFile(new FileWriter( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" ));
+            MarkerFile mf = new MarkerFile();
+            mf.add_from_file( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark 0,0100.txt" );
+            mf.add_from_file( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark pop s 5 m 5 0,1000.txt" );
+            mf.writeMarkingsToFile(new FileWriter( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark 0,01 + pop 0,10.txt" ));
         }
         catch( FileNotFoundException e )
         {
