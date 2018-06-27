@@ -1,5 +1,7 @@
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.CachedADS.CachedAudioDataSource;
+import AudioDataSource.FileADS.FileAudioSourceFactory;
+import AudioDataSource.FileADS.IFileAudioDataSource;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
@@ -423,6 +425,26 @@ public class TestMain {
             e.printStackTrace();
         }
         catch( IOException e )
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main( String[] args )
+    {
+        double length = 100;
+        double width = 100;
+        try
+        {
+            IFileAudioDataSource src = FileAudioSourceFactory.fromFile( "C:\\Users\\Alex\\Desktop\\groove.wav" );
+            IFileAudioDataSource dst = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\sweep " + String.format( "%.1f", length ) + "um l " + String.format( "%.1f", width ) + "um w.wav", src.get_channel_number(), src.get_sample_rate(), 2 );
+            Groove_Retracking eff = new Groove_Retracking();
+            eff.setStylus_width( width );
+            eff.setStylus_length( length );
+            eff.apply( src, dst, new Interval( 0, src.get_sample_number() ) );
+            dst.close();
+        }
+        catch( DataSourceException e )
         {
             e.printStackTrace();
         }

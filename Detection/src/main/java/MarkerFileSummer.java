@@ -16,9 +16,9 @@ public class MarkerFileSummer
         try
         {
             MarkerFile mf = new MarkerFile();
-            mf.add_from_file( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark 0,0100.txt" );
-            mf.add_from_file( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark pop s 5 m 5 0,1000.txt" );
-            mf.writeMarkingsToFile(new FileWriter( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark 0,01 + pop 0,10.txt" ));
+            mf.add_from_file( "D:\\training sets\\resampled\\dvorak 4th symph fin mark 96000.txt" );
+            mf.add_from_file( "D:\\training sets\\resampled\\dvorak 4th symph fin mark pop s 3 m 3 0,0250.txt" );
+            mf.writeMarkingsToFile(new FileWriter( "D:\\training sets\\resampled\\dvorak 4th symph fin mark + 0,025.txt" ));
         }
         catch( FileNotFoundException e )
         {

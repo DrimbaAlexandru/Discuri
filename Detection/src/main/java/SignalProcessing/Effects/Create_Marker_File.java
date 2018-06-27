@@ -165,6 +165,7 @@ public class Create_Marker_File implements IEffect
 {
     private double threshold = 0.5;
     private int side_extend = 0;
+    private double progress = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -180,6 +181,7 @@ public class Create_Marker_File implements IEffect
         MyPair< Integer, double[] > prediction;
 
         applying_interval.limit( nn_input_size / 2, dataSource.get_sample_number() - nn_input_size / 2 );
+        progress = 0;
 
         for( i = applying_interval.l; i < applying_interval.r; )
         {
@@ -225,13 +227,14 @@ public class Create_Marker_File implements IEffect
                 }
             }
             i += win.get_length() - nn_input_size + 1;
+            progress = 1.0 * ( i - applying_interval.l ) / applying_interval.get_length();
         }
     }
 
     @Override
     public double getProgress()
     {
-        return 0;
+        return progress;
     }
 
     public void setThreshold( double threshold )

@@ -410,7 +410,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         {
             if( write_cache == null || write_cache.get_sample_number() >= max_samples_per_chunk )
             {
-                IFileAudioDataSource rwFileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 2 );
+                IFileAudioDataSource rwFileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 4 );
                 rwFileAudioSource.close();
 
                 Cached_ADS_Manager.release_use( write_file_path );

@@ -15,10 +15,10 @@ public class MarkerFileGenerator
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark pop.wav" );
-            double threshold = 0.1;
-            int side =  5;
-            int min_distance_markings = 5;
+            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Maria Ciobanu, Ion Dolanescu - Au, lele, vino-ncoa mark.wav" );
+            double threshold = 0.015;
+            int side =  2;
+            int min_distance_markings = 1;
             int[] mark_start = new int[]{ -1, -1 };
             Marking[] last_marking = new Marking[]{ new Marking( -2 * side, -2 * side, 0 ), new Marking( -2 * side, -2 * side, 1 ) };
             int i, j, k;
@@ -71,7 +71,7 @@ public class MarkerFileGenerator
                     }
                 }
             }
-            mf.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark pop s " + side + " m " + min_distance_markings + " " + String.format( "%.4f", threshold ) + ".txt" ) );
+            mf.writeMarkingsToFile( new FileWriter( "C:\\Users\\Alex\\Desktop\\Maria Ciobanu, Ion Dolanescu - Au, lele, vino-ncoa mark s " + side + " m " + min_distance_markings + " " + String.format( "%.4f", threshold ) + ".txt" ) );
         }
         catch( DataSourceException e )
         {

@@ -250,6 +250,7 @@ public class WAVFileAudioSource implements IFileAudioDataSource
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
         first_sample_index = Math.min( first_sample_index, get_sample_number() );
+        first_sample_index = Math.max( 0, first_sample_index );
         length = Math.min( length, sample_number - first_sample_index );
 
         double data[][] = new double[ channel_number ][ length ];

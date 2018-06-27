@@ -150,8 +150,10 @@ public class Multi_Band_Repair_Marked implements IEffect
                 if( !repair_direct && compare_with_direct_repair )
                 {
                     int rep_len = repair_interval.get_length();
-                    AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - rep_len * peak_side_length_ratio, rep_len * ( 2 * peak_side_length_ratio + 1 ) );
-                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, rep_len * peak_side_length_ratio, rep_len, rep_len * peak_side_length_ratio );
+                    int spike_det_left_len = Math.min( band_pass_filter_length / 3, repair_interval.l );
+                    int spike_det_right_len = Math.min( band_pass_filter_length / 3, dataSource.get_sample_number() - repair_interval.r );
+                    AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - spike_det_left_len, rep_len + spike_det_left_len + spike_det_right_len );
+                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, spike_det_left_len, rep_len, spike_det_right_len );
                     repair_direct = ( spike_ratio > peak_threshold );
                     if( repair_direct )
                     {

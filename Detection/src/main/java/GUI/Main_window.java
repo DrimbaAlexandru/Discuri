@@ -474,6 +474,10 @@ public class Main_window
             menu_effects.getItems().add( mi );
             mi.setOnAction( this::on_integration );
 
+            mi = new MenuItem( "Groove retracking" );
+            menu_effects.getItems().add( mi );
+            mi.setOnAction( this::on_groove_retracking );
+
             mi = new MenuItem( "Mark selection" );
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_add_marking );
@@ -988,6 +992,14 @@ public class Main_window
         {
             ProjectManager.release_access();
         }
+    }
+
+    private void on_groove_retracking( ActionEvent actionEvent )
+    {
+        Groove_Retracking eff = new Groove_Retracking();
+        eff.setStylus_length( 1 );
+        eff.setStylus_width( 1 );
+        apply_effect( eff, false, true );
     }
 
     private void on_close_application()
