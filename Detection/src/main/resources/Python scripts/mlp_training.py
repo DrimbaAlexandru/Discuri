@@ -1,5 +1,6 @@
 # Load libraries
 import pandas
+import numpy
 import pickle
 from pandas.plotting import scatter_matrix
 import matplotlib.pyplot as plt
@@ -12,26 +13,35 @@ from sklearn.metrics import classification_report,confusion_matrix
 
 import sys
 # Load dataset
-if( len( sys.argv ) < 2 ):
-    print "dataset file not set"
+if( len( sys.argv ) < 3 ):
+    print "training set and validation set files not provided"
     sys.exit()
-url = sys.argv[1]
-names = [ 's_-64', 's_-63', 's_-62', 's_-61', 's_-60', 's_-59', 's_-58', 's_-57', 's_-56', 's_-55', 's_-54', 's_-53', 's_-52', 's_-51', 's_-50', 's_-49', 's_-48', 's_-47', 's_-46', 's_-45', 's_-44', 's_-43', 's_-42', 's_-41', 's_-40', 's_-39', 's_-38', 's_-37', 's_-36', 's_-35', 's_-34', 's_-33', 's_-32', 's_-31', 's_-30', 's_-29', 's_-28', 's_-27', 's_-26', 's_-25', 's_-24', 's_-23', 's_-22', 's_-21', 's_-20', 's_-19', 's_-18', 's_-17', 's_-16', 's_-15', 's_-14', 's_-13', 's_-12', 's_-11', 's_-10', 's_-9', 's_-8', 's_-7', 's_-6', 's_-5', 's_-4', 's_-3', 's_-2', 's_-1', 's_0', 's_1', 's_2', 's_3', 's_4', 's_5', 's_6', 's_7', 's_8', 's_9', 's_10', 's_11', 's_12', 's_13', 's_14', 's_15', 's_16', 's_17', 's_18', 's_19', 's_20', 's_21', 's_22', 's_23', 's_24', 's_25', 's_26', 's_27', 's_28', 's_29', 's_30', 's_31', 's_32', 's_33', 's_34', 's_35', 's_36', 's_37', 's_38', 's_39', 's_40', 's_41', 's_42', 's_43', 's_44', 's_45', 's_46', 's_47', 's_48', 's_49', 's_50', 's_51', 's_52', 's_53', 's_54', 's_55', 's_56', 's_57', 's_58', 's_59', 's_60', 's_61', 's_62', 's_63', 's_64', 'Marked' ]
-dataset = pandas.read_csv(url,names=names)
+trainingSet = sys.argv[1]
+validationSet = sys.argv[2]
 
-print(dataset.shape)
+dt = numpy.dtype([( 's_-64', 'f4' ), ( 's_-63', 'f4' ), ( 's_-62', 'f4' ), ( 's_-61', 'f4' ), ( 's_-60', 'f4' ), ( 's_-59', 'f4' ), ( 's_-58', 'f4' ), ( 's_-57', 'f4' ), ( 's_-56', 'f4' ), ( 's_-55', 'f4' ), ( 's_-54', 'f4' ), ( 's_-53', 'f4' ), ( 's_-52', 'f4' ), ( 's_-51', 'f4' ), ( 's_-50', 'f4' ), ( 's_-49', 'f4' ), ( 's_-48', 'f4' ), ( 's_-47', 'f4' ), ( 's_-46', 'f4' ), ( 's_-45', 'f4' ), ( 's_-44', 'f4' ), ( 's_-43', 'f4' ), ( 's_-42', 'f4' ), ( 's_-41', 'f4' ), ( 's_-40', 'f4' ), ( 's_-39', 'f4' ), ( 's_-38', 'f4' ), ( 's_-37', 'f4' ), ( 's_-36', 'f4' ), ( 's_-35', 'f4' ), ( 's_-34', 'f4' ), ( 's_-33', 'f4' ), ( 's_-32', 'f4' ), ( 's_-31', 'f4' ), ( 's_-30', 'f4' ), ( 's_-29', 'f4' ), ( 's_-28', 'f4' ), ( 's_-27', 'f4' ), ( 's_-26', 'f4' ), ( 's_-25', 'f4' ), ( 's_-24', 'f4' ), ( 's_-23', 'f4' ), ( 's_-22', 'f4' ), ( 's_-21', 'f4' ), ( 's_-20', 'f4' ), ( 's_-19', 'f4' ), ( 's_-18', 'f4' ), ( 's_-17', 'f4' ), ( 's_-16', 'f4' ), ( 's_-15', 'f4' ), ( 's_-14', 'f4' ), ( 's_-13', 'f4' ), ( 's_-12', 'f4' ), ( 's_-11', 'f4' ), ( 's_-10', 'f4' ), ( 's_-9', 'f4' ), ( 's_-8', 'f4' ), ( 's_-7', 'f4' ), ( 's_-6', 'f4' ), ( 's_-5', 'f4' ), ( 's_-4', 'f4' ), ( 's_-3', 'f4' ), ( 's_-2', 'f4' ), ( 's_-1', 'f4' ), ( 's_0', 'f4' ), ( 's_1', 'f4' ), ( 's_2', 'f4' ), ( 's_3', 'f4' ), ( 's_4', 'f4' ), ( 's_5', 'f4' ), ( 's_6', 'f4' ), ( 's_7', 'f4' ), ( 's_8', 'f4' ), ( 's_9', 'f4' ), ( 's_10', 'f4' ), ( 's_11', 'f4' ), ( 's_12', 'f4' ), ( 's_13', 'f4' ), ( 's_14', 'f4' ), ( 's_15', 'f4' ), ( 's_16', 'f4' ), ( 's_17', 'f4' ), ( 's_18', 'f4' ), ( 's_19', 'f4' ), ( 's_20', 'f4' ), ( 's_21', 'f4' ), ( 's_22', 'f4' ), ( 's_23', 'f4' ), ( 's_24', 'f4' ), ( 's_25', 'f4' ), ( 's_26', 'f4' ), ( 's_27', 'f4' ), ( 's_28', 'f4' ), ( 's_29', 'f4' ), ( 's_30', 'f4' ), ( 's_31', 'f4' ), ( 's_32', 'f4' ), ( 's_33', 'f4' ), ( 's_34', 'f4' ), ( 's_35', 'f4' ), ( 's_36', 'f4' ), ( 's_37', 'f4' ), ( 's_38', 'f4' ), ( 's_39', 'f4' ), ( 's_40', 'f4' ), ( 's_41', 'f4' ), ( 's_42', 'f4' ), ( 's_43', 'f4' ), ( 's_44', 'f4' ), ( 's_45', 'f4' ), ( 's_46', 'f4' ), ( 's_47', 'f4' ), ( 's_48', 'f4' ), ( 's_49', 'f4' ), ( 's_50', 'f4' ), ( 's_51', 'f4' ), ( 's_52', 'f4' ), ( 's_53', 'f4' ), ( 's_54', 'f4' ), ( 's_55', 'f4' ), ( 's_56', 'f4' ), ( 's_57', 'f4' ), ( 's_58', 'f4' ), ( 's_59', 'f4' ), ( 's_60', 'f4' ), ( 's_61', 'f4' ), ( 's_62', 'f4' ), ( 's_63', 'f4' ), ( 's_64', 'f4' ), ( 'Marked', 'i4' )])
+data = numpy.fromfile(trainingSet, dtype=dt)
+training_dataset = pandas.DataFrame(data)
 
-# Split-out validation dataset
-X = dataset.drop('Marked',axis=1)
-Y = dataset['Marked']
+data = numpy.fromfile(validationSet, dtype=dt)
+validation_dataset = pandas.DataFrame(data)
 
-validation_size = 0.20
-seed = 7
-X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
+print( training_dataset.shape )
+print( validation_dataset.shape )
+
+# Split-out validation training_dataset
+X_train = training_dataset.drop('Marked',axis=1)
+Y_train = training_dataset['Marked']
+
+
+#seed = 7
+#X_train, X_test, Y_train, Y_test = model_selection.train_test_split(X, Y, test_size=validation_size, random_state=seed)
+
+X_test = validation_dataset.drop('Marked',axis=1);
+Y_test = validation_dataset['Marked'];
 	
 # Test options and evaluation metric
-seed = 7
-scoring = 'accuracy'
+scoring = 'f1-score'
 
 scaler = StandardScaler()
 scaler.fit(X_train)
@@ -47,10 +57,10 @@ predictions = mlp.predict(X_test)
 print(confusion_matrix(Y_test,predictions))
 print(classification_report(Y_test,predictions))
 
-f1 = open( "./pickle.jar", "wb")
-pickle.dump(mlp,f1,2)
-f1.close()
+#f1 = open( "./pickle.jar", "wb")
+#pickle.dump(mlp,f1,2)
+#f1.close()
 
-f2 = open( "./pickle4scale.jar", "wb")
-pickle.dump(scaler,f2,2)
-f2.close()
+#f2 = open( "./pickle4scale.jar", "wb")
+#pickle.dump(scaler,f2,2)
+#f2.close()

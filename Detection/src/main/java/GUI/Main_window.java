@@ -1024,7 +1024,7 @@ public class Main_window
                 {
                     return;
                 }
-                DataSetGenerator.generate( ProjectManager.getCache(), interval, f.getAbsolutePath(), 48, 0.01 );
+                DataSetGenerator.generate( ProjectManager.getCache(), interval, f.getAbsolutePath(), 48, 0.01, 0 );
             }
             catch( DataSourceException | IOException e )
             {

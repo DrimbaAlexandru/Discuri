@@ -454,14 +454,14 @@ public class TestMain {
     public static void main( String[] args )
     {
         ProjectManager.lock_access();
-        String filePath = "D:\\training sets\\resampled\\results\\shostakovich\\shostakovich inv riaa.wav";
-        Interval interval = new Interval( ( 3 * 60 + 5 ) * 96000, ( 3 * 60 + 39 ) * 96000, false );
-        String dest = "D:\\datasets\\shostakovich 3 05 - 3 39 prob 0.5.bin";
+        String filePath = "D:\\training sets\\resampled\\results\\chopin\\Chopin - Etude op. 25 no. 11 inv riaa.wav";
+        Interval interval = new Interval( ( 2 * 60 + 14 ) * 96000, ( 2 * 60 + 20 ) * 96000, false );
+        String dest = "D:\\datasets\\chopin 2 14 - 2 20 training set p 0,5.bin";
         try
         {
-            ProjectManager.add_from_marker_file( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark refined s 0 m 2 0,0005.txt" );
+            ProjectManager.add_from_marker_file( "D:\\training sets\\resampled\\Chopin - Etude op. 25 no. 11 mark 96000.txt" );
             IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
-            DataSetGenerator.generate( file, interval, dest, 48, 0.05 );
+            DataSetGenerator.generate( file, interval, dest, 64, 0.1, 0.5f );
         }
         catch( DataSourceException e )
         {
@@ -479,7 +479,5 @@ public class TestMain {
         {
             ProjectManager.release_access();
         }
-
     }
-
 }
