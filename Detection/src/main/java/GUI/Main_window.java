@@ -10,6 +10,7 @@ import ProjectManager.*;
 import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
+import Utils.DataSetGenerator;
 import Utils.Interval;
 import com.sun.istack.internal.Nullable;
 import javafx.application.Platform;
@@ -70,7 +71,7 @@ public class Main_window
     @FXML
     private MenuItem menu_open_file, menu_export, menu_export_selected, menu_load_marker, menu_save_marker, menu_close;
     @FXML
-    private Menu menu_effects, menu_markings;
+    private Menu menu_effects, menu_markings, menu_file;
 
     /*--------------------------------
     Position, selection and audio data variables
@@ -337,12 +338,12 @@ public class Main_window
             btn_undo.setOnAction( this::on_undo );
 
             time_scroll.setUnitIncrement( 1 );
-            /*
+
             time_scroll.setOnMouseClicked( e ->
                                            {
                                                set_first_sample_index( ( int )time_scroll.getValue() );
                                            } );
-            */
+
             time_scroll.setOnMouseReleased( e ->
                                             {
                                                 set_first_sample_index( ( int )time_scroll.getValue() );
@@ -493,6 +494,10 @@ public class Main_window
             mi = new MenuItem( "Generate markings" );
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_generate_markings );
+
+            mi = new MenuItem( "Generate dataset" );
+            menu_file.getItems().add( mi );
+            mi.setOnAction( this::on_generate_dataset );
         }
         catch( IOException e )
         {
@@ -1000,6 +1005,37 @@ public class Main_window
         eff.setStylus_length( 1 );
         eff.setStylus_width( 1 );
         apply_effect( eff, false, true );
+    }
+
+    private void on_generate_dataset( ActionEvent ev )
+    {
+        FileChooser fc = new FileChooser();
+
+        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
+        File f = fc.showSaveDialog( null );
+        if( f != null )
+        {
+            try
+            {
+                is_updater_suspended = true;
+                ProjectManager.lock_access();
+                Interval interval = new Interval( selection.l, selection.r, false );
+                if( interval.get_length() <= 0 )
+                {
+                    return;
+                }
+                DataSetGenerator.generate( ProjectManager.getCache(), interval, f.getAbsolutePath(), 48, 0.01 );
+            }
+            catch( DataSourceException | IOException e )
+            {
+                treatException( e );
+            }
+            finally
+            {
+                ProjectManager.release_access();
+            }
+            is_updater_suspended = false;
+        }
     }
 
     private void on_close_application()

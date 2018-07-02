@@ -13,6 +13,7 @@ import SignalProcessing.FunctionApproximation.FourierInterpolator;
 import SignalProcessing.FunctionApproximation.FunctionApproximation;
 import SignalProcessing.LinearPrediction.BurgMethod;
 import SignalProcessing.LinearPrediction.LinearPrediction;
+import Utils.DataSetGenerator;
 import Utils.Interval;
 
 import java.io.*;
@@ -397,10 +398,10 @@ public class TestMain {
     {
         try
         {
-            int old_sample_number = 31603840, new_sample_number = 30576471;
+            int old_sample_number = 33965440, new_sample_number = 25927817;
             ProjectManager.lock_access();
             System.out.println( "Reading" );
-            ProjectManager.add_from_marker_file( "D:\\training sets\\Shostakovich - Simfoniya nr. 10 2 chast mark 0,0200.txt" );
+            ProjectManager.add_from_marker_file( "D:\\training sets\\Beethoven - Quartet no 4 - IV mark s 2 m 1 0,0150.txt" );
             List< Marking > markings = ProjectManager.getMarkerFile().get_all_markings( new Interval( 0, old_sample_number ) );
             MarkerFile new_markerfile = new MarkerFile();
             System.out.println( "Processing" );
@@ -409,7 +410,7 @@ public class TestMain {
                 new_markerfile.addMark( remap_to_interval( m.get_first_marked_sample(), 0, old_sample_number, 0, new_sample_number ), remap_to_interval( m.get_last_marked_sample(), 0, old_sample_number, 0, new_sample_number ), m.getChannel() );
             }
             System.out.println( "Writing" );
-            new_markerfile.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark 0,0200.txt" ) );
+            new_markerfile.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Beethoven - Quartet no 4 - IV mark s 2 m 1 0,0150.txt" ) );
             System.out.println( "Done" );
         }
         catch( DataSourceException e )
@@ -430,7 +431,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main17( String[] args )
     {
         double length = 100;
         double width = 100;
@@ -448,6 +449,37 @@ public class TestMain {
         {
             e.printStackTrace();
         }
+    }
+
+    public static void main( String[] args )
+    {
+        ProjectManager.lock_access();
+        String filePath = "D:\\training sets\\resampled\\results\\shostakovich\\shostakovich inv riaa.wav";
+        Interval interval = new Interval( ( 3 * 60 + 5 ) * 96000, ( 3 * 60 + 39 ) * 96000, false );
+        String dest = "D:\\datasets\\shostakovich 3 05 - 3 39 prob 0.5.bin";
+        try
+        {
+            ProjectManager.add_from_marker_file( "D:\\training sets\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark refined s 0 m 2 0,0005.txt" );
+            IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
+            DataSetGenerator.generate( file, interval, dest, 48, 0.05 );
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+        catch( IOException e )
+        {
+            e.printStackTrace();
+        }
+        catch( ParseException e )
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            ProjectManager.release_access();
+        }
+
     }
 
 }
