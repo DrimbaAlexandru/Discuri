@@ -80,7 +80,7 @@ public class FIR
             throw new DataSourceException( "Filter length must be odd", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
-        int ifft_size = Util_Stuff.next_power_of_two( ( filter_length - 1 ) / 2 );
+        int ifft_size = Util_Stuff.next_power_of_two( ( filter_length - 1 ) );
         FunctionApproximation fa = new LinearInterpolation();
         double[] ifft_xs = new double[ ifft_size ];
         double[] ifft_ys = new double[ ifft_size ];

@@ -38,10 +38,10 @@ public class DataSetGenerator
 
         for( Marking m : markerFile.get_all_markings( interval ) )
         {
-            /*if( rand.nextFloat() < prob_of_skipping_interval )
+            if( rand.nextFloat() < prob_of_skipping_interval )
             {
                 continue;
-            }*/
+            }
             writes_prob_0_5.addMark( m.get_first_marked_sample() - near_window_size / 4, m.get_first_marked_sample() - 1, m.getChannel() );
             writes_prob_0_5.addMark( m.get_last_marked_sample() + 1, m.get_last_marked_sample() + near_window_size / 4, m.getChannel() );
             writes_prob_0_1.addMark( m.get_first_marked_sample() - near_window_size, m.get_first_marked_sample() - near_window_size / 4 - 1, m.getChannel() );
