@@ -25,7 +25,7 @@ public class DataSetGenerator
         final int fetch_size = dataSource.get_sample_rate() + ( window_size - 1 );
         int marked_written = 0;
         int unmarked_written = 0;
-        double prob_of_skipping_interval = 0;
+        double prob_of_skipping_interval = 0.66;
 
         Random rand = new Random();
 
@@ -33,6 +33,7 @@ public class DataSetGenerator
         interval.limit( 0, dataSource.get_sample_number() - window_size );
         buf.order( ByteOrder.LITTLE_ENDIAN );
 
+        MarkerFile writes_prob_1 = new MarkerFile();
         MarkerFile writes_prob_0_5 = new MarkerFile();
         MarkerFile writes_prob_0_1 = new MarkerFile();
 
@@ -42,6 +43,7 @@ public class DataSetGenerator
             {
                 continue;
             }
+            writes_prob_1.addMark( m.get_first_marked_sample(), m.get_last_marked_sample(), m.getChannel() );
             writes_prob_0_5.addMark( m.get_first_marked_sample() - near_window_size / 4, m.get_first_marked_sample() - 1, m.getChannel() );
             writes_prob_0_5.addMark( m.get_last_marked_sample() + 1, m.get_last_marked_sample() + near_window_size / 4, m.getChannel() );
             writes_prob_0_1.addMark( m.get_first_marked_sample() - near_window_size, m.get_first_marked_sample() - near_window_size / 4 - 1, m.getChannel() );
@@ -64,13 +66,13 @@ public class DataSetGenerator
             {
                 for( j = ( window_size - 1 ) / 2; j < win.get_length() - ( window_size - 1 ) / 2; j++ )
                 {
-                    willWrite = isMarked = markerFile.isMarked( i + j, ch );
+                    isMarked = markerFile.isMarked( i + j, ch );
+                    willWrite = writes_prob_1.isMarked( i + j, ch );
                     willWrite = willWrite || ( rand.nextFloat() < 0.5 && writes_prob_0_5.isMarked( i + j, ch ) );
                     willWrite = willWrite || ( rand.nextFloat() < 0.1 && writes_prob_0_1.isMarked( i + j, ch ) );
                     if( !willWrite )
                     {
-                        willWrite = ( rand.nextDouble() < non_marked_probab );
-
+                        willWrite = ( rand.nextFloat() < non_marked_probab );
                     }
 
                     if( willWrite )

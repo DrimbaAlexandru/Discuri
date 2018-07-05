@@ -16,8 +16,8 @@ public class ProjectStatics
     private static int temp_file_cache_size = 44100;
     private static int temp_file_cache_page_size = 2048;
     private static String python_classifier_script_path = "mlp_prediction_server.py";
-    private static String python_classifier_mlp_path = "pickle.jar";
-    private static String python_classifier_scaler_path = "pickle4scale.jar";
+    private static String python_classifier_mlp_path = "pickle_2.jar";
+    private static String python_classifier_scaler_path = "pickle4scale_2.jar";
     private static String project_files_path = "C:\\Users\\Alex\\Desktop\\proj_files\\";
     private static String python_scripts_resource_path = null;
 

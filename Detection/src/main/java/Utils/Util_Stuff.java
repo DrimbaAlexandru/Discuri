@@ -106,16 +106,21 @@ public class Util_Stuff
 
     public static void plot_in_matlab( double[] ys, int n )
     {
-        int i;
-        System.out.println( "xs = linspace( 0, " + ( n - 1 ) + ", " + n + " );" );
+        plot_in_matlab( ys, n, 0, "" );
+    }
 
-        System.out.print( "ys = [ " );
-        for( i = 0; i < n - 1; i++ )
+    public static void plot_in_matlab( double[] ys, int len, int x_start, String postfix )
+    {
+        int i;
+        System.out.println( "xs" + postfix + " = linspace( " + x_start + ", " + ( x_start + len - 1 ) + ", " + len + " );" );
+
+        System.out.print( "ys" + postfix + " = [ " );
+        for( i = 0; i < len - 1; i++ )
         {
             System.out.print( ys[ i ] + ", " );
         }
-        System.out.println( ys[ n - 1 ] + " ];" );
-        System.out.println( "plot( xs, ys, '-' );" );
+        System.out.println( ys[ len - 1 ] + " ];" );
+        System.out.println( "plot( xs" + postfix + ", ys" + postfix + ", '-' );" );
     }
 
     public static void plot_in_matlab( double[] orig_f_xs, double[] orig_f_ys, int orig_f_len,double[] new_xs, double[] new_ys, int new_len )

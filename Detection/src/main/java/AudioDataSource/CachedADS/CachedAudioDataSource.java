@@ -122,9 +122,33 @@ public class CachedAudioDataSource implements IAudioDataSource
             {
                 win = get_samples( first_sample_index, length );
 
-                for( i = 0; i < length; i++ )
+                for( j = 0; j < get_channel_number(); j++ )
                 {
-                    curi = i * resized_length / length;
+                    alt = true;
+                    samples[ j ][ 0 ] = win.getSample( first_sample_index, j );
+                    for( curi = 1; curi < resized_length; curi++ )
+                    {
+                        samples[ j ][ curi ] = win.getSample( first_sample_index + curi * length / resized_length, j );
+                        for( i = ( curi - 1 ) * length / resized_length; i < curi * length / resized_length; i++ )
+                        {
+                            if( alt )
+                            {
+                                samples[ j ][ curi ] = Math.max( samples[ j ][ curi ], win.getSample( first_sample_index + i, j ) );
+                            }
+                            else
+                            {
+                                samples[ j ][ curi ] = Math.min( samples[ j ][ curi ], win.getSample( first_sample_index + i, j ) );
+                            }
+                        }
+                        alt = !alt;
+                    }
+
+                }
+
+
+                /*for( i = 0; i < length; i++ )
+                {
+                    curi = ( int )( ( double )i / length * resized_length );
 
                     if( previ != curi )
                     {
@@ -149,7 +173,7 @@ public class CachedAudioDataSource implements IAudioDataSource
                         }
                     }
                     alt = !alt;
-                }
+                }*/
             }
 
         }

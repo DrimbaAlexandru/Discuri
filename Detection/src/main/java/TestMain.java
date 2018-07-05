@@ -15,6 +15,7 @@ import SignalProcessing.LinearPrediction.BurgMethod;
 import SignalProcessing.LinearPrediction.LinearPrediction;
 import Utils.DataSetGenerator;
 import Utils.Interval;
+import Utils.MyPair;
 
 import java.io.*;
 import java.text.ParseException;
@@ -270,26 +271,18 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
-            WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), 2 );
+            //WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
+            //WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), 2 );
 
-            int nr_freq = 500;
-            double[] freqs = new double[ nr_freq ];
-            double[] resps = new double[ nr_freq ];
-            for( int i = 0; i < nr_freq; i++ )
-            {
-                freqs[ i ] = i * wav.get_sample_rate() / nr_freq;
-            }
+            double[] freqs;
+            double[] resps;
+            MyPair< double[], double[] > r = FIR.get_RIAA_response();
+            freqs = r.getLeft();
+            resps = r.getRight();
+            plot_in_matlab( freqs, resps, freqs.length );
 
-            FIR.add_pass_cut_freq_resp( freqs, resps, nr_freq, 2000, 0, 0 );
-            //plot_in_matlab( freqs, resps, nr_freq );
-
-            FIR fir = FIR.fromFreqResponse( freqs, resps, nr_freq, wav.get_sample_rate(), 2047 );
-            Equalizer effect = new Equalizer();
-            effect.setMax_chunk_size( 100000 );
-            effect.setFilter( fir );
-            effect.apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
-            dest.close();
+            FIR fir = FIR.fromFreqResponse( freqs, resps, freqs.length, 44100, 511 );
+            plot_in_matlab( fir.getFf(), fir.getFf_coeff_nr() );
         }
         catch( DataSourceException e )
         {
@@ -302,12 +295,12 @@ public class TestMain {
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
+            WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\training sets\\resampled\\results\\chopin\\Chopin - Etude op. 25 no. 11 inv riaa.wav" );
             WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
             new Copy_to_ADS().apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
             long st = System.currentTimeMillis();
-            Interval r = new Interval( 20000, 1000 );
-            float ratio = 20;
+            Interval r = new Interval( 2225535, 28 );
+            float ratio = 16;
             Repair_One repairOne = new Repair_One();
             repairOne.set_fetch_ratio( ratio );
             ArrayList< Integer > ch = new ArrayList<>();
@@ -454,14 +447,14 @@ public class TestMain {
     public static void main( String[] args )
     {
         ProjectManager.lock_access();
-        String filePath = "D:\\training sets\\resampled\\results\\chopin\\Chopin - Etude op. 25 no. 11 inv riaa.wav";
-        Interval interval = new Interval( ( 2 * 60 + 14 ) * 96000, ( 2 * 60 + 20 ) * 96000, false );
-        String dest = "D:\\datasets\\chopin 2 14 - 2 20 training set p 0,5.bin";
+        String filePath = "D:\\marked recordings\\resampled\\results\\shostakovich\\shostakovich inv riaa.wav";
+        Interval interval = new Interval( ( 3 * 60 + 18 ) * 96000, ( 3 * 60 + 39 ) * 96000, false );
+        String dest = "D:\\datasets\\shostakovich 3 18 - 3 39 train set.bin";
         try
         {
-            ProjectManager.add_from_marker_file( "D:\\training sets\\resampled\\Chopin - Etude op. 25 no. 11 mark 96000.txt" );
+            ProjectManager.add_from_marker_file( "D:\\marked recordings\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark refined s 0 m 2 0,0003.txt" );
             IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
-            DataSetGenerator.generate( file, interval, dest, 64, 0.1, 0.5f );
+            DataSetGenerator.generate( file, interval, dest, 64, 0.15, 0 );
         }
         catch( DataSourceException e )
         {

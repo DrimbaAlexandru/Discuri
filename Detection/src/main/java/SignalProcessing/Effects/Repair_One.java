@@ -31,7 +31,7 @@ public class Repair_One implements IEffect
         AudioSamplesWindow window, center_win;
         Interval required_interval = new Interval( interval.l - side_fetch_size, interval.r + side_fetch_size, false );
         window = dataSource.get_samples( required_interval.l, required_interval.get_length() );
-        center_win = dataDest.get_samples( interval.l, interval.get_length() );
+        center_win = dataSource.get_samples( interval.l, interval.get_length() );
         int step = 0;
 
         if( !window.getInterval().includes( required_interval ) )
