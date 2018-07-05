@@ -6,7 +6,8 @@ import javafx.stage.Stage;
  * Created by Alex on 12.03.2017.
  */
 
-public class CMain extends Application {
+public class CMain extends Application
+{
 
     public void start( Stage stage )
     {
@@ -19,8 +20,5 @@ public class CMain extends Application {
         launch( args );
     }
 
-    /**TODO:
-     *  - add the generate marking functionality to the UI
-     *  - work on the UI
-     */
 }
+

@@ -31,7 +31,7 @@ public class Repair_One implements IEffect
         AudioSamplesWindow window, center_win;
         Interval required_interval = new Interval( interval.l - side_fetch_size, interval.r + side_fetch_size, false );
         window = dataSource.get_samples( required_interval.l, required_interval.get_length() );
-        center_win = dataSource.get_samples( interval.l, interval.get_length() );
+        center_win = dataDest.get_samples( interval.l, interval.get_length() );
         int step = 0;
 
         if( !window.getInterval().includes( required_interval ) )
@@ -42,6 +42,8 @@ public class Repair_One implements IEffect
         {
             double[] flp = Arrays.copyOfRange( window.getSamples()[ k ], 0, side_fetch_size + interval.get_length() );
             double[] blp = Arrays.copyOfRange( window.getSamples()[ k ], side_fetch_size, side_fetch_size * 2 + interval.get_length() );
+
+//Utils.Util_Stuff.plot_in_matlab( window.getSamples()[ k ], required_interval.get_length(), 0, "o" );
 
             BurgMethod flpc = new BurgMethod( flp, 0, side_fetch_size, side_fetch_size - 1 );
             step++;
@@ -62,12 +64,21 @@ public class Repair_One implements IEffect
             step++;
             progress = ( 1.0 * step / ( 4 * affected_channels.size() ) );
 
+//Utils.Util_Stuff.plot_in_matlab( flp, side_fetch_size + interval.get_length(),0,"fp" );
+//Utils.Util_Stuff.plot_in_matlab( blp, side_fetch_size + interval.get_length() ,side_fetch_size,"bp");
+
             Windowing.apply( flp, side_fetch_size, interval.get_length(), Windowing.cos_sq_window );
             Windowing.apply( blp, 0, interval.get_length(), Windowing.inv_cos_sq_window );
+
+//Utils.Util_Stuff.plot_in_matlab( flp, side_fetch_size + interval.get_length(),0,"wfp" );
+//Utils.Util_Stuff.plot_in_matlab( blp, side_fetch_size + interval.get_length(),side_fetch_size,"wbp" );
+
             for( int i = 0; i < interval.get_length(); i++ )
             {
                 center_win.getSamples()[ k ][ i ] = flp[ side_fetch_size + i ] + blp[ i ];
             }
+//Utils.Util_Stuff.plot_in_matlab( window.getSamples()[ k ], required_interval.get_length(),0,"r" );
+
         }
         dataDest.put_samples( center_win );
     }
