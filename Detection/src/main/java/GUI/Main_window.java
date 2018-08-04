@@ -23,6 +23,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -494,10 +495,6 @@ public class Main_window
             mi = new MenuItem( "Generate markings" );
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_generate_markings );
-
-            mi = new MenuItem( "Generate dataset" );
-            menu_file.getItems().add( mi );
-            mi.setOnAction( this::on_generate_dataset );
         }
         catch( IOException e )
         {
@@ -529,6 +526,11 @@ public class Main_window
         localScene.setOnKeyReleased( e ->
                                      {
                                          //Handle key shortcuts
+                                         if( e.getCode().equals( KeyCode.M ) && e.isControlDown() )
+                                         {
+                                             on_add_marking( null );
+                                             return;
+                                         }
                                      } );
         localStage.setOnCloseRequest( ev ->
                                       {
@@ -1005,37 +1007,6 @@ public class Main_window
         eff.setStylus_length( 1 );
         eff.setStylus_width( 1 );
         apply_effect( eff, false, true );
-    }
-
-    private void on_generate_dataset( ActionEvent ev )
-    {
-        FileChooser fc = new FileChooser();
-
-        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Text files", "*.txt" ) );
-        File f = fc.showSaveDialog( null );
-        if( f != null )
-        {
-            try
-            {
-                is_updater_suspended = true;
-                ProjectManager.lock_access();
-                Interval interval = new Interval( selection.l, selection.r, false );
-                if( interval.get_length() <= 0 )
-                {
-                    return;
-                }
-                DataSetGenerator.generate( ProjectManager.getCache(), interval, f.getAbsolutePath(), 48, 0.01, 0 );
-            }
-            catch( DataSourceException | IOException e )
-            {
-                treatException( e );
-            }
-            finally
-            {
-                ProjectManager.release_access();
-            }
-            is_updater_suspended = false;
-        }
     }
 
     private void on_close_application()

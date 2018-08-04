@@ -12,10 +12,7 @@ import SignalProcessing.Filters.FIR;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Interval;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Alex on 15.06.2018.
@@ -29,13 +26,12 @@ public class Multi_Band_Repair_Marked implements IEffect
     private int buffer_size;
     private boolean repair_residue = false;
     private double peak_threshold = 4;
-    final private int peak_side_length_ratio = 12;
     private boolean compare_with_direct_repair = false;
     private double progress = 0;
 
     public Multi_Band_Repair_Marked()
     {
-        this( 511, 512, 16 );
+        this( 511, 256, 16 );
     }
 
     public Multi_Band_Repair_Marked( int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
@@ -113,6 +109,7 @@ public class Multi_Band_Repair_Marked implements IEffect
         //side length e numarul de sample-uri necesar la dreapta si la stanga selectiei pentru repair, necesare la band-pass
         final int side_length = band_pass_filter_length / 2;
         boolean repair_direct;
+        Random random = new Random();
 
         /*
             Work
@@ -122,7 +119,27 @@ public class Multi_Band_Repair_Marked implements IEffect
         {
             return;
         }
-        List< Marking > repair_intervals = ProjectManager.getMarkerFile().get_all_markings( interval );
+        List< Marking > orig_repair_intervals = ProjectManager.getMarkerFile().get_all_markings( interval );
+        List< Marking > repair_intervals = new ArrayList<>();
+
+        for( Marking m : orig_repair_intervals )
+        {
+            if( m.get_number_of_marked_samples() > max_repair_size )
+            {
+                int remaining_length = m.get_number_of_marked_samples();
+                while( remaining_length > 0 )
+                {
+                    int new_len = ( remaining_length < max_repair_size / 2 ) ? remaining_length : ( ( int )( max_repair_size / 2 * ( 2.5f + random.nextFloat() ) / 3 ) );
+                    Marking new_m = new Marking( m.get_last_marked_sample() + 1 - remaining_length, m.get_last_marked_sample() - remaining_length + new_len, m.getChannel() );
+                    remaining_length -= new_len;
+                    repair_intervals.add( new_m );
+                }
+            }
+            else
+            {
+                repair_intervals.add( m );
+            }
+        }
 
         repair_intervals.sort( ( i1, i2 ) ->
                                {

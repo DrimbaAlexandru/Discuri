@@ -15,10 +15,10 @@ public class MarkerFileGenerator
     {
         try
         {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\training sets\\Beethoven - Quartet no 4 - IV mark.wav" );
-            double threshold = 0.0090;
+            WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\marked recordings\\resampled\\Tchaikovski - 1812 Overture mark.wav" );
+            double threshold = 0.007;
             int side =  2;
-            int min_distance_markings = 1;
+            int min_distance_markings = 3;
             int[] mark_start = new int[]{ -1, -1 };
             Marking[] last_marking = new Marking[]{ new Marking( -2 * side, -2 * side, 0 ), new Marking( -2 * side, -2 * side, 1 ) };
             int i, j, k;
@@ -71,7 +71,7 @@ public class MarkerFileGenerator
                     }
                 }
             }
-            mf.writeMarkingsToFile( new FileWriter( "D:\\training sets\\Beethoven - Quartet no 4 - IV mark s " + side + " m " + min_distance_markings + " " + String.format( "%.4f", threshold ) + ".txt" ) );
+            mf.writeMarkingsToFile( new FileWriter( "D:\\marked recordings\\resampled\\Tchaikovski - 1812 Overture mark s " + side + " m " + min_distance_markings + " " + String.format( "%.4f", threshold ) + ".txt" ) );
         }
         catch( DataSourceException e )
         {

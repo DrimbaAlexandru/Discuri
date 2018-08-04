@@ -62,4 +62,9 @@ public class Marking
     {
         return "[ " + fms + ", " + lms + " ], ch = " + channel;
     }
+
+    public int get_number_of_marked_samples()
+    {
+        return lms - fms + 1;
+    }
 }

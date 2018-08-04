@@ -164,8 +164,10 @@ class Classify_In_Python
 public class Create_Marker_File implements IEffect
 {
     private double threshold = 0.5;
-    private int side_extend = 0;
+    private int side_extend = 2;
     private double progress = 0;
+    //private int moving_average_threshold_side_length = 0;
+    //private double moving_average = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException

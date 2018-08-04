@@ -16,6 +16,7 @@ import SignalProcessing.LinearPrediction.LinearPrediction;
 import Utils.DataSetGenerator;
 import Utils.Interval;
 import Utils.MyPair;
+import Utils.Util_Stuff;
 
 import java.io.*;
 import java.text.ParseException;
@@ -447,14 +448,14 @@ public class TestMain {
     public static void main( String[] args )
     {
         ProjectManager.lock_access();
-        String filePath = "D:\\marked recordings\\resampled\\results\\shostakovich\\shostakovich inv riaa.wav";
-        Interval interval = new Interval( ( 3 * 60 + 18 ) * 96000, ( 3 * 60 + 39 ) * 96000, false );
-        String dest = "D:\\datasets\\shostakovich 3 18 - 3 39 train set.bin";
+        String filePath = "D:\\marked recordings\\resampled\\results\\andries\\andries - dracula blues inv riaa.wav";
+        Interval interval = new Interval( ( 1 * 60 + 24 ) * 96000, ( 2 * 60 + 3 ) * 96000, false );
+        String dest = "D:\\datasets\\andries 1 24 - 2 03 train set.bin";
         try
         {
-            ProjectManager.add_from_marker_file( "D:\\marked recordings\\resampled\\Shostakovich - Simfoniya nr. 10 2 chast mark refined s 0 m 2 0,0003.txt" );
+            ProjectManager.add_from_marker_file( "D:\\marked recordings\\resampled\\andries - dracula blues mark 0,010 96000.txt" );
             IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
-            DataSetGenerator.generate( file, interval, dest, 64, 0.15, 0 );
+            DataSetGenerator.generate( file, interval, dest, 64, 0.001, 0, 0.75 );
         }
         catch( DataSourceException e )
         {
@@ -473,4 +474,5 @@ public class TestMain {
             ProjectManager.release_access();
         }
     }
+
 }

@@ -24,7 +24,7 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
     @FXML
     private Label lbl_lp_coeffs, lbl_spike_thrsh, lbl_drst;
     @FXML
-    private CheckBox chk_6000_cut, chk_2000_cut,chk_500_cut,chk_repair_residue, chk_use_direct_repair;
+    private CheckBox chk_16000_cut, chk_6000_cut, chk_2000_cut,chk_500_cut,chk_repair_residue, chk_use_direct_repair;
     @FXML
     private Slider slider_lp_coeffs, slider_spike_thrsh;
     @FXML
@@ -91,6 +91,10 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
                                        if( chk_6000_cut.isSelected() )
                                        {
                                            effect.getBand_cutoffs().add( 6000 );
+                                       }
+                                       if( chk_16000_cut.isSelected() )
+                                       {
+                                           effect.getBand_cutoffs().add( 16000 );
                                        }
                                        effect.setRepair_residue( chk_repair_residue.isSelected() );
                                        effect.setCompare_with_direct_repair( chk_use_direct_repair.isSelected() );
