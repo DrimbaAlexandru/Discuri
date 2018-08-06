@@ -1,5 +1,7 @@
 package Utils;
 
+import SignalProcessing.Windowing.Windowing;
+
 /**
  * Created by Alex on 21.12.2017.
  */
@@ -32,6 +34,18 @@ public class Util_Stuff
         {
             x[ i ] = Math.pow( base, x[ i ] );
         }
+    }
+
+    public static void dB2lin( double[] x, int n )
+    {
+        Windowing.apply( x, n, s -> 1.0 / 6 );
+        log2lin( x, n, 2 );
+    }
+
+    public static void lin2dB( double[] x, int n )
+    {
+        lin2log( x, n, 2 );
+        Windowing.apply( x, n, s -> 6.0 );
     }
 
     public static void lin2log( double[] x, int n, double base )

@@ -11,6 +11,7 @@ import ProjectManager.ProjectManager;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FourierTransforms.Fourier;
 import Utils.Interval;
+import Utils.Util_Stuff;
 
 import java.util.*;
 
@@ -60,26 +61,29 @@ public class Multi_Band_Repair_Marked implements IEffect
         final FIR[] filters = new FIR[ nr_of_bands ];
         final int nr_freqs = dataSource.get_sample_rate() / 2 / 50;
         final double[] freqs = new double[ nr_freqs ];
-        final double[] hp_response = new double[ nr_freqs ];
+        final double[] bp_response = new double[ nr_freqs ]; //this is in dB
+        final double[] prev_response = new double[ nr_freqs ]; //this is linear
 
         for( int i = 0; i < nr_freqs; i++ )
         {
             freqs[ i ] = 1.0 * i * dataSource.get_sample_rate() / 2 / nr_freqs;
         }
+        Arrays.setAll( prev_response, x -> 1 );
+
         for( int f = 0; f < nr_of_bands; f++ )
         {
-            Arrays.setAll( hp_response, x -> 0 );
-            FIR.add_pass_cut_freq_resp( freqs, hp_response, nr_freqs, band_cutoffs.get( f ), -96, 0 );
-            filters[ f ] = FIR.fromFreqResponse( freqs, hp_response, nr_freqs, dataSource.get_sample_rate(), band_pass_filter_length );
-            if( f > 0 )
+            Arrays.setAll( bp_response, x -> 0 );
+            FIR.add_pass_cut_freq_resp( freqs, bp_response, nr_freqs, band_cutoffs.get( f ), -96, 0 );
+
+            Util_Stuff.dB2lin( bp_response, nr_freqs );
+            for( int i = 0; i < nr_freqs; i++ )
             {
-                double[] coeffs = filters[ f ].getFf();
-                double[] prev_coeffs = filters[ f - 1 ].getFf();
-                for( int j = 0; j < band_pass_filter_length; j++ )
-                {
-                    coeffs[ j ] -= prev_coeffs[ j ];
-                }
+                prev_response[ i ] = bp_response[ i ] *= prev_response[ i ];
             }
+            Util_Stuff.lin2dB( bp_response, nr_freqs );
+
+            filters[ f ] = FIR.fromFreqResponse( freqs, bp_response, nr_freqs, dataSource.get_sample_rate(), band_pass_filter_length );
+
         }
 
         /*
