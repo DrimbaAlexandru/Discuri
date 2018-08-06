@@ -14,7 +14,7 @@ public class FIR_Filter implements IEffect
 {
     private FIR filter = null;
     private int max_chunk_size = 32768;
-    private double progress = 0;
+    private float progress = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -61,12 +61,12 @@ public class FIR_Filter implements IEffect
             }
             dataDest.put_samples( win );
             i -= applying_range.get_length();
-            progress = 1.0 * ( interval.r - i ) / interval.get_length();
+            progress = 1.0f * ( interval.r - i ) / interval.get_length();
         }
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }

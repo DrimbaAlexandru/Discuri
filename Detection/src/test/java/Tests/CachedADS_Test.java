@@ -10,8 +10,8 @@ import AudioDataSource.FileADS.WAVFileAudioSource;
  */
 public class CachedADS_Test
 {
-    final static double max_16_bit_val = ( ( double )Short.MAX_VALUE ) / ( Short.MAX_VALUE + 1 );
-    final static double min_16_bit_val = -1;
+    final static float max_16_bit_val = ( ( float )Short.MAX_VALUE ) / ( Short.MAX_VALUE + 1 );
+    final static float min_16_bit_val = -1;
 
     public static void main( String[] args )
     {
@@ -20,12 +20,12 @@ public class CachedADS_Test
             String temp_file_path = "D:\\test.wav";
             WAVFileAudioSource wavADS = new WAVFileAudioSource( temp_file_path, 2, 44100, 2 );
             CachedAudioDataSource cache = new CachedAudioDataSource( wavADS, 4096, 1024 );
-            double buffer[][] = new double[ 2 ][ 2048 ];
+            float buffer[][] = new float[ 2 ][ 2048 ];
             AudioSamplesWindow win;
             int i, k;
 
             /* Preparing phase. Populate the WAV ADS. 2 channels.
-            *  Put 2048 samples with values ( -0.5, -0.25 ) in the WAV ADS, and 2048 more with values ( 0.5, 0.25 ).
+            *  Put 2048 samples with values ( -0.5f, -0.25f ) in the WAV ADS, and 2048 more with values ( 0.5f, 0.25f ).
             *  Overwrite samples 1024-3072 with values (-1,1)
             *  Test by getting back some of the values and comparing to the expected values.
             */
@@ -34,7 +34,7 @@ public class CachedADS_Test
             {
                 for( i = 0; i < 2048; i++ )
                 {
-                    buffer[ k ][ i ] = -0.5/( k + 1 );
+                    buffer[ k ][ i ] = -0.5f/( k + 1 );
                 }
             }
             win = new AudioSamplesWindow( buffer, 0, 2048, 2 );
@@ -44,7 +44,7 @@ public class CachedADS_Test
             {
                 for( i = 0; i < 2048; i++ )
                 {
-                    buffer[ k ][ i ] = 0.5/( k + 1 );
+                    buffer[ k ][ i ] = 0.5f/( k + 1 );
                 }
             }
             win = new AudioSamplesWindow( buffer, 2048, 2048, 2 );
@@ -60,20 +60,20 @@ public class CachedADS_Test
 
             assert wavADS.get_sample_number() == 4096;
             assert wavADS.get_channel_number() == 2;
-            assert wavADS.get_samples( 0, 1 ).getSample( 0, 0 ) == -0.5;
-            assert wavADS.get_samples( 0, 1 ).getSample( 0, 1 ) == -0.25;
-            assert wavADS.get_samples( 1023, 1 ).getSample( 1023, 0 ) == -0.5;
-            assert wavADS.get_samples( 1023, 1 ).getSample( 1023, 1 ) == -0.25;
+            assert wavADS.get_samples( 0, 1 ).getSample( 0, 0 ) == -0.5f;
+            assert wavADS.get_samples( 0, 1 ).getSample( 0, 1 ) == -0.25f;
+            assert wavADS.get_samples( 1023, 1 ).getSample( 1023, 0 ) == -0.5f;
+            assert wavADS.get_samples( 1023, 1 ).getSample( 1023, 1 ) == -0.25f;
 
             assert wavADS.get_samples( 1024, 1 ).getSample( 1024, 0 ) == min_16_bit_val;
             assert wavADS.get_samples( 1024, 1 ).getSample( 1024, 1 ) == max_16_bit_val;
             assert wavADS.get_samples( 3071, 1 ).getSample( 3071, 0 ) == min_16_bit_val;
             assert wavADS.get_samples( 3071, 1 ).getSample( 3071, 1 ) == max_16_bit_val;
 
-            assert wavADS.get_samples( 3072, 1 ).getSample( 3072, 0 ) == 0.5;
-            assert wavADS.get_samples( 3072, 1 ).getSample( 3072, 1 ) == 0.25;
-            assert wavADS.get_samples( 4095, 1 ).getSample( 4095, 0 ) == 0.5;
-            assert wavADS.get_samples( 4095, 1 ).getSample( 4095, 1 ) == 0.25;
+            assert wavADS.get_samples( 3072, 1 ).getSample( 3072, 0 ) == 0.5f;
+            assert wavADS.get_samples( 3072, 1 ).getSample( 3072, 1 ) == 0.25f;
+            assert wavADS.get_samples( 4095, 1 ).getSample( 4095, 0 ) == 0.5f;
+            assert wavADS.get_samples( 4095, 1 ).getSample( 4095, 1 ) == 0.25f;
 
             assert cache.get_channel_number() == 2;
             assert cache.get_sample_rate() == 44100;
@@ -92,20 +92,20 @@ public class CachedADS_Test
             assert !win.containsSample( -1 );
             assert !win.containsSample( 4096 );
 
-            assert win.getSample( 0, 0 ) == -0.5;
-            assert win.getSample( 0, 1 ) == -0.25;
-            assert win.getSample( 1023, 0 ) == -0.5;
-            assert win.getSample( 1023, 1 ) == -0.25;
+            assert win.getSample( 0, 0 ) == -0.5f;
+            assert win.getSample( 0, 1 ) == -0.25f;
+            assert win.getSample( 1023, 0 ) == -0.5f;
+            assert win.getSample( 1023, 1 ) == -0.25f;
 
             assert win.getSample( 1024, 0 ) == min_16_bit_val;
             assert win.getSample( 1024, 1 ) == max_16_bit_val;
             assert win.getSample( 3071, 0 ) == min_16_bit_val;
             assert win.getSample( 3071, 1 ) == max_16_bit_val;
 
-            assert win.getSample( 3072, 0 ) == 0.5;
-            assert win.getSample( 3072, 1 ) == 0.25;
-            assert win.getSample( 4095, 0 ) == 0.5;
-            assert win.getSample( 4095, 1 ) == 0.25;
+            assert win.getSample( 3072, 0 ) == 0.5f;
+            assert win.getSample( 3072, 1 ) == 0.25f;
+            assert win.getSample( 4095, 0 ) == 0.5f;
+            assert win.getSample( 4095, 1 ) == 0.25f;
 
             assert cache.getCache().getCache_access().size() == 4;
             assert cache.getCache().getCache_access().get( 0 ).get_first_sample_index() == 1024 * 3;

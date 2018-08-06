@@ -65,7 +65,7 @@ public class Generate_Markings_Dialog implements Effect_UI_Component
                                    effect = new Create_Marker_File();
                                    try
                                    {
-                                       effect.setThreshold( sld_threshold.getValue() );
+                                       effect.setThreshold( ( float )sld_threshold.getValue() );
                                    }
                                    catch( Exception e )
                                    {

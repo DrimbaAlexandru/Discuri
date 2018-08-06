@@ -1,5 +1,5 @@
 int_size = 4
-double_size = 8
+float_size = 4
 max_chunk = 8 * 1024
 
 def send_errors( errors ):
@@ -13,21 +13,21 @@ def send_errors( errors ):
     sys.stderr.write( struct.pack( '>i', len( pack ) ) )
     sys.stderr.write( pack )
 
-def read_double_array():
+def read_float_array():
     recv = sys.stdin.read( int_size * 1 )
     #print >> sys.stderr, len( recv ), recv
     array_len = struct.unpack( '>i', recv )[ 0 ]
     array = []
     for i in xrange( 0, array_len ):
-        recv = sys.stdin.read( double_size * 1 )
-        value = struct.unpack( '>d', recv )[ 0 ]
+        recv = sys.stdin.read( float_size * 1 )
+        value = struct.unpack( '>f', recv )[ 0 ]
         array.append( value )
     return ( array_len, array )
     
-def print_double_array( array_len, array ):
+def print_float_array( array_len, array ):
     sys.stdout.write( struct.pack( '>i', array_len ) )
     for i in xrange( 0, array_len ):
-        sys.stdout.write( struct.pack( '>d', array[ i ] ) )
+        sys.stdout.write( struct.pack( '>f', array[ i ] ) )
 
 err_msgs = []
 
@@ -65,10 +65,10 @@ except Exception as e:
 
 send_errors( err_msgs )
 
-#sys.stderr = open("C:\Users\Alex\Desktop\python_stderr.txt", "w+" )
+sys.stderr = open("C:\Users\Alex\Desktop\python_stderr.txt", "w+" )
 #begin loop
 while True:
-    ( n, samples ) = read_double_array()
+    ( n, samples ) = read_float_array()
     if( n == 0 ):
         break
     i = 0
@@ -83,4 +83,4 @@ while True:
         #print >> sys.stderr, predictions_chunk, type( predictions_chunk )
         predictions.extend( predictions_chunk )
         i += temp_len
-    print_double_array( predictions.__len__(), predictions )
+    print_float_array( predictions.__len__(), predictions )

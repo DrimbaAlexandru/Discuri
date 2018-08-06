@@ -11,7 +11,7 @@ import Utils.Interval;
  */
 public class InMemoryADS implements IAudioDataSource
 {
-    private double[][] buffer = null;
+    private float[][] buffer = null;
     private int ch_number;
     private int capacity;
     private Interval buffered_interval = new Interval( 0, 0 );
@@ -22,7 +22,7 @@ public class InMemoryADS implements IAudioDataSource
         this.capacity = capacity;
         this.ch_number = channel_number;
         this.sample_rate = sample_rate;
-        this.buffer = new double[ channel_number ][ capacity ];
+        this.buffer = new float[ channel_number ][ capacity ];
     }
 
     @Override
@@ -56,7 +56,7 @@ public class InMemoryADS implements IAudioDataSource
         {
             throw new DataSourceException( "Samples not stored in the ADS", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
         }
-        double[][] samples = new double[ ch_number ][ length ];
+        float[][] samples = new float[ ch_number ][ length ];
         int k, i;
         for( k = 0; k < ch_number; k++ )
         {

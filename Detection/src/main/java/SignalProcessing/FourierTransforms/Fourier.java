@@ -45,7 +45,7 @@ public class Fourier
                 }
             }
         }
-        Complex c = new Complex( ( 1.0 / N ), 0 );
+        Complex c = new Complex( ( 1.0f / N ), 0 );
         for( i = 0; i < N; i++ )
         {
             BUF[ i ].mul( c );
@@ -69,10 +69,10 @@ public class Fourier
         return x;
     }
 
-    public static Complex one_freq_component( double[] signal, int start_offset, int length, double frequency, int sample_rate )
+    public static Complex one_freq_component( float[] signal, int start_offset, int length, float frequency, int sample_rate )
     {
-        double period = Math.PI * 2 / ( sample_rate / frequency );
-        double cos_comp = 0, sin_comp = 0;
+        float period = ( float )( Math.PI * 2 / ( sample_rate / frequency ) );
+        float cos_comp = 0, sin_comp = 0;
         int i;
         for( i = 0; i < length; i++ )
         {

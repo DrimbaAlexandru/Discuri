@@ -7,7 +7,7 @@ import Exceptions.DataSourceException;
  */
 public interface FunctionApproximation
 {
-    void prepare( double[] xs, double[] ys, int n ) throws DataSourceException;
+    void prepare( float[] xs, float[] ys, int n ) throws DataSourceException;
 
-    void get_values( double[] int_xs, double[] int_ys, int n ) throws DataSourceException;
+    void get_values( float[] int_xs, float[] int_ys, int n ) throws DataSourceException;
 }

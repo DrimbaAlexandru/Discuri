@@ -12,10 +12,10 @@ import Utils.Stylus;
  */
 public class Groove_Retracking implements IEffect
 {
-    private double progress = 0;
-    private double stylus_width = 1;//in micrometers
-    private double stylus_length = 1;//in micrometers
-    private double groove_max_ampl_um = 80;
+    private float progress = 0;
+    private float stylus_width = 1;//in micrometers
+    private float stylus_length = 1;//in micrometers
+    private float groove_max_ampl_um = 80;
     private int chunk_size = 96000;
 
     @Override
@@ -24,7 +24,7 @@ public class Groove_Retracking implements IEffect
         int i, temp_len;
         Stylus stylus;
         AudioSamplesWindow win;
-        double[][] flush_array = new double[ dataDest.get_channel_number() ][ chunk_size ];
+        float[][] flush_array = new float[ dataDest.get_channel_number() ][ chunk_size ];
 
         if( dataSource == dataDest )
         {
@@ -35,7 +35,7 @@ public class Groove_Retracking implements IEffect
         i = interval.l;
         for( ; i < interval.r; )
         {
-            stylus = new Stylus( stylus_width / groove_max_ampl_um, stylus_length, 33 + 1.0 / 3, 3 * 25.4, dataSource.get_sample_rate() );
+            stylus = new Stylus( stylus_width / groove_max_ampl_um, stylus_length, 33 + 1.0f / 3, 3 * 25.4f, dataSource.get_sample_rate() );
             temp_len = Math.min( chunk_size, interval.r - i );
             win = dataSource.get_samples( i - stylus.getSide_length(), temp_len + stylus.getSide_length() * 2 );
             for( int k = 0; k < Math.min( 2, win.get_channel_number() ); k++ )
@@ -48,22 +48,22 @@ public class Groove_Retracking implements IEffect
             AudioSamplesWindow flush = new AudioSamplesWindow( flush_array, i, temp_len, win.get_channel_number() );
             dataDest.put_samples( flush );
             i += temp_len;
-            progress = 1.0 * ( i - interval.l ) / interval.get_length();
+            progress = 1.0f * ( i - interval.l ) / interval.get_length();
         }
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }
 
-    public void setStylus_length( double stylus_length )
+    public void setStylus_length( float stylus_length )
     {
         this.stylus_length = stylus_length;
     }
 
-    public void setStylus_width( double stylus_width )
+    public void setStylus_width( float stylus_width )
     {
         this.stylus_width = stylus_width;
     }

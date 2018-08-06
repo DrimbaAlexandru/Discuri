@@ -17,8 +17,8 @@ public class IIR_with_centered_FIR implements IEffect
     private IIR iir_filter = null;
     private FIR fir_filter = null;
     private int max_chunk_size = 1024;
-    private final static double[] identity_FIR_coeffs = { 1 };
-    private double progress = 0;
+    private final static float[] identity_FIR_coeffs = { 1 };
+    private float progress = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -38,12 +38,12 @@ public class IIR_with_centered_FIR implements IEffect
         final boolean isInPlace = ( dataDest == dataSource );
         int buf1_size = fir_filter.getFf_coeff_nr() / 2;
         int buf2_size = max_filter_len;
-        double[][] prev_left_samples = null;
-        double[][] regression_buffer = new double[ dataSource.get_channel_number() ][ buf2_size ];
+        float[][] prev_left_samples = null;
+        float[][] regression_buffer = new float[ dataSource.get_channel_number() ][ buf2_size ];
         final Equalizer_FIR equalizer_fir = new Equalizer_FIR( fir_filter );
         if( isInPlace )
         {
-            prev_left_samples = new double[ dataSource.get_channel_number() ][ buf1_size ];
+            prev_left_samples = new float[ dataSource.get_channel_number() ][ buf1_size ];
         }
 
         int temp_len;
@@ -103,7 +103,7 @@ public class IIR_with_centered_FIR implements IEffect
         }
         dataDest.put_samples( win );
         i += applying_range.get_length();
-        progress = 1.0 * ( i - interval.l ) / interval.get_length();
+        progress = 1.0f * ( i - interval.l ) / interval.get_length();
 
         for( ; i < interval.r; )
         {
@@ -155,12 +155,12 @@ public class IIR_with_centered_FIR implements IEffect
             }
             dataDest.put_samples( win );
             i += applying_range.get_length();
-            progress = 1.0 * ( i - interval.l ) / interval.get_length();
+            progress = 1.0f * ( i - interval.l ) / interval.get_length();
         }
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }

@@ -15,8 +15,8 @@ public class Equalizer implements IEffect
 {
     private FIR fir_filter = null;
     private int max_chunk_size = 32768;
-    private final static double[] identity_FIR_coeffs = { 1 };
-    private double progress = 0;
+    private final static float[] identity_FIR_coeffs = { 1 };
+    private float progress = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -34,12 +34,12 @@ public class Equalizer implements IEffect
         }
 
         final boolean isInPlace = ( dataDest == dataSource );
-        double[][] prev_left_samples = null;
-        double[][] flushing_buffer = new double[ dataSource.get_channel_number() ][ max_chunk_size ];
+        float[][] prev_left_samples = null;
+        float[][] flushing_buffer = new float[ dataSource.get_channel_number() ][ max_chunk_size ];
         final Equalizer_FIR equalizer_fir = new Equalizer_FIR( fir_filter );
         if( isInPlace )
         {
-            prev_left_samples = new double[ dataSource.get_channel_number() ][ buf_len ];
+            prev_left_samples = new float[ dataSource.get_channel_number() ][ buf_len ];
         }
 
         int temp_len;
@@ -97,7 +97,7 @@ public class Equalizer implements IEffect
         dataDest.put_samples( new AudioSamplesWindow( flushing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
 
         i += applying_range.get_length();
-        progress = 1.0 * ( i - interval.l ) / interval.get_length();
+        progress = 1.0f * ( i - interval.l ) / interval.get_length();
 
         for( ; i < interval.r; )
         {
@@ -147,12 +147,12 @@ public class Equalizer implements IEffect
             dataDest.put_samples( new AudioSamplesWindow( flushing_buffer, applying_range.l + win.get_first_sample_index(), applying_range.get_length(), win.get_channel_number() ) );
 
             i += applying_range.get_length();
-            progress = 1.0 * ( i - interval.l ) / interval.get_length();
+            progress = 1.0f * ( i - interval.l ) / interval.get_length();
         }
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }

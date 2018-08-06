@@ -11,7 +11,7 @@ import Utils.Interval;
 public class Copy_to_ADS implements IEffect
 {
     private int buffer_size = 1024 * 1024;
-    private double progress = 0;
+    private float progress = 0;
 
     public void setBuffer_size( int buffer_size )
     {
@@ -32,12 +32,12 @@ public class Copy_to_ADS implements IEffect
             win = dataSource.get_samples( i, temp_len );
             dataDest.put_samples( win );
             i += temp_len;
-            progress = 1.0 * ( i - interval.l ) / interval.get_length();
+            progress = 1.0f * ( i - interval.l ) / interval.get_length();
         }
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }

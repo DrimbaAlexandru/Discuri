@@ -10,5 +10,5 @@ import Utils.Interval;
 public interface IEffect
 {
     void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException;
-    double getProgress();
+    float getProgress();
 }

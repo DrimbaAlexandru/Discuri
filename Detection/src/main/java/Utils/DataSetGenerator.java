@@ -19,7 +19,7 @@ public class DataSetGenerator
 {
     private static ByteBuffer buf = ByteBuffer.allocate( ( 130 ) * 4 );
 
-    public static void generate( IAudioDataSource dataSource, Interval interval, String destination_path, int near_window_size, double non_marked_probab, float doubling_probab, double prob_of_skipping_marking ) throws DataSourceException, IOException
+    public static void generate( IAudioDataSource dataSource, Interval interval, String destination_path, int near_window_size, float non_marked_probab, float doubling_probab, float prob_of_skipping_marking ) throws DataSourceException, IOException
     {
         final int window_size = 129;
         final int fetch_size = dataSource.get_sample_rate() + ( window_size - 1 );
@@ -76,8 +76,8 @@ public class DataSetGenerator
                 {
                     isMarked = markerFile.isMarked( i + j, ch );
                     willWrite = writes_prob_1.isMarked( i + j, ch );
-                    willWrite = willWrite || ( rand.nextFloat() < 0.5 && writes_prob_0_5.isMarked( i + j, ch ) );
-                    willWrite = willWrite || ( rand.nextFloat() < 0.1 && writes_prob_0_1.isMarked( i + j, ch ) );
+                    willWrite = willWrite || ( rand.nextFloat() < 0.5f && writes_prob_0_5.isMarked( i + j, ch ) );
+                    willWrite = willWrite || ( rand.nextFloat() < 0.1f && writes_prob_0_1.isMarked( i + j, ch ) );
                     if( !willWrite )
                     {
                         willWrite = ( rand.nextFloat() < non_marked_probab );
@@ -89,7 +89,7 @@ public class DataSetGenerator
                         {
                             System.out.println( "Written " + ( marked_written + unmarked_written ) );
                             System.out.println( "At sample " + ( i + j ) + "/" + dataSource.get_sample_number() );
-                            System.out.println( "Ratio ( unmarked / marked ): " + ( double )unmarked_written / marked_written );
+                            System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
                             marked_written = 0;
                             unmarked_written = 0;
                         }

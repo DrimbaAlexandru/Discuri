@@ -32,7 +32,7 @@ public class Repair_in_memory implements IEffect
     private boolean work_on_position_domain = false;
     private boolean work_on_band_pass = false;
 
-    private double progress = 0;
+    private float progress = 0;
 
     public Repair_in_memory()
     {
@@ -68,16 +68,16 @@ public class Repair_in_memory implements IEffect
             Local variables.
             Filter definitions
         */
-        final double integration_coeffs[] = { 1, -1 };
-        final MyPair< double[], double[] > riaa_resp = FIR.get_RIAA_response();
-        final MyPair< double[], double[] > inv_riaa_resp = FIR.get_RIAA_response();
+        final float integration_coeffs[] = { 1, -1 };
+        final MyPair< float[], float[] > riaa_resp = FIR.get_RIAA_response();
+        final MyPair< float[], float[] > inv_riaa_resp = FIR.get_RIAA_response();
 
         final int nr_freqs = dataSource.get_sample_rate() / 2 / 50;
-        final double[] freqs = new double[ nr_freqs ];
-        final double[] hp_response = new double[ nr_freqs ];
+        final float[] freqs = new float[ nr_freqs ];
+        final float[] hp_response = new float[ nr_freqs ];
         for( int i = 0; i < nr_freqs; i++ )
         {
-            freqs[ i ] = 1.0 * i * dataSource.get_sample_rate() / 2 / nr_freqs;
+            freqs[ i ] = 1.0f * i * dataSource.get_sample_rate() / 2 / nr_freqs;
         }
 
         if( low_cutoff_frq != -1 )
@@ -89,19 +89,19 @@ public class Repair_in_memory implements IEffect
             FIR.add_pass_cut_freq_resp( freqs, hp_response, nr_freqs, high_cutoff_frq, 0, -96 );
         }
 
-        final FIR derivation_filter = new FIR( new double[]{ 1, -1 }, 2 );
+        final FIR derivation_filter = new FIR( new float[]{ 1, -1 }, 2 );
         final FIR riaa_filter = FIR.fromFreqResponse( riaa_resp.getLeft(), riaa_resp.getRight(), riaa_resp.getLeft().length, dataSource.get_sample_rate(), riaa_length );
         final FIR inverse_riaa_filter = FIR.fromFreqResponse( inv_riaa_resp.getLeft(), inv_riaa_resp.getRight(), inv_riaa_resp.getLeft().length, dataSource.get_sample_rate(), riaa_length );
         final FIR high_pass_filter = FIR.fromFreqResponse( freqs, hp_response, nr_freqs, dataSource.get_sample_rate(), high_pass_length );
 
         final IIR integrated_riia_filter = new IIR( inverse_riaa_filter.getFf(), inverse_riaa_filter.getFf_coeff_nr(), integration_coeffs, integration_coeffs.length );
-        final IIR integration_filter = new IIR( new double[]{ 1 }, 1, integration_coeffs, integration_coeffs.length );
+        final IIR integration_filter = new IIR( new float[]{ 1 }, 1, integration_coeffs, integration_coeffs.length );
 
         /*
             Data sources
         */
         final SingleBlockADS workADS = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), cache_size, new Interval( 0, 0 ) );
-        final double[][] work_samples = workADS.getBuffer();
+        final float[][] work_samples = workADS.getBuffer();
 
         /*
             Effects
@@ -355,7 +355,7 @@ public class Repair_in_memory implements IEffect
                 }
             }
             marking_index++;
-            progress = 1.0 * marking_index / repair_intervals.size();
+            progress = 1.0f * marking_index / repair_intervals.size();
             if( repair_interval.l / dataSource.get_sample_rate() > second )
             {
                 second = repair_interval.l / dataSource.get_sample_rate();
@@ -365,7 +365,7 @@ public class Repair_in_memory implements IEffect
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }

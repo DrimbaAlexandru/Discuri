@@ -8,20 +8,20 @@ import Exceptions.DataSourceExceptionCause;
  */
 public class LinearInterpolation implements FunctionApproximation
 {
-    private double[] xs;
-    private double[] ys;
+    private float[] xs;
+    private float[] ys;
     private int n;
 
     @Override
-    public void prepare( double[] xs, double[] ys, int n ) throws DataSourceException
+    public void prepare( float[] xs, float[] ys, int n ) throws DataSourceException
     {
         int i;
         if( n > xs.length || n > ys.length )
         {
             throw new DataSourceException( "n larger than array size", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
         }
-        this.xs = new double[ n ];
-        this.ys = new double[ n ];
+        this.xs = new float[ n ];
+        this.ys = new float[ n ];
         for( i = 0; i < n; i++ )
         {
             this.xs[ i ] = xs[ i ];
@@ -31,7 +31,7 @@ public class LinearInterpolation implements FunctionApproximation
     }
 
     @Override
-    public void get_values( double[] int_xs, double[] int_ys, int int_n )throws DataSourceException
+    public void get_values( float[] int_xs, float[] int_ys, int int_n )throws DataSourceException
     {
         if( int_n> int_xs.length || int_n > int_ys.length )
         {
@@ -39,7 +39,7 @@ public class LinearInterpolation implements FunctionApproximation
         }
         int i;
         int j = 0;
-        double xl, xr, yl, yr, m;
+        float xl, xr, yl, yr, m;
         for( i = 0; i < int_n; i++ )
         {
             while( ( j < n ) && ( int_xs[ i ] > xs[ j ] ) )

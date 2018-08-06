@@ -22,15 +22,15 @@ import static Utils.Util_Stuff.plot_in_matlab;
 public class FIR
 {
     private int ff_coeff_nr;
-    private double[] ff;
+    private float[] ff;
 
-    private static final double[] riaa_points = { 20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000, 25000, 48000 };
-    private static final double[] riaa_resp = { 19.274, 18.954, 18.516, 17.792, 16.946, 15.852, 14.506, 13.088, 11.563, 9.809, 8.219, 6.677, 5.179, 3.784, 2.648, 1.642, 0.751, 0, -0.744, -1.643, -2.589, -3.700, -5.038, -6.605, -8.210, -9.980, -11.894, -13.734, -15.609, -17.708, -19.620, -21.542, -27.187 };
+    private static final float[] riaa_points = { 20, 25, 31, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000, 5000, 6300, 8000, 10000, 12500, 16000, 20000, 25000, 48000 };
+    private static final float[] riaa_resp = { 19.274f, 18.954f, 18.516f, 17.792f, 16.946f, 15.852f, 14.506f, 13.088f, 11.563f, 9.809f, 8.219f, 6.677f, 5.179f, 3.784f, 2.648f, 1.642f, 0.751f, 0, -0.744f, -1.643f, -2.589f, -3.700f, -5.038f, -6.605f, -8.210f, -9.980f, -11.894f, -13.734f, -15.609f, -17.708f, -19.620f, -21.542f, -27.187f };
 
-    public final static FIR derivation_FIR = new FIR( new double[]{ 1, -1 }, 2 );
-    public final static FIR identity_FIR = new FIR( new double[]{ 1 }, 1 );
+    public final static FIR derivation_FIR = new FIR( new float[]{ 1, -1 }, 2 );
+    public final static FIR identity_FIR = new FIR( new float[]{ 1 }, 1 );
 
-    public void apply( double[] x, Interval range ) throws DataSourceException
+    public void apply( float[] x, Interval range ) throws DataSourceException
     {
 
         if( x.length < range.r || range.l < 0 )
@@ -39,7 +39,7 @@ public class FIR
         }
 
         int i, j;
-        double newVal;
+        float newVal;
 
         for( i = range.r - 1; i >= range.l; i-- )
         {
@@ -52,10 +52,10 @@ public class FIR
         }
     }
 
-    public FIR( double coeffs[], int n )
+    public FIR( float coeffs[], int n )
     {
         int i;
-        ff = new double[ n ];
+        ff = new float[ n ];
         ff_coeff_nr = n;
         System.arraycopy( coeffs, 0, ff, 0, n );
     }
@@ -69,7 +69,7 @@ public class FIR
      * @return
      * @throws DataSourceException
      */
-    public static FIR fromFreqResponse( double[] frequencies, double[] amplitudes, int nr_of_frequencies, int sample_rate, int filter_length ) throws DataSourceException
+    public static FIR fromFreqResponse( float[] frequencies, float[] amplitudes, int nr_of_frequencies, int sample_rate, int filter_length ) throws DataSourceException
     {
         if( frequencies.length < nr_of_frequencies || amplitudes.length < nr_of_frequencies )
         {
@@ -82,29 +82,29 @@ public class FIR
 
         int ifft_size = Util_Stuff.next_power_of_two( ( filter_length - 1 ) );
         FunctionApproximation fa = new LinearInterpolation();
-        double[] ifft_xs = new double[ ifft_size ];
-        double[] ifft_ys = new double[ ifft_size ];
+        float[] ifft_xs = new float[ ifft_size ];
+        float[] ifft_ys = new float[ ifft_size ];
         boolean interpolate_logarithmically = false;
         Complex[] ifft_in = new Complex[ ifft_size ];
         Complex[] ifft_out;
-        double[] final_filter = new double[ filter_length ];
+        float[] final_filter = new float[ filter_length ];
         int i;
 
         for( i = 0; i < ifft_size; i++ )
         {
-            ifft_xs[ i ] = 1.0 * sample_rate / ifft_size * i;
+            ifft_xs[ i ] = 1.0f * sample_rate / ifft_size * i;
         }
         if( interpolate_logarithmically )
         {
-            ifft_xs[ 0 ] = 1e-12;
+            ifft_xs[ 0 ] = 1e-12f;
             Util_Stuff.lin2log( ifft_xs, ifft_size, 2 );
-            if( frequencies[ 0 ] < 1e-10 )
+            if( frequencies[ 0 ] < 1e-10f )
             {
-                frequencies[ 0 ] = 1e-10;
+                frequencies[ 0 ] = 1e-10f;
             }
             Util_Stuff.lin2log( frequencies, nr_of_frequencies, 2 );
         }
-        Windowing.apply( amplitudes, nr_of_frequencies, ( Double x ) -> 1.0 / 6 );
+        Windowing.apply( amplitudes, nr_of_frequencies, ( Float x ) -> 1.0f / 6 );
         Util_Stuff.log2lin( amplitudes, nr_of_frequencies, 2 );
 
         fa.prepare( frequencies, amplitudes, nr_of_frequencies );
@@ -119,7 +119,7 @@ public class FIR
         {
             for( i = 0; i < ifft_size; i++ )
             {
-                ifft_xs[ i ] = 1.0 * sample_rate / ifft_size * i;
+                ifft_xs[ i ] = 1.0f * sample_rate / ifft_size * i;
             }
         }
         for( i = 0; i < ifft_size; i++ )
@@ -147,12 +147,12 @@ public class FIR
         return ff_coeff_nr;
     }
 
-    public double[] getFf()
+    public float[] getFf()
     {
         return ff;
     }
 
-    public static void add_pass_cut_freq_resp( double[] frequencies, double[] amplitudes, int nr_of_frequencies, int cutoff_frequency, double low_gain_per_octave, double high_gain_per_octave ) throws DataSourceException
+    public static void add_pass_cut_freq_resp( float[] frequencies, float[] amplitudes, int nr_of_frequencies, int cutoff_frequency, float low_gain_per_octave, float high_gain_per_octave ) throws DataSourceException
     {
         int i;
         for( i = 0; i < nr_of_frequencies; i++ )
@@ -173,15 +173,15 @@ public class FIR
         }
     }
 
-    public static MyPair< double[], double[] > get_RIAA_response()
+    public static MyPair< float[], float[] > get_RIAA_response()
     {
         return new MyPair<>( Arrays.copyOf( riaa_points, riaa_points.length ), Arrays.copyOf( riaa_resp, riaa_resp.length ) );
     }
 
-    public static MyPair< double[], double[] > get_inverse_RIAA_response()
+    public static MyPair< float[], float[] > get_inverse_RIAA_response()
     {
-        MyPair< double[], double[] > resp = get_RIAA_response();
-        double[] resp_ref = resp.getRight();
+        MyPair< float[], float[] > resp = get_RIAA_response();
+        float[] resp_ref = resp.getRight();
         for( int i = 0; i < resp.getRight().length; i++ )
         {
             resp_ref[ i ] *= -1;

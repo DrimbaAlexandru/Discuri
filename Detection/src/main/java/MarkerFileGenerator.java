@@ -16,7 +16,7 @@ public class MarkerFileGenerator
         try
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "D:\\marked recordings\\resampled\\Tchaikovski - 1812 Overture mark.wav" );
-            double threshold = 0.007;
+            float threshold = 0.007f;
             int side =  2;
             int min_distance_markings = 3;
             int[] mark_start = new int[]{ -1, -1 };

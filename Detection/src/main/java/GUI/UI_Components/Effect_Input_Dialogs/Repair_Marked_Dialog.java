@@ -99,7 +99,7 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
                                        effect.setRepair_residue( chk_repair_residue.isSelected() );
                                        effect.setCompare_with_direct_repair( chk_use_direct_repair.isSelected() );
                                        effect.setFetch_ratio( ( int )slider_lp_coeffs.getValue() );
-                                       effect.setpeak_threshold( slider_spike_thrsh.getValue() );
+                                       effect.setpeak_threshold( ( float )slider_spike_thrsh.getValue() );
                                    }
                                    catch( Exception e )
                                    {

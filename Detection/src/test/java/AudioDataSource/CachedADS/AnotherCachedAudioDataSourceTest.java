@@ -29,14 +29,14 @@ public class AnotherCachedAudioDataSourceTest
 
     private void rewrite_temp_file() throws DataSourceException
     {
-        double[][] samples = new double[ dataSource.get_channel_number() ][ page_size * nr_of_pages * 5 ];
+        float[][] samples = new float[ dataSource.get_channel_number() ][ page_size * nr_of_pages * 5 ];
         int k, i;
         in_file_data = new AudioSamplesWindow( samples, 0, page_size * nr_of_pages * 5, 2 );
         for( k = 0; k < in_file_data.get_channel_number(); k++ )
         {
             for( i = in_file_data.get_first_sample_index(); i < in_file_data.get_after_last_sample_index(); i++ )
             {
-                samples[ k ][ i ] = 1.0 / 2 * Math.sin( 2 * Math.PI * ( k + 1 ) * i * ( dataSource.get_sample_rate() / 100 ) );
+                samples[ k ][ i ] = 1.0f / 2 * Math.sin( 2 * Math.PI * ( k + 1 ) * i * ( dataSource.get_sample_rate() / 100 ) );
             }
         }
         dataSource.put_samples( in_file_data );
@@ -230,7 +230,7 @@ public class AnotherCachedAudioDataSourceTest
         AudioSamplesWindow win, win2;
 
         rewrite_temp_file();
-        double[][] appended = new double[][]{ { 0.0 }, { 0.0 } };
+        float[][] appended = new float[][]{ { 0.0f }, { 0.0f } };
         dataSource.put_samples( new AudioSamplesWindow( appended, dataSource.get_sample_number(), 1, 2 ) );
         cache.setDataSource( dataSource );
 
@@ -261,8 +261,8 @@ public class AnotherCachedAudioDataSourceTest
     {
         nr_of_pages = 2;
         int i, k;
-        double val;
-        double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
+        float val;
+        float[][] samples2write = new float[ dataSource.get_channel_number() ][ page_size + 1 ];
         CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow win, winDS, win2write, winC;
 
@@ -270,7 +270,7 @@ public class AnotherCachedAudioDataSourceTest
         cache.setDataSource( dataSource );
         for( k = 0; k < dataSource.get_channel_number(); k++ )
         {
-            val = new Random().nextDouble() - 0.5;
+            val = new Random().nextFloat() - 0.5f;
             for( i = 0; i < page_size + 1; i++ )
             {
                 samples2write[ k ][ i ] = val;
@@ -313,8 +313,8 @@ public class AnotherCachedAudioDataSourceTest
     {
         nr_of_pages = 2;
         int i, k;
-        double val;
-        double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
+        float val;
+        float[][] samples2write = new float[ dataSource.get_channel_number() ][ page_size + 1 ];
         CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow winDS_orig, winDS, win2write, winC;
 
@@ -322,7 +322,7 @@ public class AnotherCachedAudioDataSourceTest
         cache.setDataSource( dataSource );
         for( k = 0; k < dataSource.get_channel_number(); k++ )
         {
-            val = new Random().nextDouble() - 0.5;
+            val = new Random().nextFloat() - 0.5f;
             for( i = 0; i < page_size + 1; i++ )
             {
                 samples2write[ k ][ i ] = val;
@@ -354,7 +354,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( cache.getCache().getCache_access().get( 0 ).get_first_sample_index(), page_size * 2 );
         Assert.assertEquals( cache.getCache().getCache_access().get( 1 ).get_first_sample_index(), page_size );
 
-        samples2write = new double[][]{ { 0 }, { 0 } };
+        samples2write = new float[][]{ { 0 }, { 0 } };
         cache.put_samples( new AudioSamplesWindow( samples2write, 0, 1, dataSource.get_channel_number() ) );
 
         Assert.assertEquals( cache.getCache().getCache_access().size(), 2 );
@@ -396,8 +396,8 @@ public class AnotherCachedAudioDataSourceTest
     {
         nr_of_pages = 2;
         int i, k;
-        double val;
-        double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
+        float val;
+        float[][] samples2write = new float[ dataSource.get_channel_number() ][ page_size + 1 ];
         CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow winDS_orig, winDS, win2write, winC;
 
@@ -405,7 +405,7 @@ public class AnotherCachedAudioDataSourceTest
         cache.setDataSource( dataSource );
         for( k = 0; k < dataSource.get_channel_number(); k++ )
         {
-            val = new Random().nextDouble() - 0.5;
+            val = new Random().nextFloat() - 0.5f;
             for( i = 0; i < page_size + 1; i++ )
             {
                 samples2write[ k ][ i ] = val;
@@ -461,8 +461,8 @@ public class AnotherCachedAudioDataSourceTest
         rewrite_temp_file();
         nr_of_pages = 5;
         int i, k;
-        double val;
-        double[][] samples2write = new double[ dataSource.get_channel_number() ][ page_size + 1 ];
+        float val;
+        float[][] samples2write = new float[ dataSource.get_channel_number() ][ page_size + 1 ];
         CachedAudioDataSource cache = new CachedAudioDataSource( dataSource, nr_of_pages * page_size, page_size );
         AudioSamplesWindow winDS_orig, winDS, win2write, winC;
 
@@ -470,7 +470,7 @@ public class AnotherCachedAudioDataSourceTest
 
         for( k = 0; k < dataSource.get_channel_number(); k++ )
         {
-            val = new Random().nextDouble() - 0.5;
+            val = new Random().nextFloat() - 0.5f;
             for( i = 0; i < page_size + 1; i++ )
             {
                 samples2write[ k ][ i ] = val;

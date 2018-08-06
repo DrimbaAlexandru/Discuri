@@ -253,7 +253,7 @@ public class WAVFileAudioSource implements IFileAudioDataSource
         first_sample_index = Math.max( 0, first_sample_index );
         length = Math.min( length, sample_number - first_sample_index );
 
-        double data[][] = new double[ channel_number ][ length ];
+        float data[][] = new float[ channel_number ][ length ];
         int i, k;
         int buffer_position = 0, read_bytes = 0;
         try
@@ -294,26 +294,26 @@ public class WAVFileAudioSource implements IFileAudioDataSource
         return new AudioSamplesWindow( data, first_sample_index, length, channel_number );
     }
 
-    private double get_sample( int buffer_offset )
+    private float get_sample( int buffer_offset )
     {
         switch( byte_depth )
         {
             case 1:
-                double val = ( double )byteBuffer.get( buffer_offset );
+                float val = ( float )byteBuffer.get( buffer_offset );
                 if( val < 0 )
                 {
                     val += 256;
                 }
                 return val / 128 - 1;
             case 2:
-                return ( ( double )byteBuffer.getShort( buffer_offset ) ) / ( Short.MAX_VALUE + 1 );
+                return ( ( float )byteBuffer.getShort( buffer_offset ) ) / ( Short.MAX_VALUE + 1 );
             case 4:
-                return ( ( double )byteBuffer.getInt( buffer_offset ) ) / ( ( long )( Integer.MAX_VALUE ) + 1 );
+                return ( ( float )byteBuffer.getInt( buffer_offset ) ) / ( ( long )( Integer.MAX_VALUE ) + 1 );
         }
         return 0;
     }
 
-    private void put_sample( int buffer_offset, double sample )
+    private void put_sample( int buffer_offset, float sample )
     {
         switch( byte_depth )
         {

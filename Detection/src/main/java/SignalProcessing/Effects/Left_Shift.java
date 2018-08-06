@@ -56,7 +56,7 @@ public class Left_Shift implements IEffect
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return 0;
     }

@@ -14,14 +14,14 @@ public class SingleBlockADS implements IAudioDataSource
     private int channel_number = 0;
     private Interval interval = new Interval( 0, 0 );
     private int sample_rate = 0;
-    private double[][] buffer = null;
+    private float[][] buffer = null;
 
     public SingleBlockADS( int sample_rate, int channel_number, int init_size, Interval init_interval )
     {
         this.channel_number = channel_number;
         this.sample_rate = sample_rate;
         interval = new Interval( init_interval.l, init_interval.get_length() );
-        buffer = new double[ channel_number ][ init_size ];
+        buffer = new float[ channel_number ][ init_size ];
     }
 
     @Override
@@ -53,7 +53,7 @@ public class SingleBlockADS implements IAudioDataSource
         Interval get_interval = new Interval( first_sample_index, length );
         if( interval.includes( get_interval ) )
         {
-            double buf[][] = new double[ channel_number ][ get_interval.get_length() ];
+            float buf[][] = new float[ channel_number ][ get_interval.get_length() ];
             int i, k;
             for( k = 0; k < channel_number; k++ )
             {
@@ -102,7 +102,7 @@ public class SingleBlockADS implements IAudioDataSource
 
     }
 
-    public double[][] getBuffer()
+    public float[][] getBuffer()
     {
         return buffer;
     }

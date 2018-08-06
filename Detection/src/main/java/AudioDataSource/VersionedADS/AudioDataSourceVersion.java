@@ -333,7 +333,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
     @Override
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
-        double buf[][] = null;
+        float buf[][] = null;
         int i, j, k;
 
         first_sample_index = Math.min( first_sample_index, get_sample_number() );
@@ -369,7 +369,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
             }
             if( buf == null )
             {
-                buf = new double[ channel_number ][ length ];
+                buf = new float[ channel_number ][ length ];
             }
             for( k = 0; k < channel_number; k++ )
             {
@@ -382,7 +382,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         }
         if( buf == null )
         {
-            buf = new double[ channel_number ][ length ];
+            buf = new float[ channel_number ][ length ];
         }
         return new AudioSamplesWindow( buf, first_sample_index, length, channel_number );
     }
@@ -419,7 +419,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
             }
             temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, max_samples_per_chunk - write_cache.get_sample_number() );
 
-            double buf[][] = new double[ samples.get_channel_number() ][ temp_len ];
+            float buf[][] = new float[ samples.get_channel_number() ][ temp_len ];
             for( int i = 0; i < temp_len; i++ )
             {
                 for( int k = 0; k < channel_number; k++ )

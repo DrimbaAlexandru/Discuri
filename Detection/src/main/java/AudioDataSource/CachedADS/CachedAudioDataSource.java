@@ -52,7 +52,7 @@ public class CachedAudioDataSource implements IAudioDataSource
             win = dataSource.get_samples( page_nr * cache_page_size, cache_page_size );
             if( win.get_capacity() < cache_page_size )
             {
-                double[][] samples = new double[ get_channel_number() ][ cache_page_size ];
+                float[][] samples = new float[ get_channel_number() ][ cache_page_size ];
                 int k, i;
                 for( k = 0; k < get_channel_number(); k++ )
                 {
@@ -83,7 +83,7 @@ public class CachedAudioDataSource implements IAudioDataSource
         int i, j, k, end;
         first_sample_index = Math.min( first_sample_index, get_sample_number() );
         length = Math.min( length, get_sample_number() - first_sample_index );
-        double[][] samples = new double[ get_channel_number() ][ length ];
+        float[][] samples = new float[ get_channel_number() ][ length ];
         AudioSamplesWindow win;
 
         for( i = first_sample_index; i < first_sample_index + length; )
@@ -106,7 +106,7 @@ public class CachedAudioDataSource implements IAudioDataSource
     {
         int i, j, previ, curi;
         boolean alt;
-        double samples[][] = new double[ get_channel_number() ][ resized_length ];
+        float samples[][] = new float[ get_channel_number() ][ resized_length ];
         AudioSamplesWindow win;
 
         previ = -1;
@@ -148,7 +148,7 @@ public class CachedAudioDataSource implements IAudioDataSource
 
                 /*for( i = 0; i < length; i++ )
                 {
-                    curi = ( int )( ( double )i / length * resized_length );
+                    curi = ( int )( ( float )i / length * resized_length );
 
                     if( previ != curi )
                     {

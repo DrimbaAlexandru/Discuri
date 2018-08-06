@@ -10,9 +10,9 @@ import Utils.Interval;
 public class Equalizer_FIR
 {
     private int tap_nr;
-    private double[] b;
+    private float[] b;
 
-    public void apply( double[] x, Interval range ) throws DataSourceException
+    public void apply( float[] x, Interval range ) throws DataSourceException
     {
         Interval applying_range = new Interval( range.l, range.r, false );
         if( x.length < range.r || range.l < 0 )
@@ -26,8 +26,8 @@ public class Equalizer_FIR
         if( tap_nr > 1 )
         {
             int i, j, buf_pos;
-            double newVal;
-            double buffer[] = new double[ tap_nr / 2 ];
+            float newVal;
+            float buffer[] = new float[ tap_nr / 2 ];
             buf_pos = buffer.length - 1;
 
             applying_range.l += tap_nr / 2;
@@ -71,7 +71,7 @@ public class Equalizer_FIR
 
     public Equalizer_FIR( FIR fir )
     {
-        b = new double[ fir.getFf_coeff_nr() ];
+        b = new float[ fir.getFf_coeff_nr() ];
         tap_nr = fir.getFf_coeff_nr();
         System.arraycopy( fir.getFf(), 0, b, 0, tap_nr );
     }

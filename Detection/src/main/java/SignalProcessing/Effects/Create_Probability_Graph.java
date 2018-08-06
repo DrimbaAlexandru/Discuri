@@ -17,8 +17,8 @@ public class Create_Probability_Graph
         final int nn_input_size = 129;
         AudioSamplesWindow win;
         AudioSamplesWindow write_win;
-        double[][] write_samples = new double[ dataSource.get_channel_number() ][];
-        MyPair< Integer, double[] > prediction;
+        float[][] write_samples = new float[ dataSource.get_channel_number() ][];
+        MyPair< Integer, float[] > prediction;
         Interval applying_interval = new Interval( 0, dataSource.get_sample_number() );
 
         applying_interval.limit( nn_input_size / 2, dataSource.get_sample_number() - nn_input_size / 2 );
@@ -31,13 +31,13 @@ public class Create_Probability_Graph
             write_win = new AudioSamplesWindow( write_samples, i, win.get_length() - nn_input_size + 1, dataSource.get_channel_number() );
             for( int ch = 0; ch < win.get_channel_number(); ch++ )
             {
-                Classify_In_Python.send_double_array( win.get_length(), win.getSamples()[ ch ] );
-                prediction = Classify_In_Python.get_double_array();
+                Classify_In_Python.send_float_array( win.get_length(), win.getSamples()[ ch ] );
+                prediction = Classify_In_Python.get_float_array();
                 if( prediction.getLeft() != win.get_length() - nn_input_size + 1 )
                 {
                     throw new DataSourceException( "Received unexpected array length", DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
                 }
-                double probabilities[] = prediction.getRight();
+                float probabilities[] = prediction.getRight();
                 write_samples[ ch ] = probabilities;
             }
             destination.put_samples( write_win );

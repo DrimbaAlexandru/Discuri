@@ -12,17 +12,17 @@ import Utils.Interval;
 public class IIR
 {
     private int ff_coeff_nr;    // P+1 in formula
-    private double[] ff;        // b in formula
+    private float[] ff;        // b in formula
     private int fb_coeff_nr;    // Q+1 in formula
-    private double[] fb;        // a in formula
+    private float[] fb;        // a in formula
 
-    public final static IIR integration_IIR = new IIR( FIR.identity_FIR.getFf(), FIR.identity_FIR.getFf_coeff_nr(), new double[]{ 1, -1 }, 2 );
+    public final static IIR integration_IIR = new IIR( FIR.identity_FIR.getFf(), FIR.identity_FIR.getFf_coeff_nr(), new float[]{ 1, -1 }, 2 );
 
-    public void apply( double[] x, Interval range, boolean use_input_as_output_start ) throws DataSourceException
+    public void apply( float[] x, Interval range, boolean use_input_as_output_start ) throws DataSourceException
     {
         FIR fir = new FIR( ff, ff_coeff_nr );
         int i, j;
-        double newVal;
+        float newVal;
 
         if( x.length < range.r )
         {
@@ -52,13 +52,13 @@ public class IIR
 
     }
 
-    public IIR( double ff_coeffs[], int ff_tap_nr, double fb_coeffs[], int fb_tap_nr )
+    public IIR( float ff_coeffs[], int ff_tap_nr, float fb_coeffs[], int fb_tap_nr )
     {
-        ff = new double[ ff_tap_nr ];
+        ff = new float[ ff_tap_nr ];
         ff_coeff_nr = ff_tap_nr;
         System.arraycopy( ff_coeffs, 0, ff, 0, ff_tap_nr );
 
-        fb = new double[ fb_tap_nr ];
+        fb = new float[ fb_tap_nr ];
         fb_coeff_nr = fb_tap_nr;
         System.arraycopy( fb_coeffs, 0, fb, 0, fb_tap_nr );
     }
@@ -73,12 +73,12 @@ public class IIR
         return fb_coeff_nr;
     }
 
-    public double[] getFb()
+    public float[] getFb()
     {
         return fb;
     }
 
-    public double[] getFf()
+    public float[] getFf()
     {
         return ff;
     }

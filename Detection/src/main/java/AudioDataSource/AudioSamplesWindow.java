@@ -15,12 +15,12 @@ import static Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
  */
 public class AudioSamplesWindow
 {
-    private double samples[][]; /* Access: samples[channel][index] */
+    private float samples[][]; /* Access: samples[channel][index] */
     private Interval interval;
     private int channel_number;
     private boolean modified;
 
-    public AudioSamplesWindow( double _samples[][], int first_sample_index, int length, int _channel_number )
+    public AudioSamplesWindow( float _samples[][], int first_sample_index, int length, int _channel_number )
     {
         samples = _samples;
         interval = new Interval( first_sample_index, length );
@@ -38,7 +38,7 @@ public class AudioSamplesWindow
         return new Interval( interval.l, get_capacity() ).contains( sample_index );
     }
 
-    public double getSample( int sample_index, int channel ) throws DataSourceException
+    public float getSample( int sample_index, int channel ) throws DataSourceException
     {
         try
         {
@@ -59,7 +59,7 @@ public class AudioSamplesWindow
         return 0;
     }
 
-    public void putSample( int sample_index, int channel, double newValue ) throws DataSourceException
+    public void putSample( int sample_index, int channel, float newValue ) throws DataSourceException
     {
         try
         {
@@ -80,7 +80,7 @@ public class AudioSamplesWindow
         }
     }
 
-    public double[][] getSamples()
+    public float[][] getSamples()
     {
         return samples;
     }
@@ -121,7 +121,7 @@ public class AudioSamplesWindow
         return interval;
     }
 
-    public void applyWindow( Function< Double, Double > function )
+    public void applyWindow( Function< Float, Float > function )
     {
         for( int ch = 0; ch < get_channel_number(); ch++ )
         {

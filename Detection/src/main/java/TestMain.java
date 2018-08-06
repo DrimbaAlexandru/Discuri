@@ -39,7 +39,7 @@ public class TestMain {
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\proj_files\\out.wav", 2, 44100, 2 );
             AudioSamplesWindow win;
-            double buffer[][] = new double[ 2 ][ 4410 ];
+            float buffer[][] = new float[ 2 ][ 4410 ];
 
             CachedAudioDataSource cached = new CachedAudioDataSource( wav, 4410, 1024 );
 
@@ -47,7 +47,7 @@ public class TestMain {
             {
                 for( int k = 0; k < buffer.length; k++ )
                 {
-                    buffer[ k ][ i ] = Math.sin( Math.PI * i / 49 );
+                    buffer[ k ][ i ] = ( float )( Math.sin( Math.PI * i / 49 ) );
                 }
             }
 
@@ -64,7 +64,7 @@ public class TestMain {
             {
                 for( int k = 0; k < buffer.length; k++ )
                 {
-                    buffer[ k ][ i ] = Math.sin( Math.PI * i / 49 ) / 2;
+                    buffer[ k ][ i ] = ( float )( Math.sin( Math.PI * i / 49 ) / 2 );
                 }
             }
 
@@ -90,8 +90,8 @@ public class TestMain {
             CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
             WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", 1, 44100, 2 );
 
-            double[] fir = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            double[][] samples = { { -1, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1 } };
+            float[] fir = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            float[][] samples = { { -1, -0.9f, -0.8f, -0.7f, -0.6f, -0.5f, -0.4f, -0.3f, -0.2f, -0.1f, 0, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1 } };
             AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, samples[ 0 ].length, samples.length );
             cache.put_samples( win );
 
@@ -150,7 +150,7 @@ public class TestMain {
                 cache.put_samples( win );
                 i += 2048;
             }
-            double[][] append = new double[ 1 ][ 441000 ];
+            float[][] append = new float[ 1 ][ 441000 ];
             cache.put_samples( new AudioSamplesWindow( append, cache.get_sample_number(), append[0].length, append.length ) );
 
             WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
@@ -176,7 +176,7 @@ public class TestMain {
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Beethoven - Quartet no 4 - IV frg pre RIAA.wav");
             Create_Marker_File create_marker_file = new Create_Marker_File();
-            create_marker_file.setThreshold( 0.5 );
+            create_marker_file.setThreshold( 0.5f );
             create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
 
             ProjectManager.getMarkerFile().writeMarkingsToFile( new OutputStreamWriter( new FileOutputStream( "C:\\Users\\Alex\\Desktop\\generated_markings beet 0.5.txt" ) ) );
@@ -214,43 +214,43 @@ public class TestMain {
 
     public static void main11( String[] args )
     {
-        Function<Double,Double> func=new Function< Double, Double >()
+        Function<Float,Float> func=new Function< Float, Float >()
         {
             @Override
-            public Double apply( Double aDouble )
+            public Float apply( Float aFloat )
             {
-                return Math.sin( ( aDouble + 0.125 ) * 2 * Math.PI ) * 0.5 + Math.sin( ( aDouble - 0.375 ) * 2 * Math.PI * 2 ) * 0.25 + Math.sin( ( aDouble + 0.05 ) * 2 * Math.PI * 8 ) * 0.33;
+                return ( float )( Math.sin( ( aFloat + 0.125f ) * 2 * Math.PI ) * 0.5f + Math.sin( ( aFloat - 0.375f ) * 2 * Math.PI * 2 ) * 0.25f + Math.sin( ( aFloat + 0.05f ) * 2 * Math.PI * 8 ) * 0.33f );
             }
         };
 
         int full_n = 500;
-        double[] full_xs = new double[ full_n ];
-        double[] full_ys = new double[ full_n ];
+        float[] full_xs = new float[ full_n ];
+        float[] full_ys = new float[ full_n ];
 
         int orig_n = 32;
-        double[] orig_xs = new double[ orig_n ];
-        double[] orig_ys = new double[ orig_n ];
+        float[] orig_xs = new float[ orig_n ];
+        float[] orig_ys = new float[ orig_n ];
 
         int approx_n = 200;
-        double[] approx_xs = new double[ approx_n ];
-        double[] approx_ys = new double[ approx_n ];
+        float[] approx_xs = new float[ approx_n ];
+        float[] approx_ys = new float[ approx_n ];
 
         int i;
         for( i = 0; i < full_n; i++ )
         {
-            full_xs[ i ] = i * ( 1.0 / full_n );
+            full_xs[ i ] = i * ( 1.0f / full_n );
             full_ys[ i ] = func.apply( full_xs[ i ] );
         }
 
         for( i = 0; i < orig_n; i++ )
         {
-            orig_xs[ i ] = i * ( 1.0 / orig_n );
+            orig_xs[ i ] = i * ( 1.0f / orig_n );
             orig_ys[ i ] = func.apply( orig_xs[ i ] );
         }
 
         for( i = 0; i < approx_n; i++ )
         {
-            approx_xs[ i ] = i * ( 1.0 / approx_n );
+            approx_xs[ i ] = i * ( 1.0f / approx_n );
         }
 
         FunctionApproximation fa = new FourierInterpolator();
@@ -275,9 +275,9 @@ public class TestMain {
             //WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\test.wav" );
             //WAVFileAudioSource dest = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\dest.wav", wav.get_channel_number(), wav.get_sample_rate(), 2 );
 
-            double[] freqs;
-            double[] resps;
-            MyPair< double[], double[] > r = FIR.get_RIAA_response();
+            float[] freqs;
+            float[] resps;
+            MyPair< float[], float[] > r = FIR.get_RIAA_response();
             freqs = r.getLeft();
             resps = r.getRight();
             plot_in_matlab( freqs, resps, freqs.length );
@@ -333,8 +333,8 @@ public class TestMain {
                 BurgMethod burgMethod = new BurgMethod( win.getSamples()[ k ], 0, win.get_length(), win.get_length() - 1 );
                 System.out.println( "Calculated coeffs" );
                 LinearPrediction lp = new LinearPrediction( burgMethod.get_coeffs(), burgMethod.get_nr_coeffs() );
-                double samples[] = Arrays.copyOf( win.getSamples()[ k ], prediction_length + win.get_length() );
-                lp.predict_forward( samples, win.get_length(), samples.length );
+                float samples[] = Arrays.copyOf( win.getSamples()[ k ], prediction_length + win.get_length() );
+                //lp.predict_forward( samples, win.get_length(), samples.length );
                 System.out.println( "Prediction done" );
                 win.getSamples()[ k ] = samples;
             }
@@ -427,8 +427,8 @@ public class TestMain {
 
     public static void main17( String[] args )
     {
-        double length = 100;
-        double width = 100;
+        float length = 100;
+        float width = 100;
         try
         {
             IFileAudioDataSource src = FileAudioSourceFactory.fromFile( "C:\\Users\\Alex\\Desktop\\groove.wav" );
@@ -455,7 +455,7 @@ public class TestMain {
         {
             ProjectManager.add_from_marker_file( "D:\\marked recordings\\resampled\\andries - dracula blues mark 0,010 96000.txt" );
             IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
-            DataSetGenerator.generate( file, interval, dest, 64, 0.001, 0, 0.75 );
+            DataSetGenerator.generate( file, interval, dest, 64, 0.001f, 0, 0.75f );
         }
         catch( DataSourceException e )
         {

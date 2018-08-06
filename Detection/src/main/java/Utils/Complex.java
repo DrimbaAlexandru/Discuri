@@ -7,7 +7,7 @@ import static java.lang.Math.PI;
  */
 public class Complex
 {
-    private double r, i;
+    private float r, i;
 
     public Complex copy()
     {
@@ -20,13 +20,13 @@ public class Complex
         i = 0;
     }
 
-    public Complex( double re, double im )
+    public Complex( float re, float im )
     {
         r = re;
         i = im;
     }
 
-    public void set( double re, double im )
+    public void set( float re, float im )
     {
         r = re;
         i = im;
@@ -54,39 +54,39 @@ public class Complex
 
     public Complex inc( int n, int N )
     {
-        set( r * ( Math.cos( -2 * PI * n / N ) ) - i * ( Math.sin( -2 * PI * n / N ) ), r * ( Math.sin( -2 * PI * n / N ) ) + i * ( Math.cos( -2 * PI * n / N ) ) );
+        set( ( float )( r * ( Math.cos( -2 * PI * n / N ) ) - i * ( Math.sin( -2 * PI * n / N ) ) ), ( float )( r * ( Math.sin( -2 * PI * n / N ) ) + i * ( Math.cos( -2 * PI * n / N ) ) ) );
         return this;
     }
 
-    public double r()
+    public float r()
     {
         return r;
     }
 
-    public double i()
+    public float i()
     {
         return i;
     }
 
-    public static Complex fromAmplPhase( double A, double theta )
+    public static Complex fromAmplPhase( float A, float theta )
     {
-        return new Complex( A * Math.sin( theta ), A * Math.cos( theta ) );
+        return new Complex( ( float )( A * Math.sin( theta ) ), ( float )( A * Math.cos( theta ) ) );
     }
 
-    public double Ampl()
+    public float Ampl()
     {
-        return Math.sqrt( r * r + i * i );
+        return ( float )( Math.sqrt( r * r + i * i ) );
     }
 
-    public double sinTheta()
+    public float sinTheta()
     {
         if( i == 0 )
         {
-            return PI/2;
+            return ( float )( PI / 2 );
         }
         else
         {
-            return Math.atan( r / i );
+            return ( float )( Math.atan( r / i ) );
         }
     }
 

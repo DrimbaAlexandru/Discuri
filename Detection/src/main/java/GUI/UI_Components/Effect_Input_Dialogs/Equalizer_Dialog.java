@@ -41,7 +41,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
 
     private Equalizer effect = null;
 
-    private final HashMap< String, MyPair< double[], double[] > > equalization_curves = new HashMap<>();
+    private final HashMap< String, MyPair< float[], float[] > > equalization_curves = new HashMap<>();
 
     @Override
     public void show( Window parent ) throws DataSourceException
@@ -84,7 +84,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
                                        {
                                            throw new DataSourceException( "No curve was selected", DataSourceExceptionCause.INVALID_USER_INPUT );
                                        }
-                                       MyPair< double[], double[] > resp = equalization_curves.get( ch_eq_curve.getValue() );
+                                       MyPair< float[], float[] > resp = equalization_curves.get( ch_eq_curve.getValue() );
                                        FIR fir = FIR.fromFreqResponse( resp.getLeft(), resp.getRight(), resp.getLeft().length, sample_rate, filter_length );
                                        effect = new Equalizer();
                                        effect.setFilter( fir );

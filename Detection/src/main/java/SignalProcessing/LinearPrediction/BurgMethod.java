@@ -15,7 +15,7 @@ public class BurgMethod
     private int coeffs;
     private int N;
 
-    public BurgMethod( double[] original, int start_offset, int N, int coeffs )
+    public BurgMethod( float[] original, int start_offset, int N, int coeffs )
     {
         N--;
         k = 0;
@@ -32,7 +32,11 @@ public class BurgMethod
         }
         a[ 0 ] = 1;
         a[ coeffs + 1 ] = 0;
-        x = Arrays.copyOfRange( original, start_offset, start_offset + N + 1 );
+        for( i = 0; i < N + 1; i++ )
+        {
+            x[ i ] = original[ i + start_offset ];
+        }
+        //x = Arrays.copyOfRange( original, start_offset, start_offset + N + 1 );
         f = Arrays.copyOf( x, N + 1 );
         b = Arrays.copyOf( x, N + 1 );
 

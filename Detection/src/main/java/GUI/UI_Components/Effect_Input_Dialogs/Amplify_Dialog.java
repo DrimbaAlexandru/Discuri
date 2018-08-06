@@ -6,6 +6,7 @@ import ProjectManager.ProjectStatics;
 import SignalProcessing.Effects.Equalizer;
 import SignalProcessing.Effects.IEffect;
 import SignalProcessing.Filters.FIR;
+import Utils.Util_Stuff;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -55,12 +56,12 @@ public class Amplify_Dialog implements Effect_UI_Component
         btn_apply.setOnAction( ( ev ) ->
                                {
                                    effect = new Equalizer();
-                                   double amplification = 0;
+                                   float amplification = 0;
                                    try
                                    {
-                                       amplification = Double.parseDouble( txt_gain.getText() );
-                                       amplification = Math.pow( 2, amplification / 6 );
-                                       double[] fir = new double[]{ amplification };
+                                       amplification = Float.parseFloat( txt_gain.getText() );
+                                       float[] fir = new float[]{ amplification };
+                                       Util_Stuff.dB2lin( fir, 1 );
                                        effect = new Equalizer();
                                        effect.setFilter( new FIR( fir, 1 ) );
                                    }

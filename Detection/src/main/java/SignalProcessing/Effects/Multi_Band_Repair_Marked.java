@@ -10,6 +10,7 @@ import MarkerFile.Marking;
 import ProjectManager.ProjectManager;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FourierTransforms.Fourier;
+import Utils.Complex;
 import Utils.Interval;
 import Utils.Util_Stuff;
 
@@ -26,13 +27,13 @@ public class Multi_Band_Repair_Marked implements IEffect
     private int fetch_ratio;
     private int buffer_size;
     private boolean repair_residue = false;
-    private double peak_threshold = 4;
+    private float peak_threshold = 4;
     private boolean compare_with_direct_repair = false;
-    private double progress = 0;
+    private float progress = 0;
 
     public Multi_Band_Repair_Marked()
     {
-        this( 511, 256, 16 );
+        this( 2005, 256, 16 );
     }
 
     public Multi_Band_Repair_Marked( int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
@@ -60,30 +61,35 @@ public class Multi_Band_Repair_Marked implements IEffect
         final int nr_of_bands = band_cutoffs.size();
         final FIR[] filters = new FIR[ nr_of_bands ];
         final int nr_freqs = dataSource.get_sample_rate() / 2 / 50;
-        final double[] freqs = new double[ nr_freqs ];
-        final double[] bp_response = new double[ nr_freqs ]; //this is in dB
-        final double[] prev_response = new double[ nr_freqs ]; //this is linear
+        final float[] freqs = new float[ nr_freqs ];
+        final float[] bp_response = new float[ nr_freqs ]; //this is in dB
+        final float[] prev_response = new float[ nr_freqs ]; //this is linear
 
         for( int i = 0; i < nr_freqs; i++ )
         {
-            freqs[ i ] = 1.0 * i * dataSource.get_sample_rate() / 2 / nr_freqs;
+            freqs[ i ] = 1.0f * i * dataSource.get_sample_rate() / 2 / nr_freqs;
+            prev_response[ i ] = 0.0f;
         }
-        Arrays.setAll( prev_response, x -> 1 );
 
         for( int f = 0; f < nr_of_bands; f++ )
         {
-            Arrays.setAll( bp_response, x -> 0 );
+            for( int i = 0; i < nr_freqs; i++ )
+            {
+                bp_response[ i ] = 0;
+            }
             FIR.add_pass_cut_freq_resp( freqs, bp_response, nr_freqs, band_cutoffs.get( f ), -96, 0 );
 
             Util_Stuff.dB2lin( bp_response, nr_freqs );
             for( int i = 0; i < nr_freqs; i++ )
             {
-                prev_response[ i ] = bp_response[ i ] *= prev_response[ i ];
+                float aux = bp_response[ i ];
+                bp_response[ i ] -= prev_response[ i ];
+                prev_response[ i ] = aux;
             }
             Util_Stuff.lin2dB( bp_response, nr_freqs );
 
             filters[ f ] = FIR.fromFreqResponse( freqs, bp_response, nr_freqs, dataSource.get_sample_rate(), band_pass_filter_length );
-
+            //Util_Stuff.plot_in_matlab( filters[ f ].getFf(), filters[ f ].getFf_coeff_nr() );
         }
 
         /*
@@ -174,14 +180,14 @@ public class Multi_Band_Repair_Marked implements IEffect
                     int spike_det_left_len = Math.min( band_pass_filter_length / 3, repair_interval.l );
                     int spike_det_right_len = Math.min( band_pass_filter_length / 3, dataSource.get_sample_number() - repair_interval.r );
                     AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - spike_det_left_len, rep_len + spike_det_left_len + spike_det_right_len );
-                    double spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, spike_det_left_len, rep_len, spike_det_right_len );
+                    float spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, spike_det_left_len, rep_len, spike_det_right_len );
                     repair_direct = ( spike_ratio > peak_threshold );
                     if( repair_direct )
                     {
                         System.out.println( "Direct repair at on interval " + marking + " with ratio = " + spike_ratio );
                     }
                 }
-
+                repair_direct = false;
                 //Calculate the requested repair OR the direct repair
                 if( !repair_direct )
                 {
@@ -238,6 +244,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                     }
                     //Util_Stuff.plot_in_matlab( repaired_samples, repair_interval.get_length() );
                     //System.out.println( "----" );
+
                     for( i = 0; i < nr_of_bands; i++ )
                     {
                         repairOne.apply( workDS[ i ], repair_dest, repair_interval );
@@ -275,12 +282,12 @@ public class Multi_Band_Repair_Marked implements IEffect
                 }
             }
             marking_index++;
-            progress = 1.0 * marking_index / repair_intervals.size();
+            progress = 1.0f * marking_index / repair_intervals.size();
         }
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }
@@ -295,9 +302,9 @@ public class Multi_Band_Repair_Marked implements IEffect
         this.repair_residue = repair_residue;
     }
 
-    private double get_freq_spike( double[] samples, int start_offset, int left_len, int mid_len, int right_len )
+    private float get_freq_spike( float[] samples, int start_offset, int left_len, int mid_len, int right_len )
     {
-        double left_ampl = 0, mid_ampl = 0, right_ampl = 0;
+        float left_ampl = 0, mid_ampl = 0, right_ampl = 0;
         for( int i = start_offset; i < start_offset + left_len; i++ )
         {
             left_ampl = Math.max( left_ampl, Math.abs( samples[ i ] ) );
@@ -324,7 +331,7 @@ public class Multi_Band_Repair_Marked implements IEffect
         buffer_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + band_pass_filter_length;
     }
 
-    public void setpeak_threshold( double peak_threshold )
+    public void setpeak_threshold( float peak_threshold )
     {
         this.peak_threshold = peak_threshold;
     }

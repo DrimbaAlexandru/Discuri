@@ -26,9 +26,9 @@ class Classify_In_Python
                                               "\"" + ProjectStatics.getPython_classifier_scaler_path() + "\" ";
 
     private static Process proc = null;
-    private static final int double_size = 8;
+    private static final int float_size = 4;
     private static final int int_size = 4;
-    private static final int buffer_size = 1024 * 4 * double_size;
+    private static final int buffer_size = 1024 * 4 * float_size;
     private static final ByteBuffer buffer = ByteBuffer.allocate( buffer_size );
 
     private static void readBytes( int size, InputStream inp ) throws IOException
@@ -95,7 +95,7 @@ class Classify_In_Python
         return proc;
     }
 
-    public static void send_double_array( int length, double[] array ) throws DataSourceException
+    public static void send_float_array( int length, float[] array ) throws DataSourceException
     {
         OutputStream out = getProcess().getOutputStream();
         try
@@ -108,7 +108,7 @@ class Classify_In_Python
 
             for( int i = 0; i < length; i++ )
             {
-                buffer.putDouble( array[ i ] );
+                buffer.putFloat( array[ i ] );
                 if( buffer.position() == buffer.capacity() || i == length - 1 )
                 {
                     out.write( buffer.array(), 0, buffer.position() );
@@ -125,10 +125,10 @@ class Classify_In_Python
         }
     }
 
-    public static MyPair< Integer, double[] > get_double_array() throws DataSourceException
+    public static MyPair< Integer, float[] > get_float_array() throws DataSourceException
     {
         int length = 0;
-        double[] array = null;
+        float[] array = null;
         InputStream inp = getProcess().getInputStream();
 
         try
@@ -138,16 +138,16 @@ class Classify_In_Python
             buffer.rewind();
 
             length = buffer.getInt();
-            array = new double[ length ];
+            array = new float[ length ];
 
             for( int i = 0; i < length; i++ )
             {
                 if( buffer.position() == buffer.capacity() || i == 0 )
                 {
                     buffer.clear();
-                    readBytes( Math.min( buffer_size / double_size * double_size, ( length - i ) * double_size ), inp );
+                    readBytes( Math.min( buffer_size / float_size * float_size, ( length - i ) * float_size ), inp );
                 }
-                array[ i ] = buffer.getDouble();
+                array[ i ] = buffer.getFloat();
             }
         }
         catch( IOException e )
@@ -156,18 +156,18 @@ class Classify_In_Python
             proc = null;
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
         }
-        return new MyPair< Integer, double[] >( length, array );
+        return new MyPair< Integer, float[] >( length, array );
     }
 }
 
 
 public class Create_Marker_File implements IEffect
 {
-    private double threshold = 0.5;
+    private float threshold = 0.5f;
     private int side_extend = 2;
-    private double progress = 0;
+    private float progress = 0;
     //private int moving_average_threshold_side_length = 0;
-    //private double moving_average = 0;
+    //private float moving_average = 0;
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -180,7 +180,7 @@ public class Create_Marker_File implements IEffect
         int chunk_size = 44100;
         final int nn_input_size = 129;
         AudioSamplesWindow win;
-        MyPair< Integer, double[] > prediction;
+        MyPair< Integer, float[] > prediction;
 
         applying_interval.limit( nn_input_size / 2, dataSource.get_sample_number() - nn_input_size / 2 );
         progress = 0;
@@ -194,14 +194,14 @@ public class Create_Marker_File implements IEffect
             //System.out.println( "At sample " + i );
             for( int ch = 0; ch < win.get_channel_number(); ch++ )
             {
-                Classify_In_Python.send_double_array( win.get_length(), win.getSamples()[ ch ] );
-                prediction = Classify_In_Python.get_double_array();
+                Classify_In_Python.send_float_array( win.get_length(), win.getSamples()[ ch ] );
+                prediction = Classify_In_Python.get_float_array();
                 if( prediction.getLeft() != win.get_length() - nn_input_size + 1 )
                 {
                     throw new DataSourceException( "Received unexpected array length", DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
                 }
                 Interval mark = null;
-                double probabilities[] = prediction.getRight();
+                float probabilities[] = prediction.getRight();
                 for( int s = 0; s < prediction.getLeft(); s++ )
                 {
                     if( probabilities[ s ] > threshold )
@@ -229,17 +229,17 @@ public class Create_Marker_File implements IEffect
                 }
             }
             i += win.get_length() - nn_input_size + 1;
-            progress = 1.0 * ( i - applying_interval.l ) / applying_interval.get_length();
+            progress = 1.0f * ( i - applying_interval.l ) / applying_interval.get_length();
         }
     }
 
     @Override
-    public double getProgress()
+    public float getProgress()
     {
         return progress;
     }
 
-    public void setThreshold( double threshold )
+    public void setThreshold( float threshold )
     {
         this.threshold = threshold;
     }

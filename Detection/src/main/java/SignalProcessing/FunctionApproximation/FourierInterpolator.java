@@ -12,12 +12,12 @@ import Utils.Util_Stuff;
 public class FourierInterpolator implements FunctionApproximation
 {
     private Complex[] fft_coeffs = null;
-    private double[] fft_xs = null;
-    private double[] fft_ys = null;
+    private float[] fft_xs = null;
+    private float[] fft_ys = null;
     int N;
 
     @Override
-    public void prepare( double[] xs, double[] ys, int n ) throws DataSourceException
+    public void prepare( float[] xs, float[] ys, int n ) throws DataSourceException
     {
         if( xs.length > n )
         {
@@ -41,24 +41,24 @@ public class FourierInterpolator implements FunctionApproximation
             fft_coeffs[ n - i ].set( 0, 0 );
         }
         N = n;
-        fft_xs = new double[ N ];
-        fft_ys = new double[ N ];
+        fft_xs = new float[ N ];
+        fft_ys = new float[ N ];
         for( int i = 0; i < N; i++ )
         {
-            fft_xs[ i ] = i * ( 1.0 / N );
+            fft_xs[ i ] = i * ( 1.0f / N );
             fft_ys[ i ] = ys[ i ];
         }
     }
 
     @Override
-    public void get_values( double[] int_xs, double[] int_ys, int n ) throws DataSourceException
+    public void get_values( float[] int_xs, float[] int_ys, int n ) throws DataSourceException
     {
         if( n > int_ys.length )
         {
             throw new DataSourceException( "n larger than array size", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
         }
-        double lin_xs[], lin_ys[];
-        int_xs = new double[ n ];
+        float lin_xs[], lin_ys[];
+        int_xs = new float[ n ];
         int lin_n;
 
         if( n <= N )
@@ -71,8 +71,8 @@ public class FourierInterpolator implements FunctionApproximation
         {
             lin_n = Util_Stuff.next_power_of_two( n - 1 );
             Complex[] ifft = new Complex[ lin_n ];
-            lin_xs = new double[ lin_n ];
-            lin_ys = new double[ lin_n ];
+            lin_xs = new float[ lin_n ];
+            lin_ys = new float[ lin_n ];
             for( int i = 0; i < N; i++ )
             {
                 ifft[ i ] = fft_coeffs[ i ];
@@ -84,7 +84,7 @@ public class FourierInterpolator implements FunctionApproximation
             ifft = Fourier.IFFT( ifft, lin_n );
             for( int i = 0; i < lin_n; i++ )
             {
-                lin_xs[ i ] = i * ( 1.0 / lin_n );
+                lin_xs[ i ] = i * ( 1.0f / lin_n );
                 lin_ys[ i ] = ifft[ i ].r();
             }
         }
@@ -93,7 +93,7 @@ public class FourierInterpolator implements FunctionApproximation
         lin.prepare( lin_xs, lin_ys, lin_n );
         for( int i = 0; i < n; i++ )
         {
-            int_xs[ i ] = i * ( 1.0 / n );
+            int_xs[ i ] = i * ( 1.0f / n );
         }
         lin.get_values( int_xs, int_ys, n );
     }

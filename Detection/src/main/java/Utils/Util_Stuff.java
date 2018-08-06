@@ -7,7 +7,7 @@ import SignalProcessing.Windowing.Windowing;
  */
 public class Util_Stuff
 {
-    public static int next_power_of_two( double val )
+    public static int next_power_of_two( float val )
     {
         int p = 1;
         while( p <= val )
@@ -17,7 +17,7 @@ public class Util_Stuff
         return p;
     }
 
-    public static boolean is_power_of_two( double val )
+    public static boolean is_power_of_two( float val )
     {
         int p = 1;
         while( p < val )
@@ -27,57 +27,57 @@ public class Util_Stuff
         return p == val;
     }
 
-    public static void log2lin( double[] x, int n, double base )
+    public static void log2lin( float[] x, int n, float base )
     {
         int i;
         for( i = 0; i <n;i++)
         {
-            x[ i ] = Math.pow( base, x[ i ] );
+            x[ i ] = ( float )( Math.pow( base, x[ i ] ) );
         }
     }
 
-    public static void dB2lin( double[] x, int n )
+    public static void dB2lin( float[] x, int n )
     {
-        Windowing.apply( x, n, s -> 1.0 / 6 );
+        Windowing.apply( x, n, s -> 1.0f / 6 );
         log2lin( x, n, 2 );
     }
 
-    public static void lin2dB( double[] x, int n )
+    public static void lin2dB( float[] x, int n )
     {
         lin2log( x, n, 2 );
-        Windowing.apply( x, n, s -> 6.0 );
+        Windowing.apply( x, n, s -> 6.0f );
     }
 
-    public static void lin2log( double[] x, int n, double base )
+    public static void lin2log( float[] x, int n, float base )
     {
         int i;
         final double factor = Math.log( base );
         for( i = 0; i <n;i++)
         {
-            x[ i ] = Math.log( x[ i ] ) / factor;
+            x[ i ] = ( float )( Math.log( x[ i ] ) / factor );
         }
     }
 
     public static int remap_to_interval( int x, int a1, int b1, int a2, int b2 )
     {
-        double ratio = 1.0 * ( b2 - a2 ) / ( b1 - a1 );
+        float ratio = 1.0f * ( b2 - a2 ) / ( b1 - a1 );
         return ( int )( ( x - a1 ) * ratio ) + a2;
     }
 
-    public static void plot_in_matlab( double[] in, int off1, int n, double[] out, int off2, int m )
+    public static void plot_in_matlab( float[] in, int off1, int n, float[] out, int off2, int m )
     {
         int i;
         System.out.print( "t1 = [ " );
         for( i = 0; i < n - 1; i++ )
         {
-            System.out.print( ( double )i / ( n - 1 ) + ", " );
+            System.out.print( ( float )i / ( n - 1 ) + ", " );
         }
         System.out.println( "1 ];" );
 
         System.out.print( "t2 = [ " );
         for( i = 0; i < m - 1; i++ )
         {
-            System.out.print( ( double )i / ( m - 1 ) + ", " );
+            System.out.print( ( float )i / ( m - 1 ) + ", " );
         }
         System.out.println( "1 ];" );
 
@@ -99,7 +99,7 @@ public class Util_Stuff
         System.out.println( "legend( 'original signal', 'resized signal' );" );
     }
 
-    public static void plot_in_matlab( double[] xs, double[] ys, int n )
+    public static void plot_in_matlab( float[] xs, float[] ys, int n )
     {
         int i;
         System.out.print( "xs = [ " );
@@ -118,12 +118,12 @@ public class Util_Stuff
         System.out.println( "plot( xs, ys, '-' );" );
     }
 
-    public static void plot_in_matlab( double[] ys, int n )
+    public static void plot_in_matlab( float[] ys, int n )
     {
         plot_in_matlab( ys, n, 0, "" );
     }
 
-    public static void plot_in_matlab( double[] ys, int len, int x_start, String postfix )
+    public static void plot_in_matlab( float[] ys, int len, int x_start, String postfix )
     {
         int i;
         System.out.println( "xs" + postfix + " = linspace( " + x_start + ", " + ( x_start + len - 1 ) + ", " + len + " );" );
@@ -137,7 +137,7 @@ public class Util_Stuff
         System.out.println( "plot( xs" + postfix + ", ys" + postfix + ", '-' );" );
     }
 
-    public static void plot_in_matlab( double[] orig_f_xs, double[] orig_f_ys, int orig_f_len,double[] new_xs, double[] new_ys, int new_len )
+    public static void plot_in_matlab( float[] orig_f_xs, float[] orig_f_ys, int orig_f_len,float[] new_xs, float[] new_ys, int new_len )
     {
         int i;
         System.out.print( "orig_f_xs = [ " );
