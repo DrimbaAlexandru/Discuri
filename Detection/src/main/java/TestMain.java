@@ -8,6 +8,7 @@ import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import MarkerFile.*;
 import ProjectManager.*;
 import SignalProcessing.Effects.*;
+import SignalProcessing.Filters.Equalizer_FIR;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;
 import SignalProcessing.FunctionApproximation.FunctionApproximation;
@@ -445,7 +446,7 @@ public class TestMain {
         }
     }
 
-    public static void main( String[] args )
+    public static void main18( String[] args )
     {
         ProjectManager.lock_access();
         String filePath = "D:\\marked recordings\\resampled\\results\\andries\\andries - dracula blues inv riaa.wav";
@@ -475,4 +476,37 @@ public class TestMain {
         }
     }
 
+    public static void main( String[] args )
+    {
+        int nr_samples = 1000000;
+        float samples[] = new float[ nr_samples ];
+        int filter_length = 8191;
+        float filter[] = new float[ filter_length ];
+
+        int i;
+
+        for( i = 0; i < nr_samples; i++ )
+        {
+            samples[ i ] = 1.0f;
+        }
+        for( i = 0; i < filter_length;i++ )
+        {
+            filter[ i ] = 1.0f;
+        }
+
+        long start = System.currentTimeMillis();
+
+        Equalizer_FIR fir = new Equalizer_FIR( new FIR( filter, filter_length ) );
+        try
+        {
+            fir.apply( samples, new Interval( 0, nr_samples ) );
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+
+        long finish = System.currentTimeMillis();
+        System.out.println( "Elapsed time: " + ( finish - start ) + " ms \n" );
+    }
 }

@@ -33,7 +33,7 @@ public class Multi_Band_Repair_Marked implements IEffect
 
     public Multi_Band_Repair_Marked()
     {
-        this( 2005, 256, 16 );
+        this( 511, 256, 16 );
     }
 
     public Multi_Band_Repair_Marked( int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
@@ -177,8 +177,8 @@ public class Multi_Band_Repair_Marked implements IEffect
                 if( !repair_direct && compare_with_direct_repair )
                 {
                     int rep_len = repair_interval.get_length();
-                    int spike_det_left_len = Math.min( band_pass_filter_length / 3, repair_interval.l );
-                    int spike_det_right_len = Math.min( band_pass_filter_length / 3, dataSource.get_sample_number() - repair_interval.r );
+                    int spike_det_left_len = Math.min( band_pass_filter_length / 2, repair_interval.l );
+                    int spike_det_right_len = Math.min( band_pass_filter_length / 2, dataSource.get_sample_number() - repair_interval.r );
                     AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - spike_det_left_len, rep_len + spike_det_left_len + spike_det_right_len );
                     float spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, spike_det_left_len, rep_len, spike_det_right_len );
                     repair_direct = ( spike_ratio > peak_threshold );
@@ -187,7 +187,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                         System.out.println( "Direct repair at on interval " + marking + " with ratio = " + spike_ratio );
                     }
                 }
-                repair_direct = false;
+
                 //Calculate the requested repair OR the direct repair
                 if( !repair_direct )
                 {

@@ -488,6 +488,10 @@ public class Main_window
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_remove_marking );
 
+            mi = new MenuItem( "Extend markings by 1" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_extend_markings );
+
             mi = new MenuItem( "Clear all markings" );
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_clear_markings );
@@ -887,6 +891,33 @@ public class Main_window
         IIR_Filter effect = new IIR_Filter();
         effect.setFilter( IIR.integration_IIR );
         apply_effect( effect, false, true );
+    }
+
+    private void on_extend_markings( @Nullable ActionEvent ev )
+    {
+        if( selection.get_length() < 0 )
+        {
+            return;
+        }
+
+        try
+        {
+            ProjectManager.lock_access();
+            Interval wi = ( selection.get_length() > 0 ) ? new Interval( selection.l, selection.r, false ) : new Interval( 0, sample_number, false );
+            for( Marking m : ProjectManager.getMarkerFile().get_all_markings( wi ) )
+            {
+                ProjectManager.getMarkerFile().addMark( Math.max( 0, m.get_first_marked_sample() - 1 ), Math.min( sample_number - 1, m.get_last_marked_sample() + 1 ), m.getChannel() );
+            }
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+        finally
+        {
+            ProjectManager.release_access();
+            markings_changed = true;
+        }
     }
 
     private void on_add_marking( @Nullable ActionEvent ev )

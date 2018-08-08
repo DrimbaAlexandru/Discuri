@@ -164,7 +164,7 @@ class Classify_In_Python
 public class Create_Marker_File implements IEffect
 {
     private float threshold = 0.5f;
-    private int side_extend = 2;
+    private int side_extend = 0;
     private float progress = 0;
     //private int moving_average_threshold_side_length = 0;
     //private float moving_average = 0;
