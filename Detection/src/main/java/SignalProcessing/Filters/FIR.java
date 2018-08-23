@@ -178,6 +178,11 @@ public class FIR
         return new MyPair<>( Arrays.copyOf( riaa_points, riaa_points.length ), Arrays.copyOf( riaa_resp, riaa_resp.length ) );
     }
 
+    public static MyPair< float[], float[] > get_flat_response()
+    {
+        return new MyPair<>( new float[]{ 1000 }, new float[]{ 0 } );
+    }
+
     public static MyPair< float[], float[] > get_inverse_RIAA_response()
     {
         MyPair< float[], float[] > resp = get_RIAA_response();

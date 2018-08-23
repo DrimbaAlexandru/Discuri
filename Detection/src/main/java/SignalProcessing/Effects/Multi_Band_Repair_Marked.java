@@ -9,8 +9,6 @@ import Exceptions.DataSourceExceptionCause;
 import MarkerFile.Marking;
 import ProjectManager.ProjectManager;
 import SignalProcessing.Filters.FIR;
-import SignalProcessing.FourierTransforms.Fourier;
-import Utils.Complex;
 import Utils.Interval;
 import Utils.Util_Stuff;
 
@@ -23,7 +21,7 @@ public class Multi_Band_Repair_Marked implements IEffect
 {
     final private int band_pass_filter_length;
     private ArrayList< Integer > band_cutoffs = new ArrayList<>();
-    final private int max_repair_size;
+    private int max_repair_size;
     private int fetch_ratio;
     private int buffer_size;
     private boolean repair_residue = false;
@@ -33,7 +31,13 @@ public class Multi_Band_Repair_Marked implements IEffect
 
     public Multi_Band_Repair_Marked()
     {
-        this( 511, 256, 16 );
+        this( 511, 256 + 128, 6 );
+    }
+
+    public void setMax_repair_size( int max_repair_size )
+    {
+        this.max_repair_size = max_repair_size;
+        buffer_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + band_pass_filter_length;
     }
 
     public Multi_Band_Repair_Marked( int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
@@ -108,7 +112,7 @@ public class Multi_Band_Repair_Marked implements IEffect
         /*
         * Effects
         */
-        final Equalizer equalizer = new Equalizer();
+        final FIR_Equalizer equalizer = new FIR_Equalizer();
         final Repair_One repairOne = new Repair_One();
         repairOne.set_fetch_ratio( fetch_ratio );
         /*

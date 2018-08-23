@@ -22,11 +22,11 @@ import java.io.IOException;
 public class Repair_Marked_Dialog implements Effect_UI_Component
 {
     @FXML
-    private Label lbl_lp_coeffs, lbl_spike_thrsh, lbl_drst;
+    private Label lbl_lp_coeffs, lbl_spike_thrsh, lbl_drst, lbl_max_repair_length;
     @FXML
     private CheckBox chk_16000_cut, chk_6000_cut, chk_2000_cut,chk_500_cut,chk_repair_residue, chk_use_direct_repair;
     @FXML
-    private Slider slider_lp_coeffs, slider_spike_thrsh;
+    private Slider slider_lp_coeffs, slider_spike_thrsh, slider_max_repair_length;
     @FXML
     private Button btn_apply, btn_cancel;
 
@@ -60,6 +60,12 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
         lbl_drst.setDisable( !chk_use_direct_repair.isSelected() );
         slider_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
         lbl_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
+        lbl_max_repair_length.setText( String.format( "%d", ( int )slider_max_repair_length.getValue() ) );
+
+        slider_max_repair_length.setOnMouseDragged( ev ->
+                                                    {
+                                                        lbl_max_repair_length.setText( String.format( "%d", ( int )slider_max_repair_length.getValue() ) );
+                                                    } );
 
         slider_lp_coeffs.setOnMouseDragged( ev ->
                                       {
@@ -100,6 +106,7 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
                                        effect.setCompare_with_direct_repair( chk_use_direct_repair.isSelected() );
                                        effect.setFetch_ratio( ( int )slider_lp_coeffs.getValue() );
                                        effect.setpeak_threshold( ( float )slider_spike_thrsh.getValue() );
+                                       effect.setMax_repair_size( ( int )slider_max_repair_length.getValue() );
                                    }
                                    catch( Exception e )
                                    {

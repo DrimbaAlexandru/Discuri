@@ -17,7 +17,6 @@ import SignalProcessing.LinearPrediction.LinearPrediction;
 import Utils.DataSetGenerator;
 import Utils.Interval;
 import Utils.MyPair;
-import Utils.Util_Stuff;
 
 import java.io.*;
 import java.text.ParseException;
@@ -96,7 +95,7 @@ public class TestMain {
             AudioSamplesWindow win = new AudioSamplesWindow( samples, 0, samples[ 0 ].length, samples.length );
             cache.put_samples( win );
 
-            Equalizer effect = new Equalizer();
+            FIR_Equalizer effect = new FIR_Equalizer();
             effect.setMax_chunk_size( 11 );
             effect.setFilter( new FIR( fir, fir.length ) );
             effect.apply( cache, out, new Interval( 0, samples[ 0 ].length, false ) );

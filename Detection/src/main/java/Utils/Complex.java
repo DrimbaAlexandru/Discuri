@@ -52,6 +52,12 @@ public class Complex
         return this;
     }
 
+    public Complex mul( float real)
+    {
+        set( real * r, real * i );
+        return this;
+    }
+
     public Complex inc( int n, int N )
     {
         set( ( float )( r * ( Math.cos( -2 * PI * n / N ) ) - i * ( Math.sin( -2 * PI * n / N ) ) ), ( float )( r * ( Math.sin( -2 * PI * n / N ) ) + i * ( Math.cos( -2 * PI * n / N ) ) ) );

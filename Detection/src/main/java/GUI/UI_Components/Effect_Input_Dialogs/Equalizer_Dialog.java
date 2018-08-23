@@ -3,7 +3,8 @@ package GUI.UI_Components.Effect_Input_Dialogs;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import ProjectManager.ProjectStatics;
-import SignalProcessing.Effects.Equalizer;
+import SignalProcessing.Effects.FFT_Equalizer;
+import SignalProcessing.Effects.FIR_Equalizer;
 import SignalProcessing.Effects.IEffect;
 import SignalProcessing.Filters.FIR;
 import Utils.MyPair;
@@ -39,7 +40,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
     private int sample_rate;
     private int filter_length;
 
-    private Equalizer effect = null;
+    private FIR_Equalizer effect = null;
 
     private final HashMap< String, MyPair< float[], float[] > > equalization_curves = new HashMap<>();
 
@@ -77,7 +78,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
 
         btn_apply.setOnAction( ( ev ) ->
                                {
-                                   effect = new Equalizer();
+                                   effect = new FIR_Equalizer();
                                    try
                                    {
                                        if( ch_eq_curve.getValue() == null )
@@ -86,7 +87,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
                                        }
                                        MyPair< float[], float[] > resp = equalization_curves.get( ch_eq_curve.getValue() );
                                        FIR fir = FIR.fromFreqResponse( resp.getLeft(), resp.getRight(), resp.getLeft().length, sample_rate, filter_length );
-                                       effect = new Equalizer();
+                                       effect = new FIR_Equalizer();
                                        effect.setFilter( fir );
                                    }
                                    catch( Exception e )
@@ -119,6 +120,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
         filter_length = 511;
         equalization_curves.put( "RIAA curve", FIR.get_RIAA_response() );
         equalization_curves.put( "Inverse RIAA curve", FIR.get_inverse_RIAA_response() );
+        equalization_curves.put( "Flat Impulse", FIR.get_flat_response() );
     }
 
     @Override

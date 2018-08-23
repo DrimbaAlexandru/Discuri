@@ -3,7 +3,7 @@ package GUI.UI_Components.Effect_Input_Dialogs;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import ProjectManager.ProjectStatics;
-import SignalProcessing.Effects.Equalizer;
+import SignalProcessing.Effects.FIR_Equalizer;
 import SignalProcessing.Effects.IEffect;
 import SignalProcessing.Filters.FIR;
 import Utils.Util_Stuff;
@@ -33,7 +33,7 @@ public class Amplify_Dialog implements Effect_UI_Component
     private Stage onTop = new Stage();
     private DataSourceException close_exception = null;
 
-    private Equalizer effect = null;
+    private FIR_Equalizer effect = null;
 
     @Override
     public void show( Window parent ) throws DataSourceException
@@ -55,14 +55,14 @@ public class Amplify_Dialog implements Effect_UI_Component
         }
         btn_apply.setOnAction( ( ev ) ->
                                {
-                                   effect = new Equalizer();
+                                   effect = new FIR_Equalizer();
                                    float amplification = 0;
                                    try
                                    {
                                        amplification = Float.parseFloat( txt_gain.getText() );
                                        float[] fir = new float[]{ amplification };
                                        Util_Stuff.dB2lin( fir, 1 );
-                                       effect = new Equalizer();
+                                       effect = new FIR_Equalizer();
                                        effect.setFilter( new FIR( fir, 1 ) );
                                    }
                                    catch( Exception e )

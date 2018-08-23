@@ -490,7 +490,11 @@ public class Main_window
 
             mi = new MenuItem( "Extend markings by 1" );
             menu_markings.getItems().add( mi );
-            mi.setOnAction( this::on_extend_markings );
+            mi.setOnAction( this::on_extend_markings_1 );
+
+            mi = new MenuItem( "Extend markings by 5" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_extend_markings_5 );
 
             mi = new MenuItem( "Clear all markings" );
             menu_markings.getItems().add( mi );
@@ -893,7 +897,17 @@ public class Main_window
         apply_effect( effect, false, true );
     }
 
-    private void on_extend_markings( @Nullable ActionEvent ev )
+    private void on_extend_markings_5( @Nullable ActionEvent ev )
+    {
+        on_extend_markings( ev, 5 );
+    }
+
+    private void on_extend_markings_1( @Nullable ActionEvent ev )
+    {
+        on_extend_markings( ev, 1 );
+    }
+
+    private void on_extend_markings( @Nullable ActionEvent ev, int amount )
     {
         if( selection.get_length() < 0 )
         {
@@ -906,7 +920,7 @@ public class Main_window
             Interval wi = ( selection.get_length() > 0 ) ? new Interval( selection.l, selection.r, false ) : new Interval( 0, sample_number, false );
             for( Marking m : ProjectManager.getMarkerFile().get_all_markings( wi ) )
             {
-                ProjectManager.getMarkerFile().addMark( Math.max( 0, m.get_first_marked_sample() - 1 ), Math.min( sample_number - 1, m.get_last_marked_sample() + 1 ), m.getChannel() );
+                ProjectManager.getMarkerFile().addMark( Math.max( 0, m.get_first_marked_sample() - amount ), Math.min( sample_number - 1, m.get_last_marked_sample() + amount ), m.getChannel() );
             }
         }
         catch( DataSourceException e )

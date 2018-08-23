@@ -107,7 +107,7 @@ public class Repair_in_memory implements IEffect
             Effects
         */
         FIR_Filter fir_filter = new FIR_Filter();
-        Equalizer equalizer = new Equalizer();
+        FIR_Equalizer equalizer = new FIR_Equalizer();
         IIR_with_centered_FIR iir_with_centered_fir = new IIR_with_centered_FIR();
         Repair_One repairOne = new Repair_One();
 

@@ -11,7 +11,7 @@ import Utils.Interval;
 /**
  * Created by Alex on 08.02.2018.
  */
-public class Equalizer implements IEffect
+public class FIR_Equalizer implements IEffect
 {
     private FIR fir_filter = null;
     private int max_chunk_size = 32768;

@@ -7,7 +7,7 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="281.0" prefWidth="260.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="320.0" prefWidth="260.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Button fx:id="btn_cancel" layoutX="149.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Cancel" AnchorPane.bottomAnchor="16.0" AnchorPane.rightAnchor="40.0" />
       <Button fx:id="btn_apply" layoutX="36.0" layoutY="211.0" mnemonicParsing="false" prefWidth="60.0" text="Apply" AnchorPane.bottomAnchor="16.0" AnchorPane.leftAnchor="40.0" />
@@ -37,16 +37,19 @@
          </padding>
       </CheckBox>
       <Label layoutX="6.0" layoutY="173.0" text="LP coefficients: " AnchorPane.leftAnchor="6.0" />
-      <Slider fx:id="slider_lp_coeffs" blockIncrement="4.0" layoutX="96.0" layoutY="173.0" max="32.0" min="1.0" prefHeight="17.0" prefWidth="121.0" value="16.0" AnchorPane.leftAnchor="96.0" />
+      <Slider fx:id="slider_lp_coeffs" blockIncrement="4.0" layoutX="96.0" layoutY="173.0" majorTickUnit="32.0" max="32.0" min="1.0" minorTickCount="8" prefHeight="17.0" prefWidth="121.0" value="16.0" AnchorPane.leftAnchor="96.0" />
       <Label fx:id="lbl_lp_coeffs" layoutX="221.0" layoutY="173.0" prefHeight="17.0" prefWidth="20.0" text="32" AnchorPane.leftAnchor="221.0" />
       <Label layoutX="87.0" layoutY="6.0" text="Repair markings" />
       <Label fx:id="lbl_drst" layoutX="6.0" layoutY="191.0" prefHeight="34.0" prefWidth="93.0" text="Direct repair spike threshold:" wrapText="true" />
-      <Slider fx:id="slider_spike_thrsh" blockIncrement="1.0" layoutX="96.0" layoutY="208.0" max="10.0" min="2.0" prefHeight="17.0" prefWidth="121.0" value="4.0" AnchorPane.leftAnchor="96.0" />
+      <Slider fx:id="slider_spike_thrsh" blockIncrement="1.0" layoutX="96.0" layoutY="208.0" majorTickUnit="1.0" max="10.0" min="2.0" minorTickCount="0" prefHeight="17.0" prefWidth="121.0" showTickMarks="true" value="4.0" AnchorPane.leftAnchor="96.0" />
       <Label fx:id="lbl_spike_thrsh" layoutX="221.0" layoutY="208.0" prefHeight="17.0" prefWidth="34.0" text="10.0" AnchorPane.leftAnchor="221.0" />
       <CheckBox fx:id="chk_16000_cut" layoutX="16.0" layoutY="36.0" mnemonicParsing="false" text="16000Hz cutoff">
          <padding>
             <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
          </padding>
       </CheckBox>
+      <Label fx:id="lbl_drst1" layoutX="6.0" layoutY="225.0" prefHeight="34.0" prefWidth="93.0" text="Max. repair length:" wrapText="true" />
+      <Slider fx:id="slider_max_repair_length" blockIncrement="128.0" layoutX="96.0" layoutY="243.0" majorTickUnit="128.0" max="1024.0" min="128.0" minorTickCount="0" prefHeight="17.0" prefWidth="121.0" showTickMarks="true" value="256.0" />
+      <Label fx:id="lbl_max_repair_length" layoutX="221.0" layoutY="243.0" prefHeight="17.0" prefWidth="34.0" text="256" />
    </children>
 </AnchorPane>
