@@ -12,21 +12,32 @@ import Utils.Util_Stuff;
 public class FourierInterpolator implements FunctionApproximation
 {
     private Complex[] fft_coeffs = null;
-    private float[] fft_xs = null;
-    private float[] fft_ys = null;
+    float dxs = 1;
     int N;
 
-    @Override
-    public void prepare( float[] xs, float[] ys, int n ) throws DataSourceException
+    /**
+     * This method assumes xs are equidistant; xs[0] = 0, xs[1] = 1, ... , xs[n-1] = n-1.
+     * @param ys
+     * @param n
+     * @throws DataSourceException
+     */
+    public void prepare( float[] ys, int n ) throws DataSourceException
     {
-        if( xs.length > n )
+        if( ys.length > n )
         {
-            throw new DataSourceException( "n larger than array size", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
+            throw new DataSourceException( "n larger than array size", DataSourceExceptionCause.INVALID_PARAMETER );
         }
         if( !Util_Stuff.is_power_of_two( n ) )
         {
-            throw new DataSourceException( "n must be a power of 2", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
+            throw new DataSourceException( "n must be a power of 2", DataSourceExceptionCause.INVALID_PARAMETER );
         }
+        if( n < 2 )
+        {
+            throw new DataSourceException( "n must be at least 2", DataSourceExceptionCause.INVALID_PARAMETER );
+        }
+
+        dxs = 1;
+
         Complex[] signal = new Complex[ n ];
         for( int i = 0; i < n; i++ )
         {
@@ -41,60 +52,35 @@ public class FourierInterpolator implements FunctionApproximation
             fft_coeffs[ n - i ].set( 0, 0 );
         }
         N = n;
-        fft_xs = new float[ N ];
-        fft_ys = new float[ N ];
-        for( int i = 0; i < N; i++ )
+    }
+
+    @Override
+    public void prepare( float[] xs, float[] ys, int n ) throws DataSourceException
+    {
+        dxs = xs[ 1 ] - xs[ 0 ];
+        float tolerance = Math.ulp( Math.max( 1.0f, dxs ) );
+        for( int i = 2; i < n; i++ )
         {
-            fft_xs[ i ] = i * ( 1.0f / N );
-            fft_ys[ i ] = ys[ i ];
+            if( Math.abs( ( xs[ i ] - xs[ i - 1 ] ) - dxs ) > tolerance * 2 )
+            {
+                throw new DataSourceException( "x values are not equidistant" );
+            }
         }
+        prepare( ys, n );
+        dxs = xs[ 1 ] - xs[ 0 ];
     }
 
     @Override
     public void get_values( float[] int_xs, float[] int_ys, int n ) throws DataSourceException
     {
-        if( n > int_ys.length )
+        if( n > int_ys.length || n > int_xs.length )
         {
             throw new DataSourceException( "n larger than array size", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
         }
-        float lin_xs[], lin_ys[];
-        int_xs = new float[ n ];
-        int lin_n;
 
-        if( n <= N )
-        {
-            lin_xs = fft_xs;
-            lin_ys = fft_ys;
-            lin_n = N;
-        }
-        else
-        {
-            lin_n = Util_Stuff.next_power_of_two( n - 1 );
-            Complex[] ifft = new Complex[ lin_n ];
-            lin_xs = new float[ lin_n ];
-            lin_ys = new float[ lin_n ];
-            for( int i = 0; i < N; i++ )
-            {
-                ifft[ i ] = fft_coeffs[ i ];
-            }
-            for( int i = N; i < lin_n; i++ )
-            {
-                ifft[ i ] = new Complex();
-            }
-            ifft = Fourier.IFFT( ifft, lin_n );
-            for( int i = 0; i < lin_n; i++ )
-            {
-                lin_xs[ i ] = i * ( 1.0f / lin_n );
-                lin_ys[ i ] = ifft[ i ].r();
-            }
-        }
-
-        LinearInterpolation lin = new LinearInterpolation();
-        lin.prepare( lin_xs, lin_ys, lin_n );
         for( int i = 0; i < n; i++ )
         {
-            int_xs[ i ] = i * ( 1.0f / n );
+            int_ys[ i ] = Fourier.IDFT( int_xs[ i ] / dxs, fft_coeffs, N );
         }
-        lin.get_values( int_xs, int_ys, n );
     }
 }

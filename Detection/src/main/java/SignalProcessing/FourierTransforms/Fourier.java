@@ -81,4 +81,15 @@ public class Fourier
         }
         return new Complex( cos_comp, sin_comp );
     }
+
+    public static float IDFT( float x, Complex[] f, int N )
+    {
+        float value = 0;
+        int i;
+        for( i = 0; i < N; i++ )
+        {
+            value += f[ i ].i() * Math.sin( -2 * Math.PI * i * x / N ) + f[ i ].r() * Math.cos( -2 * Math.PI * i * x / N );
+        }
+        return value;
+    }
 }

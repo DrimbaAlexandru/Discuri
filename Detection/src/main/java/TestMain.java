@@ -10,13 +10,12 @@ import ProjectManager.*;
 import SignalProcessing.Effects.*;
 import SignalProcessing.Filters.Equalizer_FIR;
 import SignalProcessing.Filters.FIR;
+import SignalProcessing.FourierTransforms.Fourier;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;
 import SignalProcessing.FunctionApproximation.FunctionApproximation;
 import SignalProcessing.LinearPrediction.BurgMethod;
 import SignalProcessing.LinearPrediction.LinearPrediction;
-import Utils.DataSetGenerator;
-import Utils.Interval;
-import Utils.MyPair;
+import Utils.*;
 
 import java.io.*;
 import java.text.ParseException;
@@ -257,7 +256,7 @@ public class TestMain {
         try
         {
             fa.prepare( orig_xs, orig_ys, orig_n );
-            fa.get_values( null, approx_ys, approx_n );
+            fa.get_values( approx_xs, approx_ys, approx_n );
             plot_in_matlab( orig_xs, orig_ys, orig_n, approx_xs, approx_ys, approx_n );
             plot_in_matlab( full_xs, full_ys, full_n, approx_xs, approx_ys, approx_n );
         }
@@ -477,35 +476,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        int nr_samples = 1000000;
-        float samples[] = new float[ nr_samples ];
-        int filter_length = 8191;
-        float filter[] = new float[ filter_length ];
-
-        int i;
-
-        for( i = 0; i < nr_samples; i++ )
-        {
-            samples[ i ] = 1.0f;
-        }
-        for( i = 0; i < filter_length;i++ )
-        {
-            filter[ i ] = 1.0f;
-        }
-
-        long start = System.currentTimeMillis();
-
-        Equalizer_FIR fir = new Equalizer_FIR( new FIR( filter, filter_length ) );
-        try
-        {
-            fir.apply( samples, new Interval( 0, nr_samples ) );
-        }
-        catch( DataSourceException e )
-        {
-            e.printStackTrace();
-        }
-
-        long finish = System.currentTimeMillis();
-        System.out.println( "Elapsed time: " + ( finish - start ) + " ms \n" );
+        main11( args );
     }
 }
