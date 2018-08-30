@@ -430,11 +430,15 @@ public class TestMain {
         float width = 100;
         try
         {
-            IFileAudioDataSource src = FileAudioSourceFactory.fromFile( "C:\\Users\\Alex\\Desktop\\groove.wav" );
-            IFileAudioDataSource dst = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\sweep " + String.format( "%.1f", length ) + "um l " + String.format( "%.1f", width ) + "um w.wav", src.get_channel_number(), src.get_sample_rate(), 2 );
+            IFileAudioDataSource src = FileAudioSourceFactory.fromFile( "C:\\Users\\Alex\\Desktop\\sweep.wav" );
+            IFileAudioDataSource dst = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\retrack " + String.format( "%.1f", length ) + "um l " + String.format( "%.1f", width ) + "um w.wav", src.get_channel_number(), src.get_sample_rate(), 2 );
             Groove_Retracking eff = new Groove_Retracking();
+            eff.setResample_rate_factor( 2 );
+            eff.setDrop_size( 12 );
             eff.setStylus_width( width );
             eff.setStylus_length( length );
+            eff.setChunk_size( 64 );
+
             eff.apply( src, dst, new Interval( 0, src.get_sample_number() ) );
             dst.close();
         }
@@ -476,6 +480,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        main11( args );
+        main17( args );
     }
 }
