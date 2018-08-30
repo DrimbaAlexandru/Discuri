@@ -13,6 +13,7 @@ public class FourierInterpolator implements FunctionApproximation
 {
     private Complex[] fft_coeffs = null;
     float dxs = 1;
+    float x0 = 0;
     int N;
 
     /**
@@ -37,6 +38,7 @@ public class FourierInterpolator implements FunctionApproximation
         }
 
         dxs = 1;
+        x0 = 0;
 
         Complex[] signal = new Complex[ n ];
         for( int i = 0; i < n; i++ )
@@ -68,6 +70,7 @@ public class FourierInterpolator implements FunctionApproximation
         }
         prepare( ys, n );
         dxs = xs[ 1 ] - xs[ 0 ];
+        x0 = xs[ 0 ];
     }
 
     @Override
@@ -80,7 +83,26 @@ public class FourierInterpolator implements FunctionApproximation
 
         for( int i = 0; i < n; i++ )
         {
-            int_ys[ i ] = Fourier.IDFT( int_xs[ i ] / dxs, fft_coeffs, N );
+            int_ys[ i ] = Fourier.IDFT( ( int_xs[ i ] - x0 ) / dxs, fft_coeffs, N );
+        }
+    }
+
+    /**
+     * Assumes int_xs are n equidistant values in [0, N], where N is the maximum x value of the preparation step
+     * @param int_ys
+     * @param n
+     * @throws DataSourceException
+     */
+    public void get_values( float[] int_ys, int n ) throws DataSourceException
+    {
+        if( n > int_ys.length )
+        {
+            throw new DataSourceException( "n larger than array size", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
+        }
+
+        for( int i = 0; i < n; i++ )
+        {
+            int_ys[ i ] = Fourier.IDFT( i * N * dxs / n, fft_coeffs, N );
         }
     }
 }
