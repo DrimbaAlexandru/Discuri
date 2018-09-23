@@ -391,19 +391,20 @@ public class TestMain {
     {
         try
         {
-            int old_sample_number = 33965440, new_sample_number = 25927817;
+            Interval orig_interval = new Interval( 0, 251238336 );
+            Interval new_interval = new Interval( -231380243, 251238336 );
             ProjectManager.lock_access();
             System.out.println( "Reading" );
-            ProjectManager.add_from_marker_file( "D:\\training sets\\Beethoven - Quartet no 4 - IV mark s 2 m 1 0,0150.txt" );
-            List< Marking > markings = ProjectManager.getMarkerFile().get_all_markings( new Interval( 0, old_sample_number ) );
+            ProjectManager.add_from_marker_file( "C:\\Users\\Alex\\Desktop\\marking alfred toccata.txt" );
+            List< Marking > markings = ProjectManager.getMarkerFile().get_all_markings( orig_interval );
             MarkerFile new_markerfile = new MarkerFile();
             System.out.println( "Processing" );
             for( Marking m : markings )
             {
-                new_markerfile.addMark( remap_to_interval( m.get_first_marked_sample(), 0, old_sample_number, 0, new_sample_number ), remap_to_interval( m.get_last_marked_sample(), 0, old_sample_number, 0, new_sample_number ), m.getChannel() );
+                new_markerfile.addMark( remap_to_interval( m.get_first_marked_sample(), orig_interval.l, orig_interval.r, new_interval.l, new_interval.r ), remap_to_interval( m.get_last_marked_sample(), orig_interval.l, orig_interval.r, new_interval.l, new_interval.r ), m.getChannel() );
             }
             System.out.println( "Writing" );
-            new_markerfile.writeMarkingsToFile( new FileWriter( "D:\\training sets\\resampled\\Beethoven - Quartet no 4 - IV mark s 2 m 1 0,0150.txt" ) );
+            new_markerfile.writeMarkingsToFile( new FileWriter( "C:\\Users\\Alex\\Desktop\\marking alfred toccata r.txt" ) );
             System.out.println( "Done" );
         }
         catch( DataSourceException e )
@@ -476,6 +477,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        main11( args );
+        main16( args );
     }
 }

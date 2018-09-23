@@ -60,7 +60,7 @@ public class Util_Stuff
 
     public static int remap_to_interval( int x, int a1, int b1, int a2, int b2 )
     {
-        float ratio = 1.0f * ( b2 - a2 ) / ( b1 - a1 );
+        double ratio = 1.0f * ( b2 - a2 ) / ( b1 - a1 );
         return ( int )( ( x - a1 ) * ratio ) + a2;
     }
 

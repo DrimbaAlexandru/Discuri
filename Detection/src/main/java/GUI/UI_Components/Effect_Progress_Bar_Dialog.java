@@ -26,6 +26,8 @@ public class Effect_Progress_Bar_Dialog
     private ProgressIndicator progress_bar;
     @FXML
     private Label lbl_progress;
+    @FXML
+    private Label lbl_time_remaining;
 
     private Pane main_layout;
     private Stage onTop = new Stage();
@@ -35,6 +37,14 @@ public class Effect_Progress_Bar_Dialog
     private Interval applying_interval;
     private boolean finished_working = false;
     private final boolean create_new_project_version;
+
+    private long ms_started = System.currentTimeMillis() - 1;
+    private long ms_last_progress_update = ms_started;
+    private float last_progress = 0;
+    private float progress_delta = 0;
+    private long progress_ms_delta = 1;
+    private long ms_est_end = ms_started + 1;
+    private final long min_progress_ms_delta = 5000;
 
     private void worker_thread()
     {
@@ -63,6 +73,7 @@ public class Effect_Progress_Bar_Dialog
 
     private void UI_updater_thread()
     {
+        ms_started = System.currentTimeMillis() - 1;
         while( !onTop.isShowing() )
         {
             try
@@ -78,8 +89,31 @@ public class Effect_Progress_Bar_Dialog
         {
             Platform.runLater( () ->
                                {
-                                   progress_bar.setProgress( effect.getProgress() );
-                                   lbl_progress.setText( ( int )( effect.getProgress() * 100 ) + " %" );
+                                   if( effect.getProgress() != last_progress )
+                                   {
+                                       if( System.currentTimeMillis() - ms_last_progress_update >= min_progress_ms_delta )
+                                       {
+                                           progress_ms_delta = System.currentTimeMillis() - ms_last_progress_update;
+                                           progress_delta = effect.getProgress() - last_progress;
+
+                                           ms_last_progress_update = System.currentTimeMillis();
+                                           last_progress = effect.getProgress();
+                                           ms_est_end = ms_started + ( long )( 1.0 / progress_delta * progress_ms_delta );
+                                       }
+                                       progress_bar.setProgress( effect.getProgress() );
+                                       lbl_progress.setText( String.format( "%.2f%%", effect.getProgress() * 100 ) );
+                                   }
+
+                                   if( progress_delta != 0 )
+                                   {
+                                       long remaining_time = ms_est_end - System.currentTimeMillis();
+                                       lbl_time_remaining.setText( String.format( "Remaining: %02dh:%02dm:%02ds", remaining_time / 1000 / 60 / 60, remaining_time / 1000 / 60 % 60, remaining_time / 1000 % 60 ) );
+                                   }
+                                   else
+                                   {
+                                       lbl_time_remaining.setText( "Remaining: TBA" );
+                                   }
+
                                } );
             try
             {
