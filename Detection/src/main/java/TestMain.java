@@ -2,6 +2,7 @@ import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
+import AudioDataSource.MemoryADS.InMemoryADS;
 import Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
@@ -427,21 +428,61 @@ public class TestMain {
 
     public static void main17( String[] args )
     {
-        float length = 100;
-        float width = 100;
         try
         {
-            IFileAudioDataSource src = FileAudioSourceFactory.fromFile( "C:\\Users\\Alex\\Desktop\\sweep.wav" );
-            IFileAudioDataSource dst = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\retrack " + String.format( "%.1f", length ) + "um l " + String.format( "%.1f", width ) + "um w.wav", src.get_channel_number(), src.get_sample_rate(), 2 );
+            float width = 5;
+            float length = 19;
+            IFileAudioDataSource src1 = FileAudioSourceFactory.fromFile( "C:\\Users\\Alex\\Desktop\\impulse.wav" );
+            CachedAudioDataSource src = new CachedAudioDataSource( src1, 100000, 10000 );
+            IFileAudioDataSource dst = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\retrack invriia " + String.format( "%.1f", length ) + "um l " + String.format( "%.1f", width ) + "um w.wav", src.get_channel_number(), src.get_sample_rate(), 2 );
+            //InMemoryADS dst = new InMemoryADS( src.get_sample_number(), src.get_channel_number(), src.get_sample_rate() );
+
+            double ch_dif, min_ch_dif = 100000;
+            float min_w = -1, min_l = -1;
             Groove_Retracking eff = new Groove_Retracking();
+/*
+            for( width = 5; width <= 20; width += 2 )
+            {
+                for( length = 5; length <= 20; length += 2 )
+                {
+                    System.out.println( width + ", " + length );
+                    eff.setResample_rate_factor( 2 );
+                    eff.setDrop_size( 4 );
+                    eff.setStylus_width( width );
+                    eff.setStylus_length( length );
+                    eff.setChunk_size( 32 );
+                    eff.setUpside_down( true );
+                    eff.setGroove_max_ampl_um( 100 );
+
+                    eff.apply( src, dst, new Interval( 0, src.get_sample_number() ) );
+                    ch_dif = 0;
+                    AudioSamplesWindow win = dst.get_samples( 0, dst.get_sample_number() );
+                    for( int i = 0; i < win.get_length(); i++ )
+                    {
+                        ch_dif += Math.abs( win.getSamples()[ 1 ][ i ] - win.getSamples()[ 0 ][ i ] );
+                    }
+                    if( ch_dif / win.get_length() <= min_ch_dif )
+                    {
+                        min_w = width;
+                        min_l = length;
+                        min_ch_dif = ch_dif / win.get_length();
+                    }
+                }
+            }
+
+            System.out.println( "W: " + min_w + "; L: " + min_l +"; Dif: " + min_ch_dif);
+*/
+
             eff.setResample_rate_factor( 2 );
-            eff.setDrop_size( 12 );
+            eff.setDrop_size( 4 );
             eff.setStylus_width( width );
             eff.setStylus_length( length );
-            eff.setChunk_size( 64 );
-
+            eff.setChunk_size( 32 );
+            eff.setUpside_down( true );
+            eff.setGroove_max_ampl_um( 100 );
             eff.apply( src, dst, new Interval( 0, src.get_sample_number() ) );
             dst.close();
+
         }
         catch( DataSourceException e )
         {

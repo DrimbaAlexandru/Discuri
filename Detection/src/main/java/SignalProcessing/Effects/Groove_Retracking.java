@@ -5,6 +5,7 @@ import AudioDataSource.IAudioDataSource;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;
+import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
 import Utils.Stylus;
 import Utils.Util_Stuff;
@@ -18,7 +19,7 @@ public class Groove_Retracking implements IEffect
     private float progress = 0;
     private float stylus_width = 1;//in micrometers
     private float stylus_length = 1;//in micrometers
-    private float groove_max_ampl_um = 80;
+    private float groove_max_ampl_um = 100;
     private int chunk_size = 64;
     private int drop_size = 8;
     private int resample_rate_factor = 1;
@@ -72,7 +73,7 @@ public class Groove_Retracking implements IEffect
         }
 
         //Build the stylus for the interval's end to get the usable samples count
-        stylus = new Stylus( stylus_width / groove_max_ampl_um, stylus_length, 33 + 1.0f / 3, 3 * 25.4f, dataSource.get_sample_rate() * resample_rate_factor );
+        stylus = new Stylus( stylus_width / groove_max_ampl_um, stylus_length, 33 + 1.0f / 3, 2.6563f * 25.4f, dataSource.get_sample_rate() * resample_rate_factor );
         interval.limit( interval.l, dataSource.get_sample_number() - drop_size - (stylus.getSide_length() + resample_rate_factor - 1 ) / resample_rate_factor );
 
         sample_last_stylus_built = interval.l;
@@ -111,6 +112,8 @@ public class Groove_Retracking implements IEffect
 
             for( int k = 0; k < Math.min( 2, win.get_channel_number() ); k++ )
             {
+                Windowing.apply( win.getSamples()[ k ], 0, drop_size, Windowing.inv_cos_sq_window );
+                Windowing.apply( win.getSamples()[ k ], chunk_size - drop_size, drop_size, Windowing.cos_sq_window );
                 interpolator.prepare( win.getSamples()[ k ], chunk_size );
                 interpolator.get_values( work_array, chunk_size * resample_rate_factor );
 
