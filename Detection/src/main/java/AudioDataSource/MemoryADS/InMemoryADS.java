@@ -71,10 +71,10 @@ public class InMemoryADS implements IAudioDataSource
     @Override
     public void put_samples( AudioSamplesWindow new_samples ) throws DataSourceException
     {
-        if( new_samples.get_first_sample_index() > buffered_interval.r )
+        /*if( new_samples.get_first_sample_index() > buffered_interval.r )
         {
             throw new DataSourceException( "FRAIERE!!!" );
-        }
+        }*/
         if( new_samples.get_length() > capacity )
         {
             throw new DataSourceException( "Write operation larger than ADS capacity", DataSourceExceptionCause.NOT_ENOUGH_SPACE );
