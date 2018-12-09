@@ -58,6 +58,11 @@ public class Util_Stuff
         }
     }
 
+    public static float log( float x, float base )
+    {
+        return ( float )( Math.log( x ) / Math.log( base ) );
+    }
+
     public static int remap_to_interval( int x, int a1, int b1, int a2, int b2 )
     {
         double ratio = 1.0f * ( b2 - a2 ) / ( b1 - a1 );

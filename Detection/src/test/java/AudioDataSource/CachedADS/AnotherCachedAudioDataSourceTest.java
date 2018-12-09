@@ -36,7 +36,7 @@ public class AnotherCachedAudioDataSourceTest
         {
             for( i = in_file_data.get_first_sample_index(); i < in_file_data.get_after_last_sample_index(); i++ )
             {
-                samples[ k ][ i ] = 1.0f / 2 * Math.sin( 2 * Math.PI * ( k + 1 ) * i * ( dataSource.get_sample_rate() / 100 ) );
+                samples[ k ][ i ] = ( float )( 1.0f / 2 * Math.sin( 2 * Math.PI * ( k + 1 ) * i * ( dataSource.get_sample_rate() / 100 ) ) );
             }
         }
         dataSource.put_samples( in_file_data );

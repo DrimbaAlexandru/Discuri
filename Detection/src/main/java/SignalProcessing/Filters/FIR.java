@@ -130,7 +130,7 @@ public class FIR
         int f = 0;
         for( i = ( filter_length ) / 2; i >= 0; i-- )
         {
-            final_filter[ filter_length - i - 1 ] = final_filter[ i ] = ifft_out[ f ].r();
+            final_filter[ filter_length - i - 1 ] = final_filter[ i ] = ifft_out[ f ].r;
             f++;
         }
         Windowing.apply( final_filter, filter_length, Windowing.Blackman_window );

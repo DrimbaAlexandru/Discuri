@@ -51,7 +51,8 @@ public class FourierInterpolator implements FunctionApproximation
             //fft_coeffs[ i ].add( fft_coeffs[ n - i ] );
             //fft_coeffs[ i ] = Complex.fromAmplPhase( fft_coeffs[ i ].Ampl() + fft_coeffs[ n - i ].Ampl(), fft_coeffs[ i ].sinTheta() + Math.PI );
             fft_coeffs[ i ].mul( new Complex( 2, 0 ) );
-            fft_coeffs[ n - i ].set( 0, 0 );
+            fft_coeffs[ n - i ].r = 0;
+            fft_coeffs[ n - i ].i = 0;
         }
         N = n;
     }

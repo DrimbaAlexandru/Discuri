@@ -354,31 +354,36 @@ public class TestMain {
         try
         {
             ProjectManager.lock_access();
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth inv riaa.wav" );
-            CachedAudioDataSource dest = new CachedAudioDataSource( new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\ch 2000 500 var thresh 8.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() ), 50000, 2048 );
-            new Copy_to_ADS().apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
-            ProjectManager.add_from_marker_file( "C:\\Users\\Alex\\Desktop\\chopin valtz op posth mark h 0,003 + l 0,005.txt" );
-            Multi_Band_Repair_Marked repair_marked = new Multi_Band_Repair_Marked( 511, 512, 16 );
-            repair_marked.getBand_cutoffs().add( 2000 );
-            repair_marked.getBand_cutoffs().add( 500 );
-            //repair_marked.setRepair_residue( true );
-            repair_marked.setCompare_with_direct_repair( true );
-            /*Repair_in_memory repair_marked = new Repair_in_memory();
-            repair_marked.setBandpass_cutoff_frqs( 2000, -1 );
-            repair_marked.setWork_on_band_pass( true );*/
-            repair_marked.apply( wav, dest, new Interval( 0, wav.get_sample_number() ) );
-            dest.flushAll();
-            dest.close();
+            WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\signal.wav" );
+            WAVFileAudioSource dst_FFT = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fft.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+            WAVFileAudioSource dst_FIR = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fir.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+            long start_ms;
+
+            FFT_Equalizer filter = new FFT_Equalizer();
+            FIR_Equalizer fir_filter = new FIR_Equalizer();
+            FIR fir = FIR.fromFreqResponse( FIR.get_RIAA_response().getLeft(), FIR.get_RIAA_response().getRight(), FIR.get_RIAA_response().getLeft().length, src.get_sample_rate(), 8191 );
+            filter.setFilter( fir );
+            fir_filter.setFilter( fir );
+            filter.setFFT_length( 1024 * 32 );
+            fir_filter.setMax_chunk_size( 1024 * 32 );
+
+            start_ms = System.currentTimeMillis();
+            System.out.println( "FFT:" );
+            filter.apply( src, dst_FFT, new Interval( 0, src.get_sample_number() ) );
+            System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
+
+            start_ms = System.currentTimeMillis();
+            System.out.println( "FIR:" );
+            fir_filter.apply( src, dst_FIR, new Interval( 0, src.get_sample_number() ) );
+            System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
+
+            System.out.println( "Closing..." );
+
+            src.close();
+            dst_FFT.close();
+            dst_FIR.close();
         }
         catch( DataSourceException e )
-        {
-            e.printStackTrace();
-        }
-        catch( FileNotFoundException e )
-        {
-            e.printStackTrace();
-        }
-        catch( ParseException e )
         {
             e.printStackTrace();
         }
@@ -522,6 +527,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        main16( args );
+        main15( args );
     }
 }

@@ -7,7 +7,9 @@ import static java.lang.Math.PI;
  */
 public class Complex
 {
-    private float r, i;
+    public float r, i;
+
+    private static Complex temp = new Complex();
 
     public Complex copy()
     {
@@ -21,12 +23,6 @@ public class Complex
     }
 
     public Complex( float re, float im )
-    {
-        r = re;
-        i = im;
-    }
-
-    public void set( float re, float im )
     {
         r = re;
         i = im;
@@ -48,30 +44,25 @@ public class Complex
 
     public Complex mul( Complex other )
     {
-        set( r * other.r - i * other.i, i * other.r + r * other.i );
+        temp.r = this.r;
+        this.r = r * other.r - i * other.i;
+        this.i = i * other.r + temp.r * other.i;
         return this;
     }
 
-    public Complex mul( float real)
+    public Complex mul( float real )
     {
-        set( real * r, real * i );
+        this.r *= real;
+        this.i *= real;
         return this;
     }
 
     public Complex inc( int n, int N )
     {
-        set( ( float )( r * ( Math.cos( -2 * PI * n / N ) ) - i * ( Math.sin( -2 * PI * n / N ) ) ), ( float )( r * ( Math.sin( -2 * PI * n / N ) ) + i * ( Math.cos( -2 * PI * n / N ) ) ) );
+        temp.r = this.r;
+        this.r = ( float )( r * ( Math.cos( -2 * PI * n / N ) ) - i * ( Math.sin( -2 * PI * n / N ) ) );
+        this.i = ( float )( temp.r * ( Math.sin( -2 * PI * n / N ) ) + i * ( Math.cos( -2 * PI * n / N ) ) );
         return this;
-    }
-
-    public float r()
-    {
-        return r;
-    }
-
-    public float i()
-    {
-        return i;
     }
 
     public static Complex fromAmplPhase( float A, float theta )

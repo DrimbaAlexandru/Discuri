@@ -49,7 +49,7 @@
          </padding>
       </CheckBox>
       <Label fx:id="lbl_drst1" layoutX="6.0" layoutY="225.0" prefHeight="34.0" prefWidth="93.0" text="Max. repair length:" wrapText="true" />
-      <Slider fx:id="slider_max_repair_length" blockIncrement="128.0" layoutX="96.0" layoutY="243.0" majorTickUnit="128.0" max="1024.0" min="128.0" minorTickCount="0" prefHeight="17.0" prefWidth="121.0" showTickMarks="true" value="256.0" />
+      <Slider fx:id="slider_max_repair_length" blockIncrement="128.0" layoutX="96.0" layoutY="243.0" majorTickUnit="128.0" max="10000.0" min="16.0" minorTickCount="0" prefHeight="17.0" prefWidth="121.0" showTickMarks="true" value="256.0" />
       <Label fx:id="lbl_max_repair_length" layoutX="221.0" layoutY="243.0" prefHeight="17.0" prefWidth="34.0" text="256" />
    </children>
 </AnchorPane>
