@@ -15,11 +15,56 @@ public class Fourier
 {
     private static float[][] temp = new float[ 2 ][ 1 ];
 
+    private static float[][] sin_cos_table = new float[ 2 ][ 1 ];
+    private static int sin_cos_table_length = 1;
+
+    private static int[] bit_reversal_table = new int[ 1 ];
+    private static int bit_reversal_table_length = 1;
+
     private static void incrucisare( Complex v1, Complex v2, int n, int N )
     {
         Complex c0 = v1.copy();
         v1.add( v2.copy().inc( n, N ) );
         v2.inc( n, N ).mul( new Complex( -1, 0 ) ).add( c0 );
+    }
+
+    private static void prepare_sin_cos_table( int N )
+    {
+        int i;
+        if( sin_cos_table_length == N / 2 )
+        {
+            return;
+        }
+        if( sin_cos_table[ 0 ].length < N / 2 )
+        {
+            sin_cos_table = new float[ 2 ][ N / 2 ];
+        }
+        for( i = 0; i < N / 2; i++ )
+        {
+            sin_cos_table[ 0 ][ i ] = ( float )FastMath.sin( -FastMath.PI * i / ( N / 2 ) );
+            sin_cos_table[ 1 ][ i ] = ( float )FastMath.cos( -FastMath.PI * i / ( N / 2 ) );
+        }
+        sin_cos_table_length = N / 2;
+    }
+
+    private static void prepare_bit_reversal_table( int N )
+    {
+        int i;
+        final int logN = ( int )Util_Stuff.log( N, 2 );
+
+        if( bit_reversal_table_length == N )
+        {
+            return;
+        }
+        if( bit_reversal_table.length < N )
+        {
+            bit_reversal_table = new int[ N ];
+        }
+        for( i = 0; i < N; i++ )
+        {
+            bit_reversal_table[ i ] = reverse_bits( i, logN );
+        }
+        bit_reversal_table_length = N;
     }
 
     private static int reverse_bits( int x, int bits )
@@ -39,11 +84,11 @@ public class Fourier
     public static void FFT_inplace( Complex[] x, int N ) throws DataSourceException
     {
         int i, j, k;
-        final int logN = ( int )Util_Stuff.log( N, 2 );
         final float coeff = 1.0f / N;
         final Complex c2 = new Complex();
-        final Complex twiddle_factor = new Complex();
+        //final Complex twiddle_factor = new Complex();
         int i1, i2;
+        int Npk;
 
         if( !Util_Stuff.is_power_of_two( N ) )
         {
@@ -59,16 +104,20 @@ public class Fourier
             temp[ 1 ] = new float[ N ];
         }
 
+        prepare_bit_reversal_table( N );
+
         for( i = 0; i < N; i++ )
         {
-            i1 = reverse_bits( i, logN );
-            temp[ 0 ][ i ] = x[ i1 ].r;
-            temp[ 1 ][ i ] = x[ i1 ].i;
+            temp[ 0 ][ i ] = x[ bit_reversal_table[ i ] ].r;
+            temp[ 1 ][ i ] = x[ bit_reversal_table[ i ] ].i;
         }
+
+        prepare_sin_cos_table( N );
 
         //Butterfly
         for( k = 1; k <= N / 2; k *= 2 )
         {
+            Npk = ( N / 2 ) / k;
             for( i = 0; i < N; i += k * 2 )
             {
                 for( j = 0; j < k; j++ )
@@ -79,9 +128,12 @@ public class Fourier
                     //twiddle_factor.r = ( float )FastMath.cos( -FastMath.PI * j / k );
                     //twiddle_factor.i = ( float )FastMath.sin( -FastMath.PI * j / k );
 
+                    //twiddle_factor.r = sin_cos_table[ 1 ][ j * Npk ];
+                    //twiddle_factor.i = sin_cos_table[ 0 ][ j * Npk ];
+
                     c2.r = temp[ 0 ][ i2 ];
-                    temp[ 0 ][ i2 ] = temp[ 0 ][ i2 ] * twiddle_factor.r - temp[ 1 ][ i2 ] * twiddle_factor.i;
-                    temp[ 1 ][ i2 ] = temp[ 1 ][ i2 ] * twiddle_factor.r + c2.r * twiddle_factor.i;
+                    temp[ 0 ][ i2 ] = temp[ 0 ][ i2 ] * sin_cos_table[ 1 ][ j * Npk ] - temp[ 1 ][ i2 ] * sin_cos_table[ 0 ][ j * Npk ];;
+                    temp[ 1 ][ i2 ] = temp[ 1 ][ i2 ] * sin_cos_table[ 1 ][ j * Npk ] + c2.r * sin_cos_table[ 0 ][ j * Npk ];;
 
                     c2.r = temp[ 0 ][ i2 ];
                     c2.i = temp[ 1 ][ i2 ];
