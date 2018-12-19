@@ -81,20 +81,19 @@ public class Fourier
         return y;
     }
 
-    public static void FFT_inplace( Complex[] x, int N ) throws DataSourceException
+    public static void FFT_inplace( float[] r_part, float[] i_part, int N ) throws DataSourceException
     {
         int i, j, k;
         final float coeff = 1.0f / N;
-        final Complex c2 = new Complex();
-        //final Complex twiddle_factor = new Complex();
-        int i1, i2;
+        float aux_r, aux_i;
+        int idx_1, idx_2;
         int Npk;
 
         if( !Util_Stuff.is_power_of_two( N ) )
         {
             throw new DataSourceException( "N must be a power of 2", DataSourceExceptionCause.INVALID_PARAMETER );
         }
-        if( x.length < N )
+        if( r_part.length < N || i_part.length < N )
         {
             throw new DataSourceException( "Array size must be equal or larger than N", DataSourceExceptionCause.INVALID_PARAMETER );
         }
@@ -108,8 +107,8 @@ public class Fourier
 
         for( i = 0; i < N; i++ )
         {
-            temp[ 0 ][ i ] = x[ bit_reversal_table[ i ] ].r;
-            temp[ 1 ][ i ] = x[ bit_reversal_table[ i ] ].i;
+            temp[ 0 ][ i ] = r_part[ bit_reversal_table[ i ] ];
+            temp[ 1 ][ i ] = i_part[ bit_reversal_table[ i ] ];
         }
 
         prepare_sin_cos_table( N );
@@ -122,8 +121,8 @@ public class Fourier
             {
                 for( j = 0; j < k; j++ )
                 {
-                    i1 = i + j;
-                    i2 = i + j + k;
+                    idx_1 = i + j;
+                    idx_2 = i + j + k;
 
                     //twiddle_factor.r = ( float )FastMath.cos( -FastMath.PI * j / k );
                     //twiddle_factor.i = ( float )FastMath.sin( -FastMath.PI * j / k );
@@ -131,26 +130,26 @@ public class Fourier
                     //twiddle_factor.r = sin_cos_table[ 1 ][ j * Npk ];
                     //twiddle_factor.i = sin_cos_table[ 0 ][ j * Npk ];
 
-                    c2.r = temp[ 0 ][ i2 ];
-                    temp[ 0 ][ i2 ] = temp[ 0 ][ i2 ] * sin_cos_table[ 1 ][ j * Npk ] - temp[ 1 ][ i2 ] * sin_cos_table[ 0 ][ j * Npk ];;
-                    temp[ 1 ][ i2 ] = temp[ 1 ][ i2 ] * sin_cos_table[ 1 ][ j * Npk ] + c2.r * sin_cos_table[ 0 ][ j * Npk ];;
+                    aux_r = temp[ 0 ][ idx_2 ];
+                    temp[ 0 ][ idx_2 ] = temp[ 0 ][ idx_2 ] * sin_cos_table[ 1 ][ j * Npk ] - temp[ 1 ][ idx_2 ] * sin_cos_table[ 0 ][ j * Npk ];;
+                    temp[ 1 ][ idx_2 ] = temp[ 1 ][ idx_2 ] * sin_cos_table[ 1 ][ j * Npk ] + aux_r * sin_cos_table[ 0 ][ j * Npk ];;
 
-                    c2.r = temp[ 0 ][ i2 ];
-                    c2.i = temp[ 1 ][ i2 ];
+                    aux_r = temp[ 0 ][ idx_2 ];
+                    aux_i = temp[ 1 ][ idx_2 ];
 
-                    temp[ 0 ][ i2 ] = -temp[ 0 ][ i2 ] + temp[ 0 ][ i1 ];
-                    temp[ 1 ][ i2 ] = -temp[ 1 ][ i2 ] + temp[ 1 ][ i1 ];
+                    temp[ 0 ][ idx_2 ] = -temp[ 0 ][ idx_2 ] + temp[ 0 ][ idx_1 ];
+                    temp[ 1 ][ idx_2 ] = -temp[ 1 ][ idx_2 ] + temp[ 1 ][ idx_1 ];
 
-                    temp[ 0 ][ i1 ] += c2.r;
-                    temp[ 1 ][ i1 ] += c2.i;
+                    temp[ 0 ][ idx_1 ] += aux_r;
+                    temp[ 1 ][ idx_1 ] += aux_i;
                 }
             }
         }
 
         for( i = 0; i < N; i++ )
         {
-            x[ i ].r = temp[ 0 ][ i ] * coeff;
-            x[ i ].i = temp[ 1 ][ i ] * coeff;
+            r_part[ i ] = temp[ 0 ][ i ] * coeff;
+            i_part[ i ] = temp[ 1 ][ i ] * coeff;
         }
     }
 
@@ -210,24 +209,24 @@ public class Fourier
         return x;
     }
 
-    public static void IFFT_inplace( Complex[] x, int N ) throws DataSourceException
+    public static void IFFT_inplace( float[] r_part, float[] i_part, int N ) throws DataSourceException
     {
         int i;
 
-        if( x.length < N )
+        if( r_part.length < N || i_part.length < N )
         {
             throw new DataSourceException( "Array size must be equal or larger than N", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
         for( i = 0; i < N; i++ )
         {
-            x[ i ].i *= -1;
+            i_part[ i ] *= -1;
         }
-        FFT_inplace( x, N );
+        FFT_inplace( r_part, i_part, N );
         for( i = 0; i < N; i++ )
         {
-            x[ i ].i *= -N;
-            x[ i ].r *= N;
+            i_part[ i ] *= -N;
+            r_part[ i ] *= N;
         }
     }
 

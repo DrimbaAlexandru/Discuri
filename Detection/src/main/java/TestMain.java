@@ -357,31 +357,37 @@ public class TestMain {
             WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\signal.wav" );
             WAVFileAudioSource dst_FFT = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fft.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
             WAVFileAudioSource dst_FIR = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fir.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+
+            CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100 * 10, 44100 );
+            CachedAudioDataSource fft_cache = new CachedAudioDataSource( dst_FFT, 44100 * 10, 44100 );
+            CachedAudioDataSource fir_cache = new CachedAudioDataSource( dst_FIR, 44100 * 10, 44100 );
+
             long start_ms;
+            int filter_length = ( int )Math.pow( 2, 4 );
 
             FFT_Equalizer filter = new FFT_Equalizer();
             FIR_Equalizer fir_filter = new FIR_Equalizer();
-            FIR fir = FIR.fromFreqResponse( FIR.get_RIAA_response().getLeft(), FIR.get_RIAA_response().getRight(), FIR.get_RIAA_response().getLeft().length, src.get_sample_rate(), 8191 );
+            FIR fir = FIR.fromFreqResponse( FIR.get_RIAA_response().getLeft(), FIR.get_RIAA_response().getRight(), FIR.get_RIAA_response().getLeft().length, src.get_sample_rate(), filter_length - 1 );
             filter.setFilter( fir );
             fir_filter.setFilter( fir );
-            filter.setFFT_length( 1024 * 32 );
-            fir_filter.setMax_chunk_size( 1024 * 32 );
+            filter.setFFT_length( filter_length );
+            fir_filter.setMax_chunk_size( filter_length );
 
             start_ms = System.currentTimeMillis();
             System.out.println( "FFT:" );
-            filter.apply( src, dst_FFT, new Interval( 0, src.get_sample_number() ) );
+            filter.apply( src_cache, fft_cache, new Interval( 0, src.get_sample_number() ) );
             System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
 
             start_ms = System.currentTimeMillis();
             System.out.println( "FIR:" );
-            fir_filter.apply( src, dst_FIR, new Interval( 0, src.get_sample_number() ) );
+            fir_filter.apply( src_cache, fir_cache, new Interval( 0, src.get_sample_number() ) );
             System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
 
             System.out.println( "Closing..." );
 
-            src.close();
-            dst_FFT.close();
-            dst_FIR.close();
+            src_cache.close();
+            fft_cache.close();
+            fir_cache.close();
         }
         catch( DataSourceException e )
         {

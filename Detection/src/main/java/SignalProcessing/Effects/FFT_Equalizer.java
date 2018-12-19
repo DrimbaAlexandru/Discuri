@@ -10,6 +10,7 @@ import SignalProcessing.FourierTransforms.Fourier;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Complex;
 import Utils.Interval;
+import net.jafama.FastMath;
 
 import java.util.function.Function;
 
@@ -37,8 +38,12 @@ public class FFT_Equalizer implements IEffect
         Interval FFT_possible_interval;
         int i, k, j;
         FFT_length = Math.max( Utils.Util_Stuff.next_power_of_two( fir_filter.getFf_coeff_nr() ), FFT_length );
-        Complex[] EQ = new Complex[ FFT_length ];
-        Complex[] signal = new Complex[ FFT_length ];
+        //Complex[] EQ = new Complex[ FFT_length ];
+        //Complex[] signal = new Complex[ FFT_length ];
+        float[] EQ_r = new float[ FFT_length ];
+        float[] EQ_i = new float[ FFT_length ];
+        float[] signal_i = new float[ FFT_length ];
+
         float half_buf[][] = new float[ dataDest.get_channel_number() ][ FFT_length ];
         AudioSamplesWindow win;
         int start = FFT_length - fir_filter.getFf_coeff_nr() / 2;
@@ -55,19 +60,21 @@ public class FFT_Equalizer implements IEffect
 
         for( j = 0; j < fir_filter.getFf_coeff_nr(); j++ )
         {
-            EQ[ ( j + start ) % FFT_length ] = new Complex( fir_filter.getFf()[ j ], 0 );
+            EQ_r[ ( j + start ) % FFT_length ] = fir_filter.getFf()[ j ];
+            EQ_i[ ( j + start ) % FFT_length ] = 0;
         }
         for( j = fir_filter.getFf_coeff_nr(); j < FFT_length; j++ )
         {
-            EQ[ ( j + start ) % FFT_length ] = new Complex();
+            EQ_r[ ( j + start ) % FFT_length ] = 0;
+            EQ_i[ ( j + start ) % FFT_length ] = 0;
         }
-        Fourier.FFT_inplace( EQ, FFT_length );
+        Fourier.FFT_inplace( EQ_r, EQ_i, FFT_length );
 
         for( j = 0; j < FFT_length; j++ )
         {
-            signal[ j ] = new Complex();
-            EQ[ j ].r = EQ[ j ].Ampl() * FFT_length;
-            EQ[ j ].i = 0;
+            signal_i[ j ] = 0;
+            EQ_r[ j ] = ( float )FastMath.sqrt( EQ_r[ j ] * EQ_r[ j ] + EQ_i[ j ] * EQ_i[ j ] ) * FFT_length;
+            EQ_i[ j ] = 0;
         }
 
         /*
@@ -87,21 +94,21 @@ public class FFT_Equalizer implements IEffect
 
                 for( j = 0; j < FFT_length; j++ )
                 {
-                    signal[ j ].r = win.getSamples()[ k ][ j ];
-                    signal[ j ].i = 0;
+                    signal_i[ j ] = 0;
                 }
 
-                Fourier.FFT_inplace( signal, FFT_length );
+                Fourier.FFT_inplace( win.getSamples()[ k ], signal_i, FFT_length );
                 for( j = 0; j < FFT_length; j++ )
                 {
-                    signal[ j ].mul( EQ[ j ].r );
+                    win.getSamples()[ k ][ j ] *= EQ_r[ j ];
+                    signal_i[ j ] *= EQ_r[ j ];
                 }
-                Fourier.IFFT_inplace( signal, FFT_length );
+                Fourier.IFFT_inplace( win.getSamples()[ k ], signal_i, FFT_length );
 
                 for( j = 0; j < FFT_length / 2; j++ )
                 {
-                    win.getSamples()[ k ][ j ] = half_buf[ k ][ j ] + signal[ j ].r;
-                    half_buf[ k ][ j ] = signal[ j + FFT_length / 2 ].r;
+                    win.getSamples()[ k ][ j ] += half_buf[ k ][ j ];
+                    half_buf[ k ][ j ] = win.getSamples()[ k ][ j + FFT_length / 2 ];
                 }
             }
 
