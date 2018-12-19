@@ -25,6 +25,10 @@ public class FIR_Equalizer implements IEffect
         {
             throw new DataSourceException( "No filter was set.", DataSourceExceptionCause.INVALID_STATE );
         }
+        if( interval.get_length() <= 0 )
+        {
+            return;
+        }
 
         final int buf_len = fir_filter.getFf_coeff_nr() / 2;
 

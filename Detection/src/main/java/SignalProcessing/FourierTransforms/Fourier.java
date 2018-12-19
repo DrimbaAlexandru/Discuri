@@ -13,8 +13,6 @@ import static java.lang.Math.PI;
  */
 public class Fourier
 {
-    private static float[][] temp = new float[ 2 ][ 1 ];
-
     private static float[][] sin_cos_table = new float[ 2 ][ 1 ];
     private static int sin_cos_table_length = 1;
 
@@ -97,18 +95,20 @@ public class Fourier
         {
             throw new DataSourceException( "Array size must be equal or larger than N", DataSourceExceptionCause.INVALID_PARAMETER );
         }
-        if( temp[ 0 ].length < N )
-        {
-            temp[ 0 ] = new float[ N ];
-            temp[ 1 ] = new float[ N ];
-        }
 
         prepare_bit_reversal_table( N );
 
         for( i = 0; i < N; i++ )
         {
-            temp[ 0 ][ i ] = r_part[ bit_reversal_table[ i ] ];
-            temp[ 1 ][ i ] = i_part[ bit_reversal_table[ i ] ];
+            if( i < bit_reversal_table[ i ] )
+            {
+                aux_r = r_part[ i ];
+                aux_i = i_part[ i ];
+                r_part[ i ] = r_part[ bit_reversal_table[ i ] ];
+                i_part[ i ] = i_part[ bit_reversal_table[ i ] ];
+                r_part[ bit_reversal_table[ i ] ] = aux_r;
+                i_part[ bit_reversal_table[ i ] ] = aux_i;
+            }
         }
 
         prepare_sin_cos_table( N );
@@ -124,32 +124,25 @@ public class Fourier
                     idx_1 = i + j;
                     idx_2 = i + j + k;
 
-                    //twiddle_factor.r = ( float )FastMath.cos( -FastMath.PI * j / k );
-                    //twiddle_factor.i = ( float )FastMath.sin( -FastMath.PI * j / k );
+                    aux_r = r_part[ idx_2 ];
+                    r_part[ idx_2 ] = r_part[ idx_2 ] * sin_cos_table[ 1 ][ j * Npk ] - i_part[ idx_2 ] * sin_cos_table[ 0 ][ j * Npk ];
+                    i_part[ idx_2 ] = i_part[ idx_2 ] * sin_cos_table[ 1 ][ j * Npk ] + aux_r * sin_cos_table[ 0 ][ j * Npk ];
 
-                    //twiddle_factor.r = sin_cos_table[ 1 ][ j * Npk ];
-                    //twiddle_factor.i = sin_cos_table[ 0 ][ j * Npk ];
+                    aux_r = r_part[ idx_2 ];
+                    aux_i = i_part[ idx_2 ];
 
-                    aux_r = temp[ 0 ][ idx_2 ];
-                    temp[ 0 ][ idx_2 ] = temp[ 0 ][ idx_2 ] * sin_cos_table[ 1 ][ j * Npk ] - temp[ 1 ][ idx_2 ] * sin_cos_table[ 0 ][ j * Npk ];;
-                    temp[ 1 ][ idx_2 ] = temp[ 1 ][ idx_2 ] * sin_cos_table[ 1 ][ j * Npk ] + aux_r * sin_cos_table[ 0 ][ j * Npk ];;
+                    r_part[ idx_2 ] = -r_part[ idx_2 ] + r_part[ idx_1 ];
+                    i_part[ idx_2 ] = -i_part[ idx_2 ] + i_part[ idx_1 ];
 
-                    aux_r = temp[ 0 ][ idx_2 ];
-                    aux_i = temp[ 1 ][ idx_2 ];
-
-                    temp[ 0 ][ idx_2 ] = -temp[ 0 ][ idx_2 ] + temp[ 0 ][ idx_1 ];
-                    temp[ 1 ][ idx_2 ] = -temp[ 1 ][ idx_2 ] + temp[ 1 ][ idx_1 ];
-
-                    temp[ 0 ][ idx_1 ] += aux_r;
-                    temp[ 1 ][ idx_1 ] += aux_i;
+                    r_part[ idx_1 ] += aux_r;
+                    i_part[ idx_1 ] += aux_i;
                 }
             }
         }
-
         for( i = 0; i < N; i++ )
         {
-            r_part[ i ] = temp[ 0 ][ i ] * coeff;
-            i_part[ i ] = temp[ 1 ][ i ] * coeff;
+            r_part[ i ] *= coeff;
+            i_part[ i ] *= coeff;
         }
     }
 

@@ -21,8 +21,9 @@ public class FFT_Equalizer implements IEffect
 {
     private FIR fir_filter = null;
     private float progress = 0;
-    private Function< Float, Float > window_function = Windowing.Hann_window;
+    final private Function< Float, Float > window_function = Windowing.Hann_window;
     private int FFT_length = 1;
+
 
     @Override
     public void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException
@@ -43,6 +44,7 @@ public class FFT_Equalizer implements IEffect
         float[] EQ_r = new float[ FFT_length ];
         float[] EQ_i = new float[ FFT_length ];
         float[] signal_i = new float[ FFT_length ];
+        float[] window_values = new float[ FFT_length ];
 
         float half_buf[][] = new float[ dataDest.get_channel_number() ][ FFT_length ];
         AudioSamplesWindow win;
@@ -75,7 +77,9 @@ public class FFT_Equalizer implements IEffect
             signal_i[ j ] = 0;
             EQ_r[ j ] = ( float )FastMath.sqrt( EQ_r[ j ] * EQ_r[ j ] + EQ_i[ j ] * EQ_i[ j ] ) * FFT_length;
             EQ_i[ j ] = 0;
+            window_values[ j ] = 1;
         }
+        Windowing.apply( window_values, FFT_length, window_function );
 
         /*
         *   SFFT OLA where possible
@@ -90,10 +94,9 @@ public class FFT_Equalizer implements IEffect
 
             for( k = 0; k < dataSource.get_channel_number(); k++ )
             {
-                Windowing.apply( win.getSamples()[ k ], FFT_length, window_function );
-
                 for( j = 0; j < FFT_length; j++ )
                 {
+                    win.getSamples()[ k ][ j ] *= window_values[ j ];
                     signal_i[ j ] = 0;
                 }
 

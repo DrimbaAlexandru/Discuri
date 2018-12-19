@@ -1,5 +1,7 @@
 package SignalProcessing.Windowing;
 
+import net.jafama.FastMath;
+
 import java.util.function.Function;
 
 /**
@@ -32,8 +34,8 @@ public class Windowing
     public final static Function< Float, Float > inv_cos_sq_window = ( x -> ( float )( 1 - Math.pow( Math.cos( x * Math.PI / 2 ), 2 ) ) );
     public final static Function< Float, Float > zero_window = ( x -> 0.0f );
     public final static Function< Float, Float > one_window = ( x -> 1.0f );
-    public final static Function< Float, Float > Hann_window = ( x -> ( float )( Math.pow( Math.sin( Math.PI * x ), 2 ) ) );
-    public final static Function< Float, Float > Hamming_window = ( x -> ( float )( 0.54f - 0.46f * Math.cos( 2 * Math.PI * x ) ) );
-    public final static Function< Float, Float > Hanning_window = ( x -> ( float )( 0.5f - 0.5f * Math.cos( 2 * Math.PI * x ) ) );
-    public final static Function< Float, Float > Blackman_window = ( x -> ( float )( 0.42f - 0.5f * Math.cos( 2 * Math.PI * x ) + 0.08f * Math.cos( 4 * Math.PI * x ) ) );
+    public final static Function< Float, Float > Hann_window = ( x -> ( float )( Math.pow( FastMath.sin( Math.PI * x ), 2 ) ) );
+    public final static Function< Float, Float > Hamming_window = ( x -> ( float )( 0.54f - 0.46f * FastMath.cos( 2 * Math.PI * x ) ) );
+    public final static Function< Float, Float > Hanning_window = ( x -> ( float )( 0.5f - 0.5f * FastMath.cos( 2 * Math.PI * x ) ) );
+    public final static Function< Float, Float > Blackman_window = ( x -> ( float )( 0.42f - 0.5f * FastMath.cos( 2 * Math.PI * x ) + 0.08f * FastMath.cos( 4 * Math.PI * x ) ) );
 }
