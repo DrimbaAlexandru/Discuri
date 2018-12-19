@@ -12,7 +12,6 @@ import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
 import Utils.DataSetGenerator;
 import Utils.Interval;
-import com.sun.istack.internal.Nullable;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -30,6 +29,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.text.ParseException;

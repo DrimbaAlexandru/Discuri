@@ -103,7 +103,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( win.get_channel_number(), dataSource.get_channel_number() );
         for( int k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         i = nr_of_pages - 1;
@@ -133,7 +133,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( win.get_channel_number(), dataSource.get_channel_number() );
         for( int k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         i = nr_of_pages * 2 - 1;
@@ -163,7 +163,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( win.get_channel_number(), dataSource.get_channel_number() );
         for( int k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         i = nr_of_pages;
@@ -196,7 +196,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( win.get_channel_number(), dataSource.get_channel_number() );
         for( int k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         win2 = dataSource.get_samples( 1000 + page_size - 1, nr_of_pages / 2 * page_size );
@@ -207,7 +207,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( win.get_channel_number(), dataSource.get_channel_number() );
         for( int k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         int[] expected_pages = { 15, 14, 13, 12, 11, 10, 5, 4, 3, 2 };
@@ -244,7 +244,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( win.get_channel_number(), dataSource.get_channel_number() );
         for( int k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win.getSamples()[ k ], win2.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         Assert.assertEquals( cache.getCache().getCache_access().size(), 1 );
@@ -284,7 +284,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( cache.getCache().getCache_access().size(), 2 );
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( winC.getSamples()[ k ], winDS.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winC.getSamples()[ k ], winDS.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         cache.put_samples( win2write );
@@ -296,15 +296,15 @@ public class AnotherCachedAudioDataSourceTest
 
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( winC.getSamples()[ k ], win2write.getSamples()[ k ], Math.pow( 2, -14 ) );
-            Assert.assertArrayEquals( win.getSamples()[ k ], winDS.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winC.getSamples()[ k ], win2write.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win.getSamples()[ k ], winDS.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         cache.flushAll();
         winDS = dataSource.get_samples( win2write.get_first_sample_index(), win2write.get_length() );
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win2write.getSamples()[ k ], winDS.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win2write.getSamples()[ k ], winDS.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
     }
 
@@ -336,7 +336,7 @@ public class AnotherCachedAudioDataSourceTest
         Assert.assertEquals( cache.getCache().getCache_access().size(), 2 );
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( winC.getSamples()[ k ], winDS.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winC.getSamples()[ k ], winDS.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         cache.put_samples( win2write );
@@ -348,8 +348,8 @@ public class AnotherCachedAudioDataSourceTest
 
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( winC.getSamples()[ k ], win2write.getSamples()[ k ], Math.pow( 2, -14 ) );
-            Assert.assertArrayEquals( winDS_orig.getSamples()[ k ], winDS.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winC.getSamples()[ k ], win2write.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winDS_orig.getSamples()[ k ], winDS.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
         Assert.assertEquals( cache.getCache().getCache_access().get( 0 ).get_first_sample_index(), page_size * 2 );
         Assert.assertEquals( cache.getCache().getCache_access().get( 1 ).get_first_sample_index(), page_size );
@@ -387,7 +387,7 @@ public class AnotherCachedAudioDataSourceTest
         winDS = dataSource.get_samples( win2write.get_first_sample_index(), win2write.get_length() );
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( win2write.getSamples()[ k ], winDS.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( win2write.getSamples()[ k ], winDS.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
     }
 
@@ -435,8 +435,8 @@ public class AnotherCachedAudioDataSourceTest
 
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( winC.getSamples()[ k ], win2write.getSamples()[ k ], Math.pow( 2, -14 ) );
-            Assert.assertArrayEquals( winDS.getSamples()[ k ], winDS_orig.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winC.getSamples()[ k ], win2write.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winDS.getSamples()[ k ], winDS_orig.getSamples()[ k ], (float) Math.pow( 2, -14 ) );
         }
 
         cache.flushAll();
@@ -450,7 +450,7 @@ public class AnotherCachedAudioDataSourceTest
 
         for( k = 0; k < cache.get_channel_number(); k++ )
         {
-            Assert.assertArrayEquals( winDS.getSamples()[ k ], win2write.getSamples()[ k ], Math.pow( 2, -14 ) );
+            Assert.assertArrayEquals( winDS.getSamples()[ k ], win2write.getSamples()[ k ], ( float )(float) Math.pow( 2, -14 ) );
         }
     }
 
