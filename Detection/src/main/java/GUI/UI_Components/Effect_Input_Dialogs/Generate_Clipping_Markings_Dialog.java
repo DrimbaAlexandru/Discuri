@@ -4,6 +4,7 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import ProjectManager.ProjectStatics;
 import SignalProcessing.Effects.Create_Marker_File;
+import SignalProcessing.Effects.Create_Marker_File_Clipping;
 import SignalProcessing.Effects.IEffect;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -18,7 +19,7 @@ import javafx.stage.Window;
 
 import java.io.IOException;
 
-public class Generate_Markings_Dialog implements Effect_UI_Component
+public class Generate_Clipping_Markings_Dialog implements Effect_UI_Component
 {
     @FXML
     private Label lbl_threshold;
@@ -31,7 +32,7 @@ public class Generate_Markings_Dialog implements Effect_UI_Component
     private Stage onTop = new Stage();
     private DataSourceException close_exception = null;
 
-    private Create_Marker_File effect = null;
+    private Create_Marker_File_Clipping effect = null;
 
     @Override
     public void show( Window parent ) throws DataSourceException
@@ -57,9 +58,9 @@ public class Generate_Markings_Dialog implements Effect_UI_Component
                                              lbl_threshold.setText( String.format( "%.2f", sld_threshold.getValue() ) );
                                          } );
 
-        btn_apply.setOnAction( ev ->
+        btn_apply.setOnAction( ev  ->
                                {
-                                   effect = new Create_Marker_File();
+                                   effect = new Create_Marker_File_Clipping();
                                    try
                                    {
                                        effect.setThreshold( ( float )sld_threshold.getValue() );
@@ -88,7 +89,7 @@ public class Generate_Markings_Dialog implements Effect_UI_Component
         return effect;
     }
 
-    public Generate_Markings_Dialog()
+    public Generate_Clipping_Markings_Dialog()
     {
     }
 

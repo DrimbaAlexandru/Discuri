@@ -503,6 +503,10 @@ public class Main_window
             mi = new MenuItem( "Generate markings" );
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_generate_markings );
+
+            mi = new MenuItem( "Mark clipping" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_mark_clipping );
         }
         catch( IOException e )
         {
@@ -1025,6 +1029,12 @@ public class Main_window
     private void on_generate_markings( @Nullable ActionEvent ev )
     {
         start_effect_with_UI( new Generate_Markings_Dialog(), false );
+        markings_changed = true;
+    }
+
+    private void on_mark_clipping( @Nullable ActionEvent ev )
+    {
+        start_effect_with_UI( new Generate_Clipping_Markings_Dialog(), false );
         markings_changed = true;
     }
 

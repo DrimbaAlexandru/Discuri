@@ -76,7 +76,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
                                            lbl_fil_len.setText( filter_length + "" );
                                        } );
 
-        btn_apply.setOnAction( ( ev ) ->
+        btn_apply.setOnAction( ev ->
                                {
                                    effect = new FIR_Equalizer();
                                    try

@@ -53,7 +53,7 @@ public class Amplify_Dialog implements Effect_UI_Component
         {
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
-        btn_apply.setOnAction( ( ev ) ->
+        btn_apply.setOnAction( ev ->
                                {
                                    effect = new FIR_Equalizer();
                                    float amplification = 0;

@@ -363,7 +363,7 @@ public class TestMain {
             CachedAudioDataSource fir_cache = new CachedAudioDataSource( dst_FIR, 44100 * 10, 44100 );
 
             long start_ms;
-            int filter_length = ( int )Math.pow( 2, 13 );
+            int filter_length = ( int )Math.pow( 2, 5 );
 
             FFT_Equalizer filter = new FFT_Equalizer();
             FIR_Equalizer fir_filter = new FIR_Equalizer();
@@ -377,12 +377,12 @@ public class TestMain {
             System.out.println( "FFT:" );
             filter.apply( src_cache, fft_cache, new Interval( filter_length / 2, src.get_sample_number() - filter_length / 2 ) );
             System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
-
+/*
             start_ms = System.currentTimeMillis();
             System.out.println( "FIR:" );
             fir_filter.apply( src_cache, fir_cache, new Interval( filter_length / 2, src.get_sample_number() - filter_length / 2 ) );
             System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
-
+*/
             System.out.println( "Closing..." );
 
             src_cache.close();

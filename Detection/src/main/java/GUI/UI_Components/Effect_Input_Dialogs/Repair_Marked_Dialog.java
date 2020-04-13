@@ -81,7 +81,7 @@ public class Repair_Marked_Dialog implements Effect_UI_Component
                                                slider_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
                                                lbl_spike_thrsh.setDisable( !chk_use_direct_repair.isSelected() );
                                            } );
-        btn_apply.setOnAction( ( ev ) ->
+        btn_apply.setOnAction( ev ->
                                {
                                    try
                                    {
