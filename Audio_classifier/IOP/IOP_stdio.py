@@ -9,21 +9,23 @@ import struct
 IOP_MSG_ID_AUDIO_RX = 1
 IOP_MSG_SUBID_AUDIO_RX_START = 1
 IOP_MSG_SUBID_AUDIO_RX_DATA = 2
-IOP_MSG_SUBID_AUDIO_RX_CANCEL = 3
-IOP_MSG_SUBID_AUDIO_RX_ABORT = 4
 
 IOP_MSG_ID_AUDIO_TX = 2
 IOP_MSG_SUBID_AUDIO_TX_START = 1
 IOP_MSG_SUBID_AUDIO_TX_DATA = 2
-IOP_MSG_SUBID_AUDIO_TX_ABORT = 3
+
+IOP_MSG_ID_AUDIO_ABORT = 3
+IOP_MSG_SUBID_AUDIO_CANCEL = 1
+IOP_MSG_SUBID_AUDIO_ABORTED = 2
 
 IOP_MSG_ID_CLASSIFIER_INFO = 3
 IOP_MSG_SUBID_RQST_INFO = 1
 IOP_MSG_SUBID_INFO = 2
 
-IOP_MSG_ID_STATUS = 7
+IOP_MSG_ID_CMD = 8
+IOP_MSG_SUBID_CMD_TERMINATE = 0xFF
 
-IOP_MSG_ID_LOG_EVENT = 8
+IOP_MSG_ID_LOG_EVENT = 100
 
 #----------------------------------------------
 # Special characters
@@ -60,13 +62,28 @@ _parse_index = 0
 _valid_msg = False
 _decoded_buffer = bytearray( b'' )
 
+rx_idx = 0
+
 #----------------------------------------------
 # Procedures
 #----------------------------------------------
 def IOP_get_bytes():
     global _rx_buffer
+    global rx_idx
 
-    rxd_bytes = sys.stdin.read( IOP_MSG_MAX_LENGTH - len ( _rx_buffer ) )
+    # rxd_bytes = sys.stdin.read( IOP_MSG_MAX_LENGTH - len ( _rx_buffer ) )
+    rx_tbl = [ # b'\x10\x02\x03\x01\x00\x00\x10\x03',                     # request classifier info
+               # b'\x10\x02\x01\x01\x04\x00\x04\x00\x00\x00\x10\x03',     # audio start rx
+               # b'\x10\x02\x01\x02\x0A\x00\x00\x00\x00\x00\x02\x00\x01\x00\x02\x00\x10\x03',     # audio data 1
+               # b'\x10\x02\x01\x02\x0A\x00\x02\x00\x00\x00\x02\x00\x03\x00\x04\x00\x10\x03',     # audio data 2
+               b'\x10\x02\x08\xFF\x00\x00\x10\x03'
+             ]
+    if rx_idx < len( rx_tbl ):
+        rxd_bytes = rx_tbl[ rx_idx ]
+    else:
+        rxd_bytes = b''
+    rx_idx += 1
+
     if rxd_bytes is None:
         raise EOFError( "Stream closed" )
 
@@ -78,8 +95,6 @@ def IOP_get_frame():
 
     ret_val = None
 
-    IOP_get_bytes()
-
     rxd_bytes_cnt = len( _rx_buffer )
     while( _parse_index < rxd_bytes_cnt and ret_val is None ):
         parsed_byte = iop_parse_byte( _rx_buffer[ _parse_index ] )
@@ -88,19 +103,22 @@ def IOP_get_frame():
 
         if( _parse_state == iop_PARSE_STATE_ETX and _parse_status != iop_PARSE_STATUS_CONTINUE ):
             if( _parse_state == iop_PARSE_STATE_ETX and _parse_status == iop_PARSE_STATUS_ACK ):
-                msg_id = _decoded_buffer[0:1]
-                msg_subid = _decoded_buffer[1:2]
-                msg_size = _decoded_buffer[2:4]
-                msg_data = _decoded_buffer[4:]
-
-                id = struct.unpack( '<B', msg_id )[ 0 ]
-                subid = struct.unpack( '<B', msg_subid )[ 0 ]
-                size = struct.unpack( '<H', msg_size )[ 0 ]
-
-                if( len( msg_data ) != size ):
-                    print( "Message sizes not matching" )
+                if( len( _decoded_buffer ) < 4 ):
+                    print( "Invalid frame" )
                 else:
-                    ret_val = ( id, subid, size, msg_data )
+                    msg_id = _decoded_buffer[0:1]
+                    msg_subid = _decoded_buffer[1:2]
+                    msg_size = _decoded_buffer[2:4]
+                    msg_data = _decoded_buffer[4:]
+
+                    id = struct.unpack( '<B', msg_id )[ 0 ]
+                    subid = struct.unpack( '<B', msg_subid )[ 0 ]
+                    size = struct.unpack( '<H', msg_size )[ 0 ]
+
+                    if( len( msg_data ) != size ):
+                        print( "Message sizes not matching" )
+                    else:
+                        ret_val = ( id, subid, size, msg_data )
 
             if( _parse_state == iop_PARSE_STATE_ETX and _parse_status == iop_PARSE_STATUS_ERROR ):
                 print( "Parse error" )
@@ -167,7 +185,7 @@ def iop_parse_byte( byte ):
 
 def IOP_put_bytes( raw_bytes ):
     sys.stdout.write( raw_bytes )
-
+    print( "write message" )
 
 def IOP_put_frame( id, subid, data ):
     bytes = bytearray( b'' )
@@ -182,8 +200,9 @@ def IOP_put_frame( id, subid, data ):
     bytes = bytes + struct.pack( '<H', len( data ) )
 
     # DLE stuffing
-    bytes.replace( b'\x10', b'\x10\x10' )
+    data = data.replace( b'\x10', b'\x10\x10' )
 
+    bytes = bytes + data
     bytes = bytes + struct.pack( '<B', DLE_BYTE )
     bytes = bytes + struct.pack( '<B', ETX_BYTE )
 

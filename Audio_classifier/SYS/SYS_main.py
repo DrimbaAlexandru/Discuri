@@ -3,12 +3,16 @@ import time
 
 from SYS.SYS_time import *
 from IOP.IOP_audio_classifier import *
-from IOP.IOP_stdio import *
 
 #------------------------------------------
 # Local constants
 #------------------------------------------
 SYS_TSK_PERIOD_MS = 25
+
+#------------------------------------------
+# Global variables
+#------------------------------------------
+SYS_run_loop = True
 
 class SYS_main:
     #------------------------------------------
@@ -21,10 +25,13 @@ class SYS_main:
     #------------------------------------------
     def __init__( self ):
         self.audio_tsk = IOP_audio_classifier()
+        global SYS_run_loop
+
+        SYS_run_loop = True
 
     def run( self ):
-        while True:
-            try:
+        try:
+            while SYS_run_loop:
                 self._s_last_task_tick = SYS_get_time_ms()
 
                 #----------------------------------
@@ -37,7 +44,5 @@ class SYS_main:
                 time_left = SYS_TSK_PERIOD_MS - ( SYS_get_time_ms() - self._s_last_task_tick )
                 if( time_left > 0 ):
                     time.sleep( time_left / 1000.0 )
-
-            except BaseException as e:
-                traceback.print_exc()
-                IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, traceback.format_exc() )
+        except BaseException as e:
+            traceback.print_exc()
