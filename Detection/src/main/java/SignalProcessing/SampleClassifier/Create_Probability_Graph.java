@@ -1,4 +1,4 @@
-package SignalProcessing.Effects;
+package SignalProcessing.SampleClassifier;
 
 import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
@@ -35,7 +35,7 @@ public class Create_Probability_Graph
                 prediction = Classify_In_Python.get_float_array();
                 if( prediction.getLeft() != win.get_length() - nn_input_size + 1 )
                 {
-                    throw new DataSourceException( "Received unexpected array length", DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
+                    throw new DataSourceException( "Received unexpected array length", DataSourceExceptionCause.REMOTE_ERROR );
                 }
                 float probabilities[] = prediction.getRight();
                 write_samples[ ch ] = probabilities;

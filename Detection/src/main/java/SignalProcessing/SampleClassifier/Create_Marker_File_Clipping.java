@@ -1,4 +1,4 @@
-package SignalProcessing.Effects;
+package SignalProcessing.SampleClassifier;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
@@ -6,6 +6,7 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import MarkerFile.MarkerFile;
 import ProjectManager.ProjectManager;
+import SignalProcessing.Effects.IEffect;
 import Utils.Interval;
 import Utils.MyPair;
 

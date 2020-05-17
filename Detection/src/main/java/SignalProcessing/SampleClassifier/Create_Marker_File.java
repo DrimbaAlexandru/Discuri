@@ -1,4 +1,4 @@
-package SignalProcessing.Effects;
+package SignalProcessing.SampleClassifier;
 
 import AudioDataSource.AudioSamplesWindow;
 import Exceptions.DataSourceException;
@@ -6,6 +6,7 @@ import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
 import MarkerFile.MarkerFile;
 import ProjectManager.*;
+import SignalProcessing.Effects.IEffect;
 import Utils.Interval;
 import Utils.MyPair;
 
@@ -22,8 +23,8 @@ class Classify_In_Python
 {
     private static final String script_exec = "python -u " +
                                               "\"" + ProjectStatics.getPython_classifier_script_path() + "\" " +
-                                              "\"" + ProjectStatics.getPython_classifier_mlp_path() + "\" " +
-                                              "\"" + ProjectStatics.getPython_classifier_scaler_path() + "\" ";
+                                              "\"" + ProjectStatics.getPython_classifier_mlp_path() + "\" " /*+
+                                              "\"" + ProjectStatics.getPython_classifier_scaler_path() + "\" "*/;
 
     private static Process proc = null;
     private static final int float_size = 4;
@@ -44,7 +45,10 @@ class Classify_In_Python
                 throw new IOException( "Read returned negative value" );
             }
         }
+
     }
+
+
 
     private static Process getProcess() throws DataSourceException
     {
@@ -67,7 +71,7 @@ class Classify_In_Python
                 {
                     proc.destroy();
                     proc = null;
-                    throw new DataSourceException( "Python error message larger than buffer", DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
+                    throw new DataSourceException( "Python error message larger than buffer", DataSourceExceptionCause.REMOTE_ERROR );
                 }
                 System.out.println( "Python script started" );
                 buffer.clear();
@@ -79,7 +83,7 @@ class Classify_In_Python
                 {
                     proc.destroy();
                     proc = null;
-                    throw new DataSourceException( errs, DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
+                    throw new DataSourceException( errs, DataSourceExceptionCause.REMOTE_ERROR );
                 }
             }
             catch( IOException e )
@@ -89,7 +93,7 @@ class Classify_In_Python
                     proc.destroy();
                     proc = null;
                 }
-                throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
+                throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.REMOTE_ERROR );
             }
         }
         return proc;
@@ -121,7 +125,7 @@ class Classify_In_Python
         {
             proc.destroy();
             proc = null;
-            throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
+            throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.REMOTE_ERROR );
         }
     }
 
@@ -154,7 +158,7 @@ class Classify_In_Python
         {
             proc.destroy();
             proc = null;
-            throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
+            throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.REMOTE_ERROR );
         }
         return new MyPair< Integer, float[] >( length, array );
     }
@@ -198,7 +202,7 @@ public class Create_Marker_File implements IEffect
                 prediction = Classify_In_Python.get_float_array();
                 if( prediction.getLeft() != win.get_length() - nn_input_size + 1 )
                 {
-                    throw new DataSourceException( "Received unexpected array length", DataSourceExceptionCause.PYTHON_COMMUNICATION_ERROR );
+                    throw new DataSourceException( "Received unexpected array length", DataSourceExceptionCause.REMOTE_ERROR );
                 }
                 Interval mark = null;
                 float probabilities[] = prediction.getRight();

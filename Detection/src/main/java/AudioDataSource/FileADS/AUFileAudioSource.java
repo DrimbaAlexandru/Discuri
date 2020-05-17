@@ -226,7 +226,7 @@ public class AUFileAudioSource implements IFileAudioDataSource
         switch( byte_depth )
         {
             case 1:
-                return ( ( float )byteBuffer.get( buffer_offset ) ) / Byte.MAX_VALUE;
+                return ( ( float )byteBuffer.get( buffer_offset ) ) / ( Byte.MAX_VALUE + 1 );
             case 2:
                 return ( ( float )byteBuffer.getShort( buffer_offset ) ) / ( Short.MAX_VALUE + 1 );
             case 4:

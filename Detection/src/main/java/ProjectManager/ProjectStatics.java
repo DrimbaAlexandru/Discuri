@@ -15,14 +15,13 @@ public class ProjectStatics
     private static int project_cache_page_size = 4096;
     private static int temp_file_cache_size = 44100;
     private static int temp_file_cache_page_size = 2048;
-    private static String python_classifier_script_path = "mlp_prediction_server.py";
-    private static String python_classifier_mlp_path = "pickle_5.jar";
-    private static String python_classifier_scaler_path = "pickle4scale_5.jar";
+    private static String python_classifier_script_path = "main.py";
     private static String project_files_path = "D:\\";
     private static String python_scripts_resource_path = null;
 
     static
     {
+        /*
         try
         {
             python_scripts_resource_path = new File( ProjectStatics.class.getClassLoader().getResource( "Python scripts" ).toURI() ).getAbsolutePath() + "/";
@@ -31,6 +30,8 @@ public class ProjectStatics
         {
             e.printStackTrace();
         }
+        */
+        python_scripts_resource_path = "D:/git/Discuri/Audio_classifier/";
 
     }
 
@@ -60,12 +61,7 @@ public class ProjectStatics
 
     public static String getPython_classifier_mlp_path()
     {
-        return python_scripts_resource_path + python_classifier_mlp_path;
-    }
-
-    public static String getPython_classifier_scaler_path()
-    {
-        return python_scripts_resource_path + python_classifier_scaler_path;
+        return python_scripts_resource_path + "TBD";
     }
 
     public static String get_temp_files_path()

@@ -2,17 +2,16 @@ package ProjectManager;
 
 import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.Cached_ADS_Manager;
-import AudioDataSource.FileADS.FileAudioSourceFactory;
-import AudioDataSource.IAudioDataSource;
 import AudioDataSource.VersionedADS.AudioDataSourceVersion;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import MarkerFile.MarkerFile;
 import MarkerFile.Marking;
-import SignalProcessing.Effects.Copy_to_ADS;
-import SignalProcessing.Effects.Create_Marker_File;
 import SignalProcessing.Effects.IEffect;
+import SignalProcessing.SampleClassifier.AIDamageRecognition;
+import SignalProcessing.SampleClassifier.RemoteAIServer.IOP_IPC_stdio;
+import SignalProcessing.SampleClassifier.RemoteAIServer.IOP_msg_struct_type;
 import Utils.Interval;
 
 import java.io.FileNotFoundException;
@@ -29,6 +28,8 @@ public class ProjectManager
     private static VersionedAudioDataSource versionedADS = null;
     private static MarkerFile markerFile = new MarkerFile();
     private static CachedAudioDataSource cache = null;
+
+    private static IOP_IPC_stdio classifier_ipc = null;
 
     private static ReentrantLock mutex = new ReentrantLock();
 
@@ -168,5 +169,51 @@ public class ProjectManager
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
         }
         effect.apply( getCache(), null, interval );
+    }
+
+    public static void start_classifier_process() throws IOException, InterruptedException
+    {
+        String script_exec = "python -u " + "\"" + ProjectStatics.getPython_classifier_script_path() + "\"";
+        stop_classifier_process( true );
+        classifier_ipc = new IOP_IPC_stdio( script_exec );
+    }
+
+    public static IOP_IPC_stdio get_classifier_ipc()
+    {
+        return classifier_ipc;
+    }
+
+    public static void stop_classifier_process( boolean force ) throws IOException, InterruptedException
+    {
+        if( classifier_ipc == null )
+        {
+            return;
+        }
+
+        if( !force )
+        {
+            IOP_msg_struct_type msg = new IOP_msg_struct_type();
+            msg.ID = AIDamageRecognition.IOP_MSG_ID_CMD;
+            msg.subID = AIDamageRecognition.IOP_MSG_SUBID_CMD_TERMINATE;
+            msg.size = 0;
+
+            classifier_ipc.IOP_put_frame( msg );
+
+            // Wait for the processing of the message
+            Thread.sleep( 1000 );
+
+            if( classifier_ipc.getProcess().isAlive() )
+            {
+                force = true;
+            }
+        }
+        if( force )
+        {
+            if( classifier_ipc.getProcess().isAlive() )
+            {
+                classifier_ipc.getProcess().destroy();
+            }
+        }
+        classifier_ipc = null;
     }
 }

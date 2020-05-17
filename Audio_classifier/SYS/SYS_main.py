@@ -14,6 +14,10 @@ SYS_TSK_PERIOD_MS = 25
 #------------------------------------------
 SYS_run_loop = True
 
+def SYS_main_stop_loop():
+    global SYS_run_loop
+    SYS_run_loop = False
+
 class SYS_main:
     #------------------------------------------
     # Local variables
