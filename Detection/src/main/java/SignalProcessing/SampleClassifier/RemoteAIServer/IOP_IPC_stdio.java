@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class IOP_IPC_stdio
@@ -70,7 +69,7 @@ public class IOP_IPC_stdio
         try
         {
             System.out.println( "Starting python script" );
-            proc = new ProcessBuilder( start_command ).start();
+            proc = Runtime.getRuntime().exec( start_command );
             System.out.println( "Python script started" );
         }
         catch( IOException e )
@@ -86,19 +85,22 @@ public class IOP_IPC_stdio
         return proc;
     }
 
-    public void IOP_get_bytes() throws IOException
+    public int IOP_get_bytes() throws IOException
     {
         InputStream in = proc.getInputStream();
-        int bytes_read;
+        int bytes_read = 0;
 
         try
         {
-            bytes_read = in.read( rx_buffer, rx_bytes_cnt, rx_buffer.length - rx_bytes_cnt );
-            if( bytes_read < 0 )
+            if( in.available() > 0 )
             {
-                throw new IOException( "Input stream terminated" );
+                bytes_read = in.read( rx_buffer, rx_bytes_cnt, rx_buffer.length - rx_bytes_cnt );
+                if( bytes_read < 0 )
+                {
+                    throw new IOException( "Input stream terminated" );
+                }
+                rx_bytes_cnt += bytes_read;
             }
-            rx_bytes_cnt += bytes_read;
         }
         catch( IOException e )
         {
@@ -109,6 +111,7 @@ public class IOP_IPC_stdio
             proc = null;
             throw e;
         }
+        return bytes_read;
     }
 
 
@@ -235,8 +238,8 @@ public class IOP_IPC_stdio
                 }
 
                 //Discard the processed bytes _rx_buffer = _rx_buffer[ parse_index + 1:]
-                rx_bytes_cnt -= parse_index;
-                System.arraycopy( rx_buffer, parse_index, rx_buffer, 0, rx_bytes_cnt );
+                rx_bytes_cnt -= parse_index + 1;
+                System.arraycopy( rx_buffer, parse_index + 1, rx_buffer, 0, rx_bytes_cnt );
                 parse_index = 0;
                 parse_status = iop_parse_status_type.iop_PARSE_STATUS_CONTINUE;
                 decoded_bytes = 0;
@@ -252,19 +255,32 @@ public class IOP_IPC_stdio
     public int IOP_put_bytes( byte[] raw_bytes, int length ) throws IOException
     {
         proc.getOutputStream().write( raw_bytes, 0, length );
-
+        proc.getOutputStream().flush();
         return length;
     }
 
     public int IOP_put_frame( IOP_msg_struct_type msg ) throws IOException
     {
         ByteBuffer out = ByteBuffer.wrap( tx_buffer ).order( ByteOrder.LITTLE_ENDIAN );
+        ByteBuffer hdr = ByteBuffer.allocate( 4 ).order( ByteOrder.LITTLE_ENDIAN );
 
+        out.rewind();
         out.put( ( byte )DLE_BYTE );
         out.put( ( byte )STX_BYTE );
-        out.put( ( byte )( msg.ID & 0xFF ) );
-        out.put( ( byte )( msg.subID & 0xFF ) );
-        out.putShort( ( short )( msg.size & 0xFFFF ) );
+
+        hdr.put( ( byte )( msg.ID & 0xFF ) );
+        hdr.put( ( byte )( msg.subID & 0xFF ) );
+        hdr.putShort( ( short )( msg.size & 0xFFFF ) );
+
+        // DLE stuffing for the header
+        for( int i = 0; i < 4; i++ )
+        {
+            if( hdr.array()[ i ] == DLE_BYTE )
+            {
+                out.put( ( byte )DLE_BYTE );
+            }
+            out.put( hdr.array()[ i ] );
+        }
 
         // DLE stuffing
         for( int i = 0; i < msg.size; i++ )
@@ -280,5 +296,6 @@ public class IOP_IPC_stdio
         out.put( ( byte )ETX_BYTE );
 
         return IOP_put_bytes( out.array(), out.position() );
+
     }
 }

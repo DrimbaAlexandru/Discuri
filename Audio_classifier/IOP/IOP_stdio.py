@@ -6,6 +6,8 @@ import struct
 #
 # Special characters
 #----------------------------------------------
+from io import SEEK_END
+
 DLE_BYTE = 0x10
 STX_BYTE = 0x02
 ETX_BYTE = 0x03
@@ -48,8 +50,18 @@ def IOP_get_bytes():
     global _rx_buffer
     global rx_idx
 
-    rxd_bytes = sys.stdin.read( IOP_MSG_MAX_LENGTH - len ( _rx_buffer ) )
-    # rx_tbl = [ # b'\x10\x02\x03\x01\x00\x00\x10\x03',                     # request classifier info
+    rxd_bytes = b''
+
+    if( sys.stdin.buffer.seekable() ):
+        crnt_pos = sys.stdin.buffer.tell()
+        sys.stdin.buffer.seek(0,SEEK_END)
+        bytes_avail = sys.stdin.buffer.tell() - crnt_pos
+        sys.stdin.buffer.seek(crnt_pos)
+        if( bytes_avail > 0 ):
+            #print( "Reading %u bytes " % bytes_avail, file = sys.stderr, flush=True )
+            rxd_bytes = sys.stdin.buffer.read1( bytes_avail )
+            #print( "Read %u bytes " % len( rxd_bytes ), file = sys.stderr, flush=True )
+    # rx_tbl = [ # b'\x10\x02\x07\x01\x00\x00\x10\x03',                     # request classifier info
     #            # b'\x10\x02\x01\x01\x04\x00\x04\x00\x00\x00\x10\x03',     # audio start rx
     #            # b'\x10\x02\x01\x02\x0A\x00\x00\x00\x00\x00\x02\x00\x01\x00\x02\x00\x10\x03',     # audio data 1
     #            # b'\x10\x02\x01\x02\x0A\x00\x02\x00\x00\x00\x02\x00\x03\x00\x04\x00\x10\x03',     # audio data 2
@@ -65,6 +77,7 @@ def IOP_get_bytes():
         raise EOFError( "Stream closed" )
 
     _rx_buffer = _rx_buffer + rxd_bytes
+    return len( rxd_bytes )
 
 
 def IOP_get_frame():
@@ -81,7 +94,8 @@ def IOP_get_frame():
         if( _parse_state == iop_PARSE_STATE_ETX and _parse_status != iop_PARSE_STATUS_CONTINUE ):
             if( _parse_state == iop_PARSE_STATE_ETX and _parse_status == iop_PARSE_STATUS_ACK ):
                 if( len( _decoded_buffer ) < 4 ):
-                    print( "Invalid frame", file=sys.stderr )
+                    #print( "Invalid frame", file=sys.stderr )
+                    pass
                 else:
                     msg_id = _decoded_buffer[0:1]
                     msg_subid = _decoded_buffer[1:2]
@@ -93,12 +107,14 @@ def IOP_get_frame():
                     size = struct.unpack( '<H', msg_size )[ 0 ]
 
                     if( len( msg_data ) != size ):
-                        print( "Message sizes not matching", file=sys.stderr )
+                        #print( "Message sizes not matching", file=sys.stderr )
+                        pass
                     else:
                         ret_val = ( id, subid, size, msg_data )
 
             if( _parse_state == iop_PARSE_STATE_ETX and _parse_status == iop_PARSE_STATUS_ERROR ):
-                print( "Parse error", file=sys.stderr )
+                #print( "Parse error", file=sys.stderr )
+                pass
 
             # Discard the processed bytes
             _rx_buffer = _rx_buffer[_parse_index + 1:]
@@ -161,19 +177,25 @@ def iop_parse_byte( byte ):
 
 
 def IOP_put_bytes( raw_bytes ):
-    return sys.stdout.buffer.write( raw_bytes )
+    byte_cnt = sys.stdout.buffer.write( raw_bytes )
+    #sys.stdout.flush()
+    return byte_cnt
 
 def IOP_put_frame( id, subid, data ):
     bytes = bytearray( b'' )
 
     if( data is None ):
         data = b''
+
+    if( isinstance( data, str ) ):
+        data = data.encode("ascii")
         
     bytes = bytes + struct.pack( '<B', DLE_BYTE )
     bytes = bytes + struct.pack( '<B', STX_BYTE )
-    bytes = bytes + struct.pack( '<B', id )
-    bytes = bytes + struct.pack( '<B', subid )
-    bytes = bytes + struct.pack( '<H', len( data ) )
+
+    #print( "Txing message %u %u %u" % (id, subid, len(data)), file = sys.stderr, flush=True )
+
+    data = struct.pack( '<B', id ) + struct.pack( '<B', subid ) + struct.pack( '<H', len( data ) ) + data
 
     # DLE stuffing
     data = data.replace( b'\x10', b'\x10\x10' )
@@ -184,11 +206,14 @@ def IOP_put_frame( id, subid, data ):
 
     bytes_written = IOP_put_bytes( bytes )
 
+    #print( "Txd message %u %u %u" % (id, subid, len(data)), file = sys.stderr, flush=True )
+
     if bytes_written == len( bytes ):
         return bytes_written
-    else:
-        print( "Message not fully written", file = sys.stderr )
-        return 0
+    elif bytes_written is not None:
+        #print( "Message not fully written", file = sys.stderr )
+        raise Exception("Message not fully written")
+    return len( bytes )
 
 
 

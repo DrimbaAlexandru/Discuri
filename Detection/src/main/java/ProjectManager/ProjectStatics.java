@@ -56,7 +56,7 @@ public class ProjectStatics
 
     public static String getPython_classifier_script_path()
     {
-        return python_scripts_resource_path + python_classifier_script_path;
+        return "D:\\git\\Discuri\\Audio_classifier\\main.py";
     }
 
     public static String getPython_classifier_mlp_path()

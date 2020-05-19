@@ -180,7 +180,12 @@ public class ProjectManager
 
     public static IOP_IPC_stdio get_classifier_ipc()
     {
+        if( classifier_ipc != null && !classifier_ipc.getProcess().isAlive() )
+        {
+            classifier_ipc = null;
+        }
         return classifier_ipc;
+
     }
 
     public static void stop_classifier_process( boolean force ) throws IOException, InterruptedException

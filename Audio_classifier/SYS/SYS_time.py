@@ -1,10 +1,10 @@
-from time import process_time_ns
+import time
 
 #----------------------------------------------
 # Local variables
 #----------------------------------------------
-_init_time = process_time_ns()
+_init_time = int(round(time.time() * 1000))
 
 
 def SYS_get_time_ms():
-    return ( process_time_ns() - _init_time ) // 1000
+    return int(round(time.time() * 1000)) - _init_time

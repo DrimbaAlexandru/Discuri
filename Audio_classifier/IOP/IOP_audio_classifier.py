@@ -46,7 +46,7 @@ class IOP_audio_classifier:
     SAMPLE_SIZE_BYTES = 2
     PROBABILITY_SIZE_BYTES = 1
 
-    TX_BAUD_RATE_PER_CYCLE = 2**14
+    TX_BAUD_RATE_PER_CYCLE = 8192
 
     #----------------------------------------------
     # Local variables
@@ -70,19 +70,20 @@ class IOP_audio_classifier:
     def audio_input( self ):
         try:
             while True:
-                IOP_get_bytes()
+                bytes_read = IOP_get_bytes()
                 frame = IOP_get_frame()
 
-                if( frame is None ):
-                    return
-                else:
+                if( frame is not None ):
                     id, subid, len, data = frame
-                    print( "Rxd message %u %u %u" % ( id, subid, len ) )
+                    #print( "Rxd message %u %u %u" % ( id, subid, len ), file= sys.stderr )
                     self._process_message( frame )
+                else:
+                    if( bytes_read == 0 ):
+                        break
 
         except BaseException as e:
-            traceback.print_exc()
-            self._abort( b'Exception occured' )
+            #traceback.print_exc( file = sys.stderr )
+            self._abort( b'Exception occurred' )
             IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, traceback.format_exc().encode("ascii") )
             SYS.SYS_main.SYS_main_stop_loop()
 
@@ -92,7 +93,7 @@ class IOP_audio_classifier:
         if( id == IOP_MSG_ID_CLASSIFIER_INFO ):
             if( subid == IOP_MSG_SUBID_RQST_INFO ):
                 response_msg = struct.pack( '<IHHH', AI_AUDIO_SAMPLE_RATE, AI_AUDIO_INPUTS, AI_AUDIO_OUTPUTS, AI_AUDIO_OFFSET )
-                IOP_put_frame( IOP_MSG_ID_CLASSIFIER_INFO, IOP_MSG_SUBID_INFO, response_msg)
+                IOP_put_frame( IOP_MSG_ID_CLASSIFIER_INFO, IOP_MSG_SUBID_INFO, response_msg )
             return
 
         if( id == IOP_MSG_ID_AUDIO_RX ):
@@ -103,7 +104,7 @@ class IOP_audio_classifier:
                     self._state = self.iop_AUDIO_STATE_RX
                 else:
                     self._abort( b'Classifier not ready for receiving audio data START' )
-                    IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, "RXd AUDIO START RX in non IDLE state %u" % self._state)
+                    IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, "RXd AUDIO START RX in non IDLE state %u" % self._state )
 
             elif( subid == IOP_MSG_SUBID_AUDIO_RX_DATA ):
                 if( self._state == self.iop_AUDIO_STATE_RX ):
@@ -129,7 +130,7 @@ class IOP_audio_classifier:
         if( id == IOP_MSG_ID_AUDIO_ABORT ):
             if( subid == IOP_MSG_SUBID_AUDIO_CANCEL ):
                 self._reset_everything()
-                print( "Aborted by client", sys.stderr )
+                #print( "Aborted by client", sys.stderr )
             return
 
         if( id == IOP_MSG_ID_CMD ):
@@ -176,7 +177,7 @@ class IOP_audio_classifier:
                 chunk_length = len( self._tx_probability_buffer ) - self._tx_offset
                 max_tx_bytes = min( IOP_MSG_MAX_DATA_LENGTH, self.TX_BAUD_RATE_PER_CYCLE - txd_bytes )
                 if( chunk_length * self.PROBABILITY_SIZE_BYTES > max_tx_bytes ):
-                    chunk_length = max_tx_bytes / self.PROBABILITY_SIZE_BYTES
+                    chunk_length = max_tx_bytes // self.PROBABILITY_SIZE_BYTES
 
                 # If there's no data to be sent, exit the loop
                 if( chunk_length <= 0 ):
@@ -184,7 +185,7 @@ class IOP_audio_classifier:
 
                 data_msg = struct.pack( "<IH", self._tx_offset, chunk_length )
                 data_msg += struct.pack( "B" * chunk_length ,
-                                         *[ i * 255 for i in self._tx_probability_buffer[ self._tx_offset:self._tx_offset + chunk_length ] ] )
+                                         *[ int( i * 255 ) for i in self._tx_probability_buffer[ self._tx_offset:self._tx_offset + chunk_length ] ] )
                 txd_bytes += IOP_put_frame( IOP_MSG_ID_AUDIO_TX, IOP_MSG_SUBID_AUDIO_TX_DATA, data_msg )
 
                 self._tx_offset += chunk_length

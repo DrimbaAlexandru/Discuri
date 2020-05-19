@@ -128,7 +128,7 @@ public class FFT_Equalizer implements IEffect
         }
 
         /*
-        *   Ye old FIR where FFT is not possible
+        *   Ye olde FIR where FFT is not possible
         */
         filter.setFilter( fir_filter );
         filter.apply( dataSource, dataDest, new Interval( interval.l, FFT_possible_interval.l + FFT_length / 2, false ) );

@@ -7,7 +7,7 @@ from IOP.IOP_audio_classifier import *
 #------------------------------------------
 # Local constants
 #------------------------------------------
-SYS_TSK_PERIOD_MS = 25
+SYS_TSK_PERIOD_MS = 1
 
 #------------------------------------------
 # Global variables
@@ -48,5 +48,7 @@ class SYS_main:
                 time_left = SYS_TSK_PERIOD_MS - ( SYS_get_time_ms() - self._s_last_task_tick )
                 if( time_left > 0 ):
                     time.sleep( time_left / 1000.0 )
+            time.sleep( 1 )
         except BaseException as e:
-            traceback.print_exc()
+            pass
+            #traceback.print_exc( file = sys.stderr )
