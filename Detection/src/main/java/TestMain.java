@@ -13,7 +13,7 @@ import SignalProcessing.FunctionApproximation.FourierInterpolator;
 import SignalProcessing.FunctionApproximation.FunctionApproximation;
 import SignalProcessing.LinearPrediction.BurgMethod;
 import SignalProcessing.LinearPrediction.LinearPrediction;
-import SignalProcessing.SampleClassifier.Create_Marker_File;
+import SignalProcessing.SampleClassifier.AIDamageRecognition;
 import SignalProcessing.SampleClassifier.Create_Probability_Graph;
 import Utils.*;
 
@@ -174,7 +174,7 @@ public class TestMain {
         try
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\Beethoven - Quartet no 4 - IV frg pre RIAA.wav");
-            Create_Marker_File create_marker_file = new Create_Marker_File();
+            AIDamageRecognition create_marker_file = new AIDamageRecognition();
             create_marker_file.setThreshold( 0.5f );
             create_marker_file.apply( wav, null, new Interval( 0, wav.get_sample_number() ) );
 
@@ -362,7 +362,7 @@ public class TestMain {
             CachedAudioDataSource fir_cache = new CachedAudioDataSource( dst_FIR, 44100 * 10, 44100 );
 
             long start_ms;
-            int filter_length = ( int )Math.pow( 2, 5 );
+            int filter_length = ( int )Math.pow( 2, 13 );
 
             FFT_Equalizer filter = new FFT_Equalizer();
             FIR_Equalizer fir_filter = new FIR_Equalizer();
@@ -371,18 +371,22 @@ public class TestMain {
             fir_filter.setFilter( fir );
             filter.setFFT_length( filter_length );
             fir_filter.setMax_chunk_size( 44100 );
+            filter.set_OLA_window_size( filter_length / 2 );
 
             start_ms = System.currentTimeMillis();
             System.out.println( "FFT:" );
-            filter.apply( src_cache, fft_cache, new Interval( filter_length / 2, src.get_sample_number() - filter_length / 2 ) );
+            filter.apply( src_cache, fft_cache, new Interval( 0, src_cache.get_sample_number() ) );
             System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
-/*
+
             start_ms = System.currentTimeMillis();
             System.out.println( "FIR:" );
-            fir_filter.apply( src_cache, fir_cache, new Interval( filter_length / 2, src.get_sample_number() - filter_length / 2 ) );
+            fir_filter.apply( src_cache, fir_cache, new Interval( 0, src.get_sample_number() ) );
             System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
-*/
+
             System.out.println( "Closing..." );
+
+            fft_cache.flushAll();
+            fir_cache.flushAll();
 
             src_cache.close();
             fft_cache.close();
