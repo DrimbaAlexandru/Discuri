@@ -118,7 +118,7 @@ public class FFT_Equalizer implements IEffect
         if( OLA_zero_padding > 0 )
         {
             Arrays.fill( zero_pad_window, 1 );
-            Windowing.apply( zero_pad_window, OLA_zero_padding, Windowing.one_window );
+            Windowing.apply( zero_pad_window, OLA_zero_padding, Windowing.half_Hann_window );
         }
 
         /*
@@ -163,7 +163,7 @@ public class FFT_Equalizer implements IEffect
                 for( j = 0; j < OLA_zero_padding; j++ )
                 {
                     signal_r[ j ] *= zero_pad_window[ j ];
-                    signal_r[ FFT_length - 1 - j ] *= zero_pad_window[ OLA_zero_padding - 1 - j ];
+                    signal_r[ FFT_length - 1 - j ] *= zero_pad_window[ j ];
                 }
 
                 /* Perform the Overlap Add */
@@ -199,6 +199,7 @@ public class FFT_Equalizer implements IEffect
         *   Ye olde FIR where FFT is not possible
         */
         filter.setFilter( fir_filter );
+        filter.setMax_chunk_size( FFT_length );
         filter.apply( dataSource, dataDest, new Interval( interval.l, FFT_applicable_interval.l, false ) );
         filter.apply( dataSource, dataDest, new Interval( FFT_applicable_interval.r, interval.r, false ) );
 

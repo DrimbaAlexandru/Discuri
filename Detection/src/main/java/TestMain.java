@@ -354,7 +354,7 @@ public class TestMain {
         {
             ProjectManager.lock_access();
             WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\signal.wav" );
-            WAVFileAudioSource dst_FFT = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fft.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+            WAVFileAudioSource dst_FFT = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fft_fade.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
             WAVFileAudioSource dst_FIR = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fir.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
 
             CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100 * 10, 44100 );
@@ -370,7 +370,7 @@ public class TestMain {
             filter.setFilter( fir );
             fir_filter.setFilter( fir );
             filter.setFFT_length( filter_length );
-            fir_filter.setMax_chunk_size( 44100 );
+            fir_filter.setMax_chunk_size( filter_length );
             filter.set_OLA_window_size( filter_length / 2 );
 
             start_ms = System.currentTimeMillis();
@@ -507,24 +507,15 @@ public class TestMain {
     public static void main18( String[] args )
     {
         ProjectManager.lock_access();
-        String filePath = "D:\\marked recordings\\resampled\\results\\andries\\andries - dracula blues inv riaa.wav";
-        Interval interval = new Interval( ( 1 * 60 + 24 ) * 96000, ( 2 * 60 + 3 ) * 96000, false );
-        String dest = "D:\\datasets\\andries 1 24 - 2 03 train set.bin";
+        String filePath = "E:\\Discuri wav\\wav\\AT440MLb\\15RPM\\96000\\Beethoven - Serenade in D for flute inv riaa.wav";
+        String dest = "D:\\git\\Discuri\\Audio_classifier\\AI\\training_data\\beethoven serenade valid.bin";
         try
         {
-            ProjectManager.add_from_marker_file( "D:\\marked recordings\\resampled\\andries - dracula blues mark 0,010 96000.txt" );
+            ProjectManager.add_from_marker_file( "E:\\Discuri wav\\wav\\AT440MLb\\15RPM\\96000\\Beethoven - Serenade in D for flute mark.txt" );
             IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
             DataSetGenerator.generate( file, interval, dest, 64, 0.001f, 0, 0.75f );
         }
-        catch( DataSourceException e )
-        {
-            e.printStackTrace();
-        }
-        catch( IOException e )
-        {
-            e.printStackTrace();
-        }
-        catch( ParseException e )
+        catch( DataSourceException | IOException | ParseException e )
         {
             e.printStackTrace();
         }
@@ -536,6 +527,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        main15( args );
+        main18( args );
     }
 }
