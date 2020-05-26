@@ -113,7 +113,7 @@ public class Cached_ADS_Manager
         List< String > to_be_removed = new ArrayList<>();
         for( Map.Entry< String, MyPair< CachedAudioDataSource, Long > > entry : to_be_closed.entrySet() )
         {
-            if( entry.getValue().getRight() + close_delay_ms < time_now )
+            if( entry.getValue().getRight() + close_delay_ms > time_now )
             {
                 to_be_removed.add( entry.getKey() );
             }
