@@ -80,6 +80,8 @@ public class ProjectManager
         }
         AudioDataSourceVersion sourceVersion = versionedADS.get_current_version();
         cache.flushAll();
+        Cached_ADS_Manager.finish_all_caches();
+
         AudioDataSourceVersion destinationVersion = versionedADS.create_new();
         CachedAudioDataSource destCache = new CachedAudioDataSource( destinationVersion, ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
         effect.apply( cache, destCache, interval );

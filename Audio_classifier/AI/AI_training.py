@@ -11,8 +11,8 @@ TEST_DATA_LABELED = True
 
 INPUT_SIZE = 129
 OUTPUT_SIZE = 1
-OFFSET = ( INPUT_SIZE - OUTPUT_SIZE ) // 2
-SAMPLE_RATE = 9600
+OFFSET = 64
+SAMPLE_RATE = 96000
 
 model = BinaryClassifierModelWithGenerator( INPUT_SIZE,
                                             OUTPUT_SIZE,

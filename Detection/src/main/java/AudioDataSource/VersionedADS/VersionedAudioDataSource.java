@@ -48,7 +48,7 @@ public class VersionedAudioDataSource
         }
     }
 
-    public AudioDataSourceVersion create_new()
+    public AudioDataSourceVersion create_new() throws DataSourceException
     {
         while( versions.size() > current_version + 1 )
         {
@@ -61,7 +61,7 @@ public class VersionedAudioDataSource
         return ver;
     }
 
-    public void dispose()
+    public void dispose() throws DataSourceException
     {
         current_version = versions.size() - 1;
         while( versions.size() > 1 )

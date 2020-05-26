@@ -8,6 +8,7 @@ import SignalProcessing.Filters.FIR;
 import SignalProcessing.FourierTransforms.Fourier;
 import SignalProcessing.Windowing.Windowing;
 import Utils.Interval;
+import Utils.Util_Stuff;
 import net.jafama.FastMath;
 
 import java.util.Arrays;
@@ -199,7 +200,7 @@ public class FFT_Equalizer implements IEffect
         *   Ye olde FIR where FFT is not possible
         */
         filter.setFilter( fir_filter );
-        filter.setMax_chunk_size( FFT_length );
+        filter.setMax_chunk_size( FFT_length * 2 );
         filter.apply( dataSource, dataDest, new Interval( interval.l, FFT_applicable_interval.l, false ) );
         filter.apply( dataSource, dataDest, new Interval( FFT_applicable_interval.r, interval.r, false ) );
 
@@ -215,6 +216,8 @@ public class FFT_Equalizer implements IEffect
     public void setFilter( FIR filter )
     {
         fir_filter = filter;
+        setFFT_length( Util_Stuff.next_power_of_two( filter.getFf_coeff_nr() ) );
+        set_OLA_window_size( this.FFT_length / 2 );
     }
 
     public void set_OLA_window_size( int OLA_step_size )

@@ -513,7 +513,9 @@ public class TestMain {
         {
             ProjectManager.add_from_marker_file( "E:\\Discuri wav\\wav\\AT440MLb\\15RPM\\96000\\Beethoven - Serenade in D for flute mark.txt" );
             IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
-            DataSetGenerator.generate( file, interval, dest, 64, 0.001f, 0, 0.75f );
+            DataSetGenerator dse = new DataSetGenerator( 129, 1, 64 );
+            dse.generate( file, new Interval( ( 0 * 60 + 0 ) * file.get_sample_rate(), ( 0 * 60 + 0 ) * file.get_sample_rate(), false ), dest, 64, 0.001f, 0.1f, 0.75f );
+
         }
         catch( DataSourceException | IOException | ParseException e )
         {
@@ -525,8 +527,40 @@ public class TestMain {
         }
     }
 
+    public static void main19( String[] args )
+    {
+        ProjectManager.lock_access();
+        String base_path = "E:\\datasets\\new\\positives\\";
+        String filename = "Bach triosonata 3 mark";
+        try
+        {
+            WAVFileAudioSource src = new WAVFileAudioSource( base_path + filename + ".wav" );
+            WAVFileAudioSource dest = new WAVFileAudioSource( base_path + filename + " mvg avg.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+            CachedAudioDataSource dest_cache = new CachedAudioDataSource( dest, 44100, 4096 );
+
+            MarkerFileGenerator generator = new MarkerFileGenerator();
+            generator.setDest_path( base_path + filename );
+            generator.setAbs_threshold( 0.0075f );
+            generator.setDuplicate_L_to_R( true );
+            generator.setMin_marking_spacing( 4 );
+            generator.setSide_extend( 4 );
+            generator.setSpike_threshold( 0.2f );
+            generator.apply( src, dest_cache, new Interval( 0, src.get_sample_number() ) );
+
+            dest_cache.flushAll();
+        }
+        catch( DataSourceException e )
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            ProjectManager.release_access();
+        }
+    }
+
     public static void main( String[] args )
     {
-        main18( args );
+        main19( args );
     }
 }
