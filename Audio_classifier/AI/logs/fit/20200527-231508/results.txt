@@ -1,0 +1,26 @@
+Number of learning samples: 159
+Number of validation samples: 22
+Number of testing samples: 25
+Learning results:
+  IoU,   Dice
+0.8457900285720825, 
+0.8457900881767273, 
+0.8457900285720825, 
+0.8457900285720825, 
+
+
+Validation results:
+  IoU,   Dice
+0.842666506767273, 
+0.842666506767273, 
+0.842666506767273, 
+0.842666506767273, 
+
+
+Testing results:
+  IoU,   Dice
+0.8456648588180542, 
+0.8456648588180542, 
+0.8456648588180542, 
+0.8456648588180542, 
+

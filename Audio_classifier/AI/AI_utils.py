@@ -3,7 +3,10 @@ import struct
 
 import numpy as np
 
-from AI.AI_training import INPUT_SIZE, OUTPUT_SIZE
+OFFSET = 128
+OUTPUT_SIZE = 128
+INPUT_SIZE = OFFSET * 2 + OUTPUT_SIZE
+SAMPLE_RATE = 96000
 
 RECORD_FORMAT = "<" + INPUT_SIZE * "h" + OUTPUT_SIZE * "B"
 SAMPLE_VALUE_MUL_FACTOR = 2**15
@@ -11,11 +14,17 @@ MAX_SAMPLE_VALUE = 2**15 - 1
 MIN_SAMPLE_VALUE = -2**15
 RECORD_SIZE = struct.calcsize( RECORD_FORMAT )
 
+POSITIVE_CLASS_WEIGHT = 4.62683
+NEGATIVE_CLASS_WEIGHT = 1 / np.sqrt(POSITIVE_CLASS_WEIGHT)
+POSITIVE_CLASS_WEIGHT = np.sqrt( POSITIVE_CLASS_WEIGHT )
+
+
+
 def load_marked_signal_file( file_path, start_idx, seq_len ):
     with open( file_path, mode='rb') as file:
         file.seek( start_idx * RECORD_SIZE )
         file_content = file.read( seq_len * RECORD_SIZE )
-        assert len( file_content ) % RECORD_SIZE == 0
+        assert len( file_content ) % RECORD_SIZE == 0, "File: " + file_path + ", start idx: " + str( start_idx ) + ", len: " + str( len( file_content ) )
         record_cnt = len( file_content ) // RECORD_SIZE
 
         samples = np.zeros( ( record_cnt, 1, INPUT_SIZE ), dtype=np.float_ )
@@ -67,14 +76,14 @@ def evaluate_model_generator(model, metrics):
     metrics["validation_size"] = model.validation_generator.get_item_count()
 
     metrics[model.epochs_measured] = []
-    metrics[model.epochs_measured].append(metrics_learn[1:3])
-    metrics[model.epochs_measured].append(metrics_val[1:3])
+    metrics[model.epochs_measured].append(metrics_learn[1:5])
+    metrics[model.epochs_measured].append(metrics_val[1:5])
 
     if model.IS_TEST_DATA_LABELED:
         metrics_test = model.model.evaluate_generator(generator=model.test_generator)
         metrics["test_size"] = model.test_generator.get_item_count()
 
-        metrics[model.epochs_measured].append(metrics_test[1:3])
+        metrics[model.epochs_measured].append(metrics_test[1:5])
 
 
 def write_model_metrics(model, metrics):
@@ -87,7 +96,7 @@ def write_model_metrics(model, metrics):
         results_file.write("\nNumber of testing samples: " + str(metrics["test_size"]))
 
     results_file.write("\nLearning results:")
-    results_file.write("\n  IoU,   Dice\n")
+    results_file.write("\n  Accuracy, F1 score, Precision, Recall\n")
     for epoch in range(0, model.epochs_measured + 1):
         if epoch in metrics:
             for metric in metrics[epoch][0]:
@@ -96,7 +105,7 @@ def write_model_metrics(model, metrics):
     results_file.write("\n")
 
     results_file.write("\nValidation results:")
-    results_file.write("\n  IoU,   Dice\n")
+    results_file.write("\n  Accuracy, F1 score, Precision, Recall\n")
     for epoch in range(0, model.epochs_measured + 1):
         if epoch in metrics:
             for metric in metrics[epoch][1]:
@@ -106,7 +115,7 @@ def write_model_metrics(model, metrics):
 
     if model.IS_TEST_DATA_LABELED:
         results_file.write("\nTesting results:")
-        results_file.write("\n  IoU,   Dice\n")
+        results_file.write("\n  Accuracy, F1 score, Precision, Recall\n")
         for epoch in range(0, model.epochs_measured + 1):
             if epoch in metrics:
                 for metric in metrics[epoch][2]:

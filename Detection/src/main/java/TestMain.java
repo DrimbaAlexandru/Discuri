@@ -506,16 +506,85 @@ public class TestMain {
 
     public static void main18( String[] args )
     {
+        class markedFile
+        {
+            public String audio_path;
+            public String marker_path;
+            public String dest_path;
+            public float non_marked_prob;
+            public float marked_prob;
+            public float doubling_prob;
+
+            public markedFile( String a, String m, String d, float nm, float mp, float dp )
+            {
+                audio_path = a;
+                marker_path = m;
+                dest_path = d;
+                non_marked_prob = nm;
+                marked_prob = mp;
+                doubling_prob = dp;
+            }
+        }
+
+        markedFile files[] = new markedFile[]
+        {
+            new markedFile( "Bach triosonata 3.wav","Bach triosonata 3 mark diff s 4 m 4 0.2000 avg 18.txt", "Bach triosonata.bin",  0.00033f, 0.02f,  0.0f ),
+            new markedFile( "Boccherini cello.wav", "Boccherini cello mark diff s 2 m 4 0.1000 avg 12.txt",  "Boccherini cello.bin", 0.0025f,  0.15f,  0.0f ),
+            new markedFile( "les preludes.wav",     "les preludes mark diff s 4 m 1 0.1000 avg 17.txt",      "les preludes.bin",     0.01f,    0.03f,  0.0f ),
+            new markedFile( "Marie, osanca me.wav", "Marie, osanca me mark diff s 3 m 1 0.1000 avg 21.txt",  "petreusi.bin",         0.01f,    0.0125f,0.0f ),
+            new markedFile( "mendelssohn.wav",      "mendelssohn mark diff s 3 m 1 0.1500 avg 19.txt",       "mendelssohn.bin",      0.01f,    0.0175f,0.0f ),
+            new markedFile( "phoenix.wav",          "phoenix mark diff s 3 m 5 0.1000 avg 15.txt",           "phoenix.bin",          0.005f,   0.033f, 0.0f ),
+            new markedFile( "vivaldi.wav",          "vivaldi mark diff s 3 m 1 0.1000 avg 12.txt",           "vivaldi.bin",          0.0025f,  0.075f, 0.0f ),
+
+            new markedFile( "bagpipe.wav",       null, "neg_bagpipe.bin",    0.05f,  0.0f, 0.0f ),
+            new markedFile( "bathory.wav",       null, "neg_bathory.bin",    0.1f,   0.0f, 0.0f ),
+            new markedFile( "cargo.wav",         null, "neg_cargo.bin",      0.1f,   0.0f, 0.0f ),
+            new markedFile( "infinitum.wav",     null, "neg_infinitum.bin",  0.1f,   0.0f, 0.0f ),
+            new markedFile( "ioan bocsa.wav",    null, "neg_ioan bocsa.bin", 0.05f,  0.0f, 0.0f ),
+            new markedFile( "prokofiev 2.wav",   null, "neg_prokofiev.bin",  0.05f,  0.0f, 0.0f ),
+            new markedFile( "trumpet.wav",       null, "neg_trumpet.bin",    0.075f, 0.0f, 0.0f ),
+
+            new markedFile( "andries - dracula blues.wav",                                 "andries - dracula blues mark diff s 2 m 4 0.1750 avg 16.txt",                                 "andries.bin",           0.0025f, 0.033f, 0.0f ),
+            new markedFile( "Beethoven - Quartet no 4 - IV.wav",                           "Beethoven - Quartet no 4 - IV mark diff s 3 m 1 0.1000 avg 15.txt",                           "beethoven quartet.bin", 0.002f,  0.025f, 0.0f ),
+            new markedFile( "Chopin - Etude op. 25 no. 11.wav",                            "Chopin - Etude op. 25 no. 11 mark diff s 3 m 5 0.1000 avg 11.txt",                            "chopin.bin",            0.0005f, 0.066f, 0.0f ),
+            new markedFile( "dvorak 4th symph fin.wav",                                    "dvorak 4th symph fin mark diff s 3 m 1 0.1000 avg 12.txt",                                    "dvorak.bin",            0.0025f, 0.033f, 0.0f ),
+            new markedFile( "Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2.wav", "Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark diff s 4 m 1 0.1000 avg 16.txt", "enescu.bin",            0.0015f, 0.0125f,0.0f ),
+            new markedFile( "Shostakovich - Simfoniya nr. 10 2 chast.wav",                 "Shostakovich - Simfoniya nr. 10 2 chast mark diff s 3 m 1 0.1000 avg 25.txt",                 "shostakovich.bin",      0.01f,   0.025f, 0.0f ),
+        };
+
         ProjectManager.lock_access();
-        String filePath = "E:\\Discuri wav\\wav\\AT440MLb\\15RPM\\96000\\Beethoven - Serenade in D for flute inv riaa.wav";
-        String dest = "D:\\git\\Discuri\\Audio_classifier\\AI\\training_data\\beethoven serenade valid.bin";
+        String wav_base_path="e:\\datasets\\inv riaa\\";
+        String marking_base_path="e:\\datasets\\inv riaa\\markings\\";
+        String dest_base_path="e:\\datasets\\";
+
+        float master_nonmarked = 0.2f;
+        float master_marked = 0.4f;
+        int side_grab = 128;
+        int outputs = 128;
+
+        DataSetGenerator dse = new DataSetGenerator( side_grab * 2 + outputs, outputs, side_grab );
+
         try
         {
-            ProjectManager.add_from_marker_file( "E:\\Discuri wav\\wav\\AT440MLb\\15RPM\\96000\\Beethoven - Serenade in D for flute mark.txt" );
-            IFileAudioDataSource file = FileAudioSourceFactory.fromFile( filePath );
-            DataSetGenerator dse = new DataSetGenerator( 129, 1, 64 );
-            dse.generate( file, new Interval( ( 0 * 60 + 0 ) * file.get_sample_rate(), ( 0 * 60 + 0 ) * file.get_sample_rate(), false ), dest, 64, 0.001f, 0.1f, 0.75f );
+            for( markedFile file : files )
+            {
+                ProjectManager.clear_all_markings();
+                if( file.marker_path != null )
+                {
+                    ProjectManager.add_from_marker_file( marking_base_path + file.marker_path );
+                }
+                IFileAudioDataSource srcfile = FileAudioSourceFactory.fromFile( wav_base_path + file.audio_path );
 
+                dse.generate( srcfile,
+                              new Interval( 0,srcfile.get_sample_number(), false ),
+                              dest_base_path + file.dest_path,
+                              64,
+                              file.non_marked_prob * master_nonmarked,
+                              file.doubling_prob,
+                              1.0f - ( file.marked_prob * master_marked ) );
+            }
+
+            dse.write_final_results();
         }
         catch( DataSourceException | IOException | ParseException e )
         {
@@ -530,21 +599,21 @@ public class TestMain {
     public static void main19( String[] args )
     {
         ProjectManager.lock_access();
-        String base_path = "E:\\datasets\\new\\positives\\";
-        String filename = "Bach triosonata 3 mark";
+        String base_path = "e:\\datasets\\inv riaa\\";
+        String filename = "Beethoven - Quartet no 4 - IV mark diff";
         try
         {
             WAVFileAudioSource src = new WAVFileAudioSource( base_path + filename + ".wav" );
             WAVFileAudioSource dest = new WAVFileAudioSource( base_path + filename + " mvg avg.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
-            CachedAudioDataSource dest_cache = new CachedAudioDataSource( dest, 44100, 4096 );
+            CachedAudioDataSource dest_cache = new CachedAudioDataSource( dest, 96000, 48000 );
 
             MarkerFileGenerator generator = new MarkerFileGenerator();
             generator.setDest_path( base_path + filename );
-            generator.setAbs_threshold( 0.0075f );
-            generator.setDuplicate_L_to_R( true );
-            generator.setMin_marking_spacing( 4 );
-            generator.setSide_extend( 4 );
-            generator.setSpike_threshold( 0.2f );
+            generator.setAbs_threshold( 0.005f );
+            generator.setDuplicate_L_to_R( false );
+            generator.setSide_extend( 3 );
+            generator.setMin_marking_spacing( 1 );
+            generator.setSpike_threshold( 0.10f );
             generator.apply( src, dest_cache, new Interval( 0, src.get_sample_number() ) );
 
             dest_cache.flushAll();
@@ -561,6 +630,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        main19( args );
+        main18( args );
     }
 }

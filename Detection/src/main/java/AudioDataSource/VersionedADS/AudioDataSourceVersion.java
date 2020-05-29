@@ -264,6 +264,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         }
         if( left_length != 0 )
         {
+
             map( map.project_interval.l, left_length, map.file_interval.l, map.file_name );
             map( proj_sample_index, map.get_length() - left_length, map.file_interval.l + left_length, map.file_name );
         }

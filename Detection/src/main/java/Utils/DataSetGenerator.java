@@ -22,6 +22,11 @@ public class DataSetGenerator
     private int output_size;
     private int offset;
 
+    private long total_marked_written = 0;
+    private long total_unmarked_written = 0;
+    private int marked_written = 0;
+    private int unmarked_written = 0;
+
     public DataSetGenerator( int input_size, int output_size, int offset )
     {
         this.input_size = input_size;
@@ -33,8 +38,6 @@ public class DataSetGenerator
     {
 
         final int fetch_size = dataSource.get_sample_rate() + ( input_size - output_size );
-        int marked_written = 0;
-        int unmarked_written = 0;
 
         Random rand = new Random();
 
@@ -42,6 +45,9 @@ public class DataSetGenerator
         interval.limit( 0, dataSource.get_sample_number() );
         buf = ByteBuffer.allocate( input_size * 2 + output_size * 1 );
         buf.order( ByteOrder.LITTLE_ENDIAN );
+
+        marked_written = 0;
+        unmarked_written = 0;
 
         MarkerFile writes_prob_1 = new MarkerFile();
         MarkerFile writes_prob_0_5 = new MarkerFile();
@@ -84,7 +90,7 @@ public class DataSetGenerator
 
             for( ch = 0; ch < win.get_channel_number(); ch++ )
             {
-                for( j = offset; j < win.get_length() - ( input_size - output_size - offset ); j++ )
+                for( j = offset; j < win.get_length() - ( input_size - output_size ) - offset; j++ )
                 {
                     isMarked = markerFile.isMarked( i + j, ch );
                     willWrite = writes_prob_1.isMarked( i + j, ch );
@@ -99,30 +105,20 @@ public class DataSetGenerator
                     {
                         if( ( marked_written + unmarked_written ) % 1000 == 0 )
                         {
-                            System.out.println( "Written " + ( marked_written + unmarked_written ) );
-                            System.out.println( "At sample " + ( i + j ) + "/" + dataSource.get_sample_number() );
-                            System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
-                            marked_written = 0;
-                            unmarked_written = 0;
+//                            System.out.println( "Written " + ( marked_written + unmarked_written ) );
+//                            System.out.println( "At sample " + ( i + j ) + "/" + dataSource.get_sample_number() );
+//                            System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
+                            // marked_written = 0;
+                            // unmarked_written = 0;
                         }
 
-                        write_case( win, i + j, ch, markerFile, writer );
+                        write_case( win, i + j - offset, ch, markerFile, writer );
                         if( isMarked )
                         {
                             while( rand.nextFloat() < doubling_probab )
                             {
-                                write_case( win, i + j, ch, markerFile, writer );
-                                marked_written++;
+                                write_case( win, i + j - offset, ch, markerFile, writer );
                             }
-                        }
-
-                        if( isMarked )
-                        {
-                            marked_written++;
-                        }
-                        else
-                        {
-                            unmarked_written++;
                         }
                     }
                 }
@@ -132,6 +128,12 @@ public class DataSetGenerator
         }
         writer.close();
 
+        System.out.println( destination_path );
+        System.out.println( "Written " + ( marked_written + unmarked_written ) / output_size );
+        System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
+
+        total_marked_written += marked_written;
+        total_unmarked_written += unmarked_written;
     }
 
     public static void generateV2( IAudioDataSource dataSource, Interval interval, String out_path ) throws DataSourceException, IOException
@@ -182,15 +184,35 @@ public class DataSetGenerator
 
     private void write_case( AudioSamplesWindow win, int sample_start_idx, int ch, MarkerFile mf, DataOutputStream writer ) throws DataSourceException, IOException
     {
-        buf.rewind();
-        for( int k = sample_start_idx; k < sample_start_idx + input_size; k++ )
+        boolean isMarked;
+
+         buf.rewind();
+         for( int k = sample_start_idx; k < sample_start_idx + input_size; k++ )
+         {
+             buf.putShort( ( short )( win.getSample( k, ch ) * 32768 ) );
+         }
+        for( int k = sample_start_idx + offset; k < sample_start_idx + offset + output_size; k++ )
         {
-            buf.putShort( ( short )( win.getSample( k, ch ) * 32768 ) );
-        }
-        for(int k=sample_start_idx+offset;k<sample_start_idx+offset+output_size;k++)
-        {
-            buf.put( ( byte )( mf.isMarked( k, ch ) ? 1 : 0 ) );
+            isMarked = mf.isMarked( k, ch );
+            if( isMarked )
+            {
+                marked_written++;
+            }
+            else
+            {
+                unmarked_written++;
+            }
+             buf.put( ( byte )( isMarked ? 1 : 0 ) );
+
         }
         writer.write( buf.array(), 0, buf.position() );
+    }
+
+    public void write_final_results()
+    {
+        System.out.println( "Written " + ( total_marked_written + total_unmarked_written ) / output_size );
+        System.out.println( "Marked: " + ( total_marked_written ) );
+        System.out.println( "Unmarked: " + ( total_unmarked_written ) );
+        System.out.println( "Ratio ( unmarked / marked ): " + ( float )total_unmarked_written / total_marked_written );
     }
 }

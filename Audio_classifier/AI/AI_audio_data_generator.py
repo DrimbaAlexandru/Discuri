@@ -1,5 +1,6 @@
 import numpy as np
 from keras.utils import Sequence
+from sklearn.utils import compute_sample_weight
 
 import AI.AI_utils as utils
 
@@ -47,9 +48,17 @@ class MarkedAudioDataGenerator(Sequence):
         X, y = utils.load_marked_signal_file( this_file, start_idx, self.batch_size )
 
         if self.to_fit:
-            return X, y
+            return X, y, self._compute_weights( y )
         else:
             return X
+
+
+    def _compute_weights( self, y ):
+        weights = np.sum( y, axis = ( 1, 2 ) ) / self.output_cnt
+        weights = utils.POSITIVE_CLASS_WEIGHT * weights + ( utils.NEGATIVE_CLASS_WEIGHT * ( 1 - weights ) )
+        return weights
+
+
 
 
     def get_item_count( self ):
