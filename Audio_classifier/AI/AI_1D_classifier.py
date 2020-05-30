@@ -12,6 +12,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras import backend as K, Sequential, metrics
 
 import numpy as np
+from keras.optimizers import Adam
 
 from AI.AI_audio_data_generator import MarkedAudioDataGenerator
 import AI.AI_utils as utils
@@ -131,20 +132,21 @@ class BinaryClassifierModelWithGenerator:
         # self.model.add( Dense( 64, input_shape= ( 1, self.INPUTS ), activation="relu" ) )
         # self.model.add( Dense( 32, activation="relu" ) )
         # self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
-        self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1, activation = 'relu', input_shape = ( 1, self.INPUTS ), data_format = "channels_first" ) )
-        self.model.add( Conv1D( filters = 64, kernel_size = 1, activation = 'relu', data_format = "channels_first"  ) )
+        self.model.add( Conv1D( filters = 256, kernel_size = self.INPUTS - self.OUTPUTS + 1, activation = 'relu', input_shape = ( self.INPUTS, 1 ) ) )
+        self.model.add( Dropout( 0.05 ) )
+        self.model.add( Conv1D( filters = 128, kernel_size = 1, activation = 'relu' ) )
         # self.model.add( MaxPooling1D( pool_size = 2, data_format = "channels_first" ) )
-        assert self.model.output_shape[ 2 ] >= self.OUTPUTS
+        assert self.model.output_shape[ 1 ] >= self.OUTPUTS
         # self.model.add( Conv1D( filters = 1, kernel_size = self.model.output_shape[ 2 ] - self.OUTPUTS + 1, activation = 'sigmoid', data_format = "channels_first" ) )
         # self.model.add( Flatten() )
         # self.model.add( Reshape( ( 1, -1 ) ) )
         # self.model.add( Dropout( 0.05 ) )
         # self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
-        self.model.add( Conv1D( filters = 1, kernel_size = 1, activation = 'sigmoid', data_format = "channels_first"  ) )
+        self.model.add( Conv1D( filters = 1, kernel_size = 1, activation = 'sigmoid' ) )
         print( self.model.output_shape )
 
         #self.model.compile(optimizer='adam', loss=iou_coef_loss, metrics=[ iou_coef_loss, dice_coef_loss, "accuracy" ])
-        self.model.compile(optimizer='adam', loss="binary_crossentropy", metrics=[ "accuracy", metrics.Precision(), metrics.Recall() ] )
+        self.model.compile(optimizer = Adam(learning_rate=0.01), loss="binary_crossentropy", metrics=[ "accuracy", metrics.Precision(), metrics.Recall() ], sample_weight_mode="temporal" )
         self.model.summary()
 
     def fit_model( self, epochs = 50 ):

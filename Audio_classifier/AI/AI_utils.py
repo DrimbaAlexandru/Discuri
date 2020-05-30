@@ -14,8 +14,8 @@ MAX_SAMPLE_VALUE = 2**15 - 1
 MIN_SAMPLE_VALUE = -2**15
 RECORD_SIZE = struct.calcsize( RECORD_FORMAT )
 
-POSITIVE_CLASS_WEIGHT = 4.62683
-NEGATIVE_CLASS_WEIGHT = 1 / np.sqrt(POSITIVE_CLASS_WEIGHT)
+POSITIVE_CLASS_WEIGHT = 3.38
+NEGATIVE_CLASS_WEIGHT = 1 / np.sqrt( POSITIVE_CLASS_WEIGHT )
 POSITIVE_CLASS_WEIGHT = np.sqrt( POSITIVE_CLASS_WEIGHT )
 
 
@@ -27,15 +27,15 @@ def load_marked_signal_file( file_path, start_idx, seq_len ):
         assert len( file_content ) % RECORD_SIZE == 0, "File: " + file_path + ", start idx: " + str( start_idx ) + ", len: " + str( len( file_content ) )
         record_cnt = len( file_content ) // RECORD_SIZE
 
-        samples = np.zeros( ( record_cnt, 1, INPUT_SIZE ), dtype=np.float_ )
-        markings = np.zeros( ( record_cnt, 1, OUTPUT_SIZE ), dtype=np.bool_ )
+        samples = np.zeros( ( record_cnt, INPUT_SIZE, 1 ), dtype=np.float_ )
+        markings = np.zeros( ( record_cnt, OUTPUT_SIZE, 1 ), dtype=np.bool_ )
 
         for idx in range( 0, record_cnt ):
             record = struct.unpack( RECORD_FORMAT, file_content[ idx * RECORD_SIZE : ( idx + 1 ) * RECORD_SIZE ] )
             inputs = np.asarray( record[ :INPUT_SIZE ], dtype=np.float_ )
-            samples[ idx ][ 0 ] = inputs / SAMPLE_VALUE_MUL_FACTOR
+            samples[ idx ] = np.expand_dims( inputs / SAMPLE_VALUE_MUL_FACTOR, 1 )
             outputs = np.asarray( record[ INPUT_SIZE: ], dtype=np.bool_ )
-            markings[ idx ][ 0 ] = outputs
+            markings[ idx ] = np.expand_dims( outputs, 1 )
 
 
     return( samples, markings )

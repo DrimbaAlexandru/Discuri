@@ -2,11 +2,11 @@ package SignalProcessing.Effects;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
-import AudioDataSource.MemoryADS.InMemoryADS;
-import AudioDataSource.MemoryADS.SingleBlockADS;
+import AudioDataSource.MemoryADS.SingleWindowMemoryADS;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import MarkerFile.Marking;
+import ProjectManager.ProjectStatics;
 import ProjectManager.ProjectManager;
 import SignalProcessing.Filters.FIR;
 import Utils.Interval;
@@ -37,7 +37,6 @@ public class Multi_Band_Repair_Marked implements IEffect
     public void setMax_repair_size( int max_repair_size )
     {
         this.max_repair_size = max_repair_size;
-        buffer_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + band_pass_filter_length;
     }
 
     public Multi_Band_Repair_Marked( int band_pass_filter_length, int max_repaired_size, int repair_fetch_ratio )
@@ -45,7 +44,48 @@ public class Multi_Band_Repair_Marked implements IEffect
         this.band_pass_filter_length = band_pass_filter_length;
         max_repair_size = max_repaired_size;
         fetch_ratio = repair_fetch_ratio;
-        buffer_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + band_pass_filter_length;
+    }
+
+    private FIR[] get_FIR_filters( int nyquist_frequency ) throws DataSourceException
+    {
+        final int nr_of_bands = band_cutoffs.size();
+        final FIR[] filters = new FIR[ nr_of_bands ];
+        final float[] freqs = new float[ nr_of_bands + 2 ];
+        final float[] bp_response = new float[ nr_of_bands + 2 ]; //this is in dB
+        final float[] prev_response = new float[ nr_of_bands + 2 ]; //this is linear
+
+        band_cutoffs.sort( Comparator.reverseOrder() );
+
+        Arrays.fill( prev_response, 0.0f );
+
+        /* Initialize the frequency points list with the band cutoffs, 0 Hz and Nyquist frequency*/
+        freqs[ 0 ] = 0.0f;
+        for( int i = 0; i < nr_of_bands; i++ )
+        {
+            freqs[ i + 1 ] = band_cutoffs.get( nr_of_bands - 1 - i );
+        }
+        freqs[ nr_of_bands + 1 ] = nyquist_frequency;
+
+        for( int f = 0; f < nr_of_bands; f++ )
+        {
+            /* Create the current bandpass response by adding a high-pass over the previous filter */
+            Arrays.fill( bp_response, 0.0f );
+            FIR.add_pass_cut_freq_resp( freqs, bp_response, nr_of_bands + 2, band_cutoffs.get( f ), -96, 0 );
+
+            Util_Stuff.dB2lin( bp_response, nr_of_bands + 2 );
+            for( int i = 0; i < nr_of_bands + 2; i++ )
+            {
+                float aux = bp_response[ i ];
+                bp_response[ i ] -= prev_response[ i ];
+                prev_response[ i ] = aux;
+            }
+            Util_Stuff.lin2dB( bp_response, nr_of_bands + 2 );
+
+            filters[ f ] = FIR.fromFreqResponse( freqs, bp_response, nr_of_bands + 2, nyquist_frequency * 2, band_pass_filter_length );
+            //Util_Stuff.plot_in_matlab( filters[ f ].getFf(), filters[ f ].getFf_coeff_nr() );
+        }
+
+        return filters;
     }
 
     @Override
@@ -56,86 +96,61 @@ public class Multi_Band_Repair_Marked implements IEffect
             throw new DataSourceException( "Data Source and Data Dest cannot be the same", DataSourceExceptionCause.INVALID_PARAMETER );
         }
 
-        progress = 0;
-        band_cutoffs.sort( Comparator.reverseOrder() );
-        /*
-            Local variables.
-            Filter definitions
-        */
+        progress = 0.0f;
+        interval.limit( 0, dataSource.get_sample_number() );
+
+        /**************************************
+        Local variables.
+        Filter definitions
+        ****************************************/
         final int nr_of_bands = band_cutoffs.size();
-        final FIR[] filters = new FIR[ nr_of_bands ];
-        final int nr_freqs = dataSource.get_sample_rate() / 2 / 50;
-        final float[] freqs = new float[ nr_freqs ];
-        final float[] bp_response = new float[ nr_freqs ]; //this is in dB
-        final float[] prev_response = new float[ nr_freqs ]; //this is linear
-
-        for( int i = 0; i < nr_freqs; i++ )
-        {
-            freqs[ i ] = 1.0f * i * dataSource.get_sample_rate() / 2 / nr_freqs;
-            prev_response[ i ] = 0.0f;
-        }
-
-        for( int f = 0; f < nr_of_bands; f++ )
-        {
-            for( int i = 0; i < nr_freqs; i++ )
-            {
-                bp_response[ i ] = 0;
-            }
-            FIR.add_pass_cut_freq_resp( freqs, bp_response, nr_freqs, band_cutoffs.get( f ), -96, 0 );
-
-            Util_Stuff.dB2lin( bp_response, nr_freqs );
-            for( int i = 0; i < nr_freqs; i++ )
-            {
-                float aux = bp_response[ i ];
-                bp_response[ i ] -= prev_response[ i ];
-                prev_response[ i ] = aux;
-            }
-            Util_Stuff.lin2dB( bp_response, nr_freqs );
-
-            filters[ f ] = FIR.fromFreqResponse( freqs, bp_response, nr_freqs, dataSource.get_sample_rate(), band_pass_filter_length );
-            //Util_Stuff.plot_in_matlab( filters[ f ].getFf(), filters[ f ].getFf_coeff_nr() );
-        }
+        FIR[] filters = get_FIR_filters( dataSource.get_sample_rate() / 2 );
 
         /*
-            Data sources
+        Data sources and audio sample windows
         */
-        final SingleBlockADS repair_dest = new SingleBlockADS( dataSource.get_sample_rate(), dataSource.get_channel_number(), 0, new Interval( 0, 0 ) );
-        //workDS[nr_of_bands] - buffer-ul pentru reziduu
-        final InMemoryADS workDS[] = new InMemoryADS[ nr_of_bands + 1 ];
-        for( int i = 0; i < nr_of_bands + 1; i++ )
-        {
-            workDS[ i ] = new InMemoryADS( buffer_size, dataSource.get_channel_number(), dataSource.get_sample_rate() );
-        }
-
-        AudioSamplesWindow requested_repaired, repaired;
+        final SingleWindowMemoryADS repair_dest;
+        final SingleWindowMemoryADS freq_band_ADS[] = new SingleWindowMemoryADS[ nr_of_bands + 1 ]; // freq_band_ADS[nr_of_bands] - buffer-ul pentru reziduu
+        AudioSamplesWindow repair_dest_asw, repaired_band_asw;
+        float[] src_array, dst_array;
 
         /*
         * Effects
         */
-        final FIR_Equalizer equalizer = new FIR_Equalizer();
+        final FFT_Equalizer fft_equalizer = new FFT_Equalizer();
         final Repair_One repairOne = new Repair_One();
         repairOne.set_fetch_ratio( fetch_ratio );
+
         /*
-            Indexes and other shit
+        Indexes and other shit
         */
         int i;
         int marking_index = 0;
-        //side length e numarul de sample-uri necesar la dreapta si la stanga selectiei pentru repair, necesare la band-pass
-        final int side_length = band_pass_filter_length / 2;
         boolean repair_direct;
         Random random = new Random();
 
-        /*
-            Work
-        */
-        interval.limit( 0, dataSource.get_sample_number() );
-        if( !repair_residue && nr_of_bands == 0 && !compare_with_direct_repair )
-        {
-            return;
-        }
         List< Marking > orig_repair_intervals = ProjectManager.getMarkerFile().get_all_markings( interval );
         List< Marking > repair_intervals = new ArrayList<>();
 
+        /* Return early if there's nothing to process */
+        if( orig_repair_intervals.size() == 0 || ( !repair_residue && nr_of_bands == 0 && !compare_with_direct_repair ) )
+        {
+            return;
+        }
+
+        /*
+         * Prepare the initial state of the variables
+         * Allocate the data buffers
+         */
+        buffer_size = Math.max( ProjectStatics.getProject_cache_size() / 2, max_repair_size * ( fetch_ratio * 2 + 1 ) );
+        repair_dest = new SingleWindowMemoryADS( max_repair_size, dataSource.get_channel_number(), dataSource.get_sample_rate() );
+
+        for( i = 0; i < nr_of_bands + 1; i++ )
+        {
+            freq_band_ADS[ i ] = new SingleWindowMemoryADS( buffer_size, dataSource.get_channel_number(), dataSource.get_sample_rate() );
+        }
+
+        /* Split the markings that are longer than the maximum repair size */
         for( Marking m : orig_repair_intervals )
         {
             if( m.get_number_of_marked_samples() > max_repair_size )
@@ -143,7 +158,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                 int remaining_length = m.get_number_of_marked_samples();
                 while( remaining_length > 0 )
                 {
-                    int new_len = ( remaining_length < max_repair_size / 2 ) ? remaining_length : ( ( int )( max_repair_size / 2 * ( 2.5f + random.nextFloat() ) / 3 ) );
+                    int new_len = ( remaining_length < max_repair_size ) ? remaining_length : ( ( int )( max_repair_size * ( 0.75f + ( random.nextFloat() * 2 - 1 ) * 0.15 ) ) ); /* Use a random length between 0.6-0.9*max_repair_size */
                     Marking new_m = new Marking( m.get_last_marked_sample() + 1 - remaining_length, m.get_last_marked_sample() - remaining_length + new_len, m.getChannel() );
                     remaining_length -= new_len;
                     repair_intervals.add( new_m );
@@ -155,136 +170,150 @@ public class Multi_Band_Repair_Marked implements IEffect
             }
         }
 
+        /* Sort the markings by the first sample needed for repair */
         repair_intervals.sort( ( i1, i2 ) ->
                                {
                                    return -( i2.getInterval().l - i2.getInterval().get_length() * fetch_ratio ) + ( i1.getInterval().l - i1.getInterval().get_length() * fetch_ratio );
                                } );
 
+        /* Limit the interval to the first and last sample needed by the repair process */
+        interval.l = repair_intervals.get( 0 ).get_first_marked_sample() - repair_intervals.get( 0 ).getInterval().get_length() * fetch_ratio;
+        interval.r = 0;
+        for( Marking m:repair_intervals)
+        {
+            interval.r = Math.max( interval.r, m.get_last_marked_sample() + 1 + m.get_number_of_marked_samples() * fetch_ratio );
+        }
+        interval.limit( 0, dataSource.get_sample_number() );
+
+        /* Repair each marking individually */
         for( Marking marking : repair_intervals )
         {
             Interval repair_interval = marking.getInterval();
-            try
+            Interval interval_required_for_prediction = new Interval( repair_interval.l - fetch_ratio * repair_interval.get_length(), repair_interval.r + fetch_ratio * repair_interval.get_length(), false );
+            repairOne.setAffected_channels( Arrays.asList( marking.getChannel() ) );
+
+            if( interval_required_for_prediction.l < 0 || interval_required_for_prediction.r > dataSource.get_sample_number() )
             {
-                Interval interval_required_for_prediction = new Interval( repair_interval.l - fetch_ratio * repair_interval.get_length(), repair_interval.r + fetch_ratio * repair_interval.get_length(), false );
-                repairOne.setAffected_channels( Arrays.asList( marking.getChannel() ) );
+                System.err.println( "Not enough samples for linear prediction at marking " + repair_interval );
+                continue;
+            }
 
-                if( interval_required_for_prediction.l < 0 || interval_required_for_prediction.r > dataSource.get_sample_number() )
+            if( repair_interval.get_length() > max_repair_size )
+            {
+                throw new DataSourceException( "Repair interval too big", DataSourceExceptionCause.THIS_SHOULD_NEVER_HAPPEN );
+            }
+
+            /* Check if this marking shall be repaired_band_asw without splitting into multiple frequency bands */
+            repair_direct = repair_residue && ( nr_of_bands == 0 );
+            if( !repair_direct && compare_with_direct_repair )
+            {
+                int rep_len = repair_interval.get_length();
+                int spike_det_left_len = Math.min( band_pass_filter_length / 2, repair_interval.l );
+                int spike_det_right_len = Math.min( band_pass_filter_length / 2, dataSource.get_sample_number() - repair_interval.r );
+                AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - spike_det_left_len, rep_len + spike_det_left_len + spike_det_right_len );
+                float spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, spike_det_left_len, rep_len, spike_det_right_len );
+                repair_direct = ( spike_ratio > peak_threshold );
+                if( repair_direct )
                 {
-                    throw new DataSourceException( "Not enough samples for linear prediction", DataSourceExceptionCause.INTERPOLATION_EXCEPTION );
+                    System.out.println( "Direct repair at on interval " + marking + " with ratio = " + spike_ratio );
                 }
-                if( repair_interval.get_length() > max_repair_size )
+            }
+
+            if( !repair_direct )
+            {
+                /* Repair with splitting the signal into multiple frequency bands */
+
+                // Make sure the workADSs contain enough data to complete the current repair
+                if( !freq_band_ADS[ 0 ].get_buffer_interval().includes( interval_required_for_prediction ) )
                 {
-                    throw new DataSourceException( "Repair interval too big", DataSourceExceptionCause.WARNING );
-                }
-
-                repair_direct = repair_residue && ( nr_of_bands == 0 );
-                if( !repair_direct && compare_with_direct_repair )
-                {
-                    int rep_len = repair_interval.get_length();
-                    int spike_det_left_len = Math.min( band_pass_filter_length / 2, repair_interval.l );
-                    int spike_det_right_len = Math.min( band_pass_filter_length / 2, dataSource.get_sample_number() - repair_interval.r );
-                    AudioSamplesWindow from_source = dataSource.get_samples( repair_interval.l - spike_det_left_len, rep_len + spike_det_left_len + spike_det_right_len );
-                    float spike_ratio = get_freq_spike( from_source.getSamples()[ marking.getChannel() ], 0, spike_det_left_len, rep_len, spike_det_right_len );
-                    repair_direct = ( spike_ratio > peak_threshold );
-                    if( repair_direct )
+                    // Shift left as much as possible and as rare as possible. Keep only the data that can be still used
+                    int amount_to_shift = interval_required_for_prediction.l - freq_band_ADS[ 0 ].get_buffer_interval().l;
+                    for( i = 0; i <= nr_of_bands; i++ )
                     {
-                        System.out.println( "Direct repair at on interval " + marking + " with ratio = " + spike_ratio );
-                    }
-                }
-
-                //Calculate the requested repair OR the direct repair
-                if( !repair_direct )
-                {
-                    //Make sure all the required samples are in workADSs
-                    if( !workDS[ 0 ].get_buffer_interval().includes( interval_required_for_prediction ) )
-                    {
-
-                        //shift left as much as possible and as rare as possible
-                        //if( workDS[ 0 ].get_buffer_interval().r < interval_required_for_prediction.r || workDS[ 0 ].get_buffer_interval().l + workDS[ 0 ].getCapacity() < interval_required_for_prediction.r )
-                        {
-                            int amount_to_shift = interval_required_for_prediction.l - workDS[ 0 ].get_buffer_interval().l;
-                            for( i = 0; i <= nr_of_bands; i++ )
-                            {
-                                workDS[ i ].shift_interval( amount_to_shift );
-                            }
-                        }
-                        Interval not_existing = new Interval( workDS[ 0 ].get_buffer_interval().r, interval_required_for_prediction.r, false );
-                        not_existing.limit( interval_required_for_prediction.l, interval_required_for_prediction.r );
-                        for( i = 0; i < nr_of_bands; i++ )
-                        {
-                            equalizer.setFilter( filters[ i ] );
-                            equalizer.apply( dataSource, workDS[ i ], not_existing );
-                        }
-                        AudioSamplesWindow win = dataSource.get_samples( not_existing.l, not_existing.get_length() );
-                        for( i = 0; i < nr_of_bands; i++ )
-                        {
-                            AudioSamplesWindow winb = workDS[ i ].get_samples( not_existing.l, not_existing.get_length() );
-                            for( int k = 0; k < win.get_channel_number(); k++ )
-                            {
-                                for( int j = not_existing.l; j < not_existing.r; j++ )
-                                {
-                                    win.putSample( j, k, win.getSample( j, k ) - winb.getSample( j, k ) );
-                                }
-                            }
-                        }
-                        workDS[ nr_of_bands ].put_samples( win );
-                    /*for( i = 0; i <= nr_of_bands; i++ )
-                    {
-                        win = workDS[ i ].get_samples( workDS[ i ].get_buffer_interval().l, workDS[ i ].get_buffer_interval().get_length() );
-                        Util_Stuff.plot_in_matlab( win.getSamples()[ 0 ], win.get_length() );
-                        System.out.println( "----" );
-                    }*/
+                        freq_band_ADS[ i ].shift_interval( amount_to_shift );
                     }
 
-                    //Begin the repair process
-                    if( repair_residue )
-                    {
-                        repairOne.apply( workDS[ nr_of_bands ], repair_dest, repair_interval );
-                        requested_repaired = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
-                    }
-                    else
-                    {
-                        requested_repaired = workDS[ nr_of_bands ].get_samples( repair_interval.l, repair_interval.get_length() );
-                    }
-                    //Util_Stuff.plot_in_matlab( repaired_samples, repair_interval.get_length() );
-                    //System.out.println( "----" );
+                    /* Compute the next fetchable chunk. Fill the buffer to its max if we need that much data. If not, fill just as needed */
+                    Interval missing_region = new Interval( freq_band_ADS[ 0 ].get_buffer_interval().r, buffer_size - freq_band_ADS[ 0 ].get_buffer_interval().get_length(), true );
+                    missing_region.limit( interval_required_for_prediction.l, interval.r );
 
                     for( i = 0; i < nr_of_bands; i++ )
                     {
-                        repairOne.apply( workDS[ i ], repair_dest, repair_interval );
-                        repaired = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
-                        for( int j = repair_interval.l; j < repair_interval.r; j++ )
-                        {
-                            requested_repaired.getSamples()[ marking.getChannel() ][ j - repair_interval.l ] += repaired.getSample( j, marking.getChannel() );
-                        }
-                        //Util_Stuff.plot_in_matlab( repaired_samples, repair_interval.get_length() );
-                        //System.out.println( "----" );
+                        fft_equalizer.setFilter( filters[ i ] );
+                        fft_equalizer.apply( dataSource, freq_band_ADS[ i ], missing_region );
                     }
-                    repaired = dataDest.get_samples( repair_interval.l, repair_interval.get_length() );
-                    repaired.getSamples()[ marking.getChannel() ] = requested_repaired.getSamples()[ marking.getChannel() ];
-                    dataDest.put_samples( repaired );
+
+                    /* Compute the residue signal by subtracting each filtered signal from the original signal */
+                    AudioSamplesWindow win_src = dataSource.get_samples( missing_region.l, missing_region.get_length() );
+                    for( i = 0; i < nr_of_bands; i++ )
+                    {
+                        AudioSamplesWindow win_band = freq_band_ADS[ i ].get_samples( missing_region.l, missing_region.get_length() );
+                        for( int k = 0; k < win_src.get_channel_number(); k++ )
+                        {
+                            dst_array = win_src.getSamples()[ k ];
+                            src_array = win_band.getSamples()[ k ];
+                            for( int j = 0; j < win_src.get_length(); j++ )
+                            {
+                                dst_array[ j ] -= src_array[ j ];
+                            }
+                        }
+                    }
+                    freq_band_ADS[ nr_of_bands ].put_samples( win_src );
+
+                    /*for( i = 0; i <= nr_of_bands; i++ )
+                    {
+                        win = freq_band_ADS[ i ].get_samples( freq_band_ADS[ i ].get_buffer_interval().l, freq_band_ADS[ i ].get_buffer_interval().get_length() );
+                        Util_Stuff.plot_in_matlab( win.getSamples()[ 0 ], win.get_length() );
+                        System.out.println( "----" );
+                    }*/
+                }
+
+                /*
+                * Begin the repair process
+                * Start with the residual signal, and then add each repaired_band_asw frequency band.
+                 */
+                repair_dest.reset_interval( repair_interval );
+
+                if( repair_residue )
+                {
+                    repairOne.apply( freq_band_ADS[ nr_of_bands ], repair_dest, repair_interval );
+                    repair_dest_asw = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
                 }
                 else
                 {
-                    repaired = dataDest.get_samples( repair_interval.l, repair_interval.get_length() );
-                    repairOne.apply( dataSource, repair_dest, repair_interval );
-                    AudioSamplesWindow direct_repaired = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
-                    repaired.getSamples()[ marking.getChannel() ] = direct_repaired.getSamples()[ marking.getChannel() ];
-                    dataDest.put_samples( repaired );
+                    repair_dest_asw = freq_band_ADS[ nr_of_bands ].get_samples( repair_interval.l, repair_interval.get_length() );
                 }
-            }
-            catch( DataSourceException ex )
-            {
-                switch( ex.getDSEcause() )
+                //Util_Stuff.plot_in_matlab( repaired_samples, repair_interval.get_length() );
+                //System.out.println( "----" );
+
+                dst_array = repair_dest_asw.getSamples()[ marking.getChannel() ];
+                for( i = 0; i < nr_of_bands; i++ )
                 {
-                    case INTERPOLATION_EXCEPTION:
-                    case WARNING:
-                        ex.printStackTrace();
-                        break;
-                    default:
-                        throw ex;
+                    repairOne.apply( freq_band_ADS[ i ], repair_dest, repair_interval );
+                    repaired_band_asw = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
+                    src_array = repaired_band_asw.getSamples()[ marking.getChannel() ];
+
+                    for( int j = 0; j < repair_interval.get_length(); j++ )
+                    {
+                        dst_array[ j ] += src_array[ j ];
+                    }
+                    //Util_Stuff.plot_in_matlab( repaired_samples, repair_interval.get_length() );
+                    //System.out.println( "----" );
                 }
+                repaired_band_asw = dataDest.get_samples( repair_interval.l, repair_interval.get_length() );
+                repaired_band_asw.getSamples()[ marking.getChannel() ] = repair_dest_asw.getSamples()[ marking.getChannel() ];
+                dataDest.put_samples( repaired_band_asw );
             }
+            else
+            {
+                repair_dest.reset_interval( repair_interval );
+                repaired_band_asw = dataDest.get_samples( repair_interval.l, repair_interval.get_length() );
+                repairOne.apply( dataSource, repair_dest, repair_interval );
+                AudioSamplesWindow direct_repaired = repair_dest.get_samples( repair_interval.l, repair_interval.get_length() );
+                repaired_band_asw.getSamples()[ marking.getChannel() ] = direct_repaired.getSamples()[ marking.getChannel() ];
+                dataDest.put_samples( repaired_band_asw );
+            }
+
             marking_index++;
             progress = 1.0f * marking_index / repair_intervals.size();
         }
@@ -332,7 +361,6 @@ public class Multi_Band_Repair_Marked implements IEffect
     public void setFetch_ratio( int fetch_ratio )
     {
         this.fetch_ratio = fetch_ratio;
-        buffer_size = max_repair_size * ( fetch_ratio * 2 + 1 ) + band_pass_filter_length;
     }
 
     public void setpeak_threshold( float peak_threshold )

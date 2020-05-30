@@ -47,6 +47,10 @@ class MarkedAudioDataGenerator(Sequence):
         # Generate data
         X, y = utils.load_marked_signal_file( this_file, start_idx, self.batch_size )
 
+        # Augment the data by varying the input signal amplitude
+        factors = np.random.uniform( 0.25, 2.0, X.shape[ 0 ] ) * ( np.random.randint( 0, 2, X.shape[ 0 ] ) * 2 - 1 )
+        X = np.asarray( [ X[ i ] * factors[ i ] for i in range( 0, X.shape[ 0 ] ) ] )
+
         if self.to_fit:
             return X, y, self._compute_weights( y )
         else:
@@ -54,11 +58,8 @@ class MarkedAudioDataGenerator(Sequence):
 
 
     def _compute_weights( self, y ):
-        weights = np.sum( y, axis = ( 1, 2 ) ) / self.output_cnt
-        weights = utils.POSITIVE_CLASS_WEIGHT * weights + ( utils.NEGATIVE_CLASS_WEIGHT * ( 1 - weights ) )
-        return weights
-
-
+        weights = y * (utils.POSITIVE_CLASS_WEIGHT - utils.NEGATIVE_CLASS_WEIGHT) + utils.NEGATIVE_CLASS_WEIGHT
+        return np.reshape( weights, ( y.shape[ 0 ], y.shape[ 1 ] ) )
 
 
     def get_item_count( self ):

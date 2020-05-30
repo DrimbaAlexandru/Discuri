@@ -11,9 +11,9 @@ import java.net.URL;
  */
 public class ProjectStatics
 {
-    private static int project_cache_size = 44100 * 5;
+    private static int project_cache_size = 1024 * 1024;    /* ALlow up to 2 ^ 20 samples to be cached into*/
     private static int project_cache_page_size = 4096;
-    private static int temp_file_cache_size = 44100;
+    private static int temp_file_cache_size = 1024 * 64;
     private static int temp_file_cache_page_size = 2048;
     private static String python_classifier_script_path = "main.py";
     private static String project_files_path = "D:\\";

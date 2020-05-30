@@ -5,7 +5,7 @@ import random
 from AI.AI_1D_classifier import BinaryClassifierModelWithGenerator
 from AI.AI_utils import *
 
-TRAIN_PATH = 'e:\\datasets\\384-128\\'
+TRAIN_PATH = 'e:\\datasets\\384-128 4.86 near 32\\'
 TEST_PATH = None
 TEST_DATA_LABELED = True
 
@@ -24,7 +24,7 @@ metrics = {}
 
 model.create_model()
 #model.load_model()
-for i in range( 0, 4 ):
+for i in range( 0, 10 ):
     model.fit_model( 5 )
     model.save_model()
     #model.predict_from_model()

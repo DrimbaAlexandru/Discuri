@@ -108,29 +108,6 @@ public class TestMain {
         }
     }
 
-    public static void main7( String[] args )
-    {
-        try
-        {
-            WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\in2.wav");
-            CachedAudioDataSource cache = new CachedAudioDataSource( wav, 44100, 2048 );
-            WAVFileAudioSource out = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\out.wav", wav.get_channel_number(), wav.get_sample_rate(), wav.getByte_depth() );
-
-            //Utils.copyToADS( wav, out );
-            Repair_in_memory effect = new Repair_in_memory();
-            effect.setWork_on_position_domain( true );
-            effect.setWork_on_band_pass( true );
-            effect.apply( cache, out, new Interval( 0, wav.get_sample_number() ) );
-
-            cache.flushAll();
-            out.close();
-        }
-        catch( DataSourceException e )
-        {
-            e.printStackTrace();
-        }
-    }
-
     public static void main8( String[] args )
     {
         long start_time, end_time;
@@ -557,8 +534,8 @@ public class TestMain {
         String marking_base_path="e:\\datasets\\inv riaa\\markings\\";
         String dest_base_path="e:\\datasets\\";
 
-        float master_nonmarked = 0.2f;
-        float master_marked = 0.4f;
+        float master_nonmarked = 0.25f;
+        float master_marked = 0.6f;
         int side_grab = 128;
         int outputs = 128;
 
@@ -578,7 +555,7 @@ public class TestMain {
                 dse.generate( srcfile,
                               new Interval( 0,srcfile.get_sample_number(), false ),
                               dest_base_path + file.dest_path,
-                              64,
+                              32,
                               file.non_marked_prob * master_nonmarked,
                               file.doubling_prob,
                               1.0f - ( file.marked_prob * master_marked ) );
