@@ -48,40 +48,41 @@ public class Multi_Band_Repair_Marked implements IEffect
 
     private FIR[] get_FIR_filters( int nyquist_frequency ) throws DataSourceException
     {
+        final int FREQ_BAND_HZ = 50;
+        final int nr_freqs = nyquist_frequency / FREQ_BAND_HZ + 1;
+
         final int nr_of_bands = band_cutoffs.size();
         final FIR[] filters = new FIR[ nr_of_bands ];
-        final float[] freqs = new float[ nr_of_bands + 2 ];
-        final float[] bp_response = new float[ nr_of_bands + 2 ]; //this is in dB
-        final float[] prev_response = new float[ nr_of_bands + 2 ]; //this is linear
+        final float[] freqs = new float[ nr_freqs ];
+        final float[] bp_response = new float[ nr_freqs ]; //this is in dB
+        final float[] prev_response = new float[ nr_freqs ]; //this is linear
 
         band_cutoffs.sort( Comparator.reverseOrder() );
 
         Arrays.fill( prev_response, 0.0f );
 
-        /* Initialize the frequency points list with the band cutoffs, 0 Hz and Nyquist frequency*/
-        freqs[ 0 ] = 0.0f;
-        for( int i = 0; i < nr_of_bands; i++ )
+        /* Initialize the frequency points list with 50Hz spaced frequencies */
+        for( int i = 0; i < nr_freqs; i++ )
         {
-            freqs[ i + 1 ] = band_cutoffs.get( nr_of_bands - 1 - i );
+            freqs[ i ] = 1.0f * i * FREQ_BAND_HZ;
         }
-        freqs[ nr_of_bands + 1 ] = nyquist_frequency;
 
         for( int f = 0; f < nr_of_bands; f++ )
         {
             /* Create the current bandpass response by adding a high-pass over the previous filter */
             Arrays.fill( bp_response, 0.0f );
-            FIR.add_pass_cut_freq_resp( freqs, bp_response, nr_of_bands + 2, band_cutoffs.get( f ), -96, 0 );
+            FIR.add_pass_cut_freq_resp( freqs, bp_response, nr_freqs, band_cutoffs.get( f ), -96, 0 );
 
-            Util_Stuff.dB2lin( bp_response, nr_of_bands + 2 );
-            for( int i = 0; i < nr_of_bands + 2; i++ )
+            Util_Stuff.dB2lin( bp_response, nr_freqs );
+            for( int i = 0; i < nr_freqs; i++ )
             {
                 float aux = bp_response[ i ];
                 bp_response[ i ] -= prev_response[ i ];
                 prev_response[ i ] = aux;
             }
-            Util_Stuff.lin2dB( bp_response, nr_of_bands + 2 );
+            Util_Stuff.lin2dB( bp_response, nr_freqs );
 
-            filters[ f ] = FIR.fromFreqResponse( freqs, bp_response, nr_of_bands + 2, nyquist_frequency * 2, band_pass_filter_length );
+            filters[ f ] = FIR.fromFreqResponse( freqs, bp_response, nr_freqs, nyquist_frequency * 2, band_pass_filter_length );
             //Util_Stuff.plot_in_matlab( filters[ f ].getFf(), filters[ f ].getFf_coeff_nr() );
         }
 
@@ -219,6 +220,11 @@ public class Multi_Band_Repair_Marked implements IEffect
                 }
             }
 
+            // LA vivaldi, sample 1613742 e reparat cu predictie nula dinspre stanga
+            if( marking.get_first_marked_sample() >= 1613742 )
+            {
+                repair_direct = repair_direct;
+            }
             if( !repair_direct )
             {
                 /* Repair with splitting the signal into multiple frequency bands */

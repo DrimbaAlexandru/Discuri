@@ -132,7 +132,7 @@ public class SingleWindowMemoryADS implements IAudioDataSource
         {
             for( k = 0; k < ch_number; k++ )
             {
-                for( i = 0; i < buffered_interval.get_length() - amount; i++ )
+                for( i = 0; i < buffered_interval.get_length(); i++ )
                 {
                     buffer[ k ][ i ] = buffer[ k ][ i + amount ];
                 }
