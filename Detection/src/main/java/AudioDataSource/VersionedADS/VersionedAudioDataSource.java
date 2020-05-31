@@ -20,7 +20,7 @@ public class VersionedAudioDataSource
 
     public VersionedAudioDataSource( String path ) throws DataSourceException
     {
-        AudioDataSourceVersion adsv = new AudioDataSourceVersion( 0, path );
+        AudioDataSourceVersion adsv = new AudioDataSourceVersion( 0, path, false );
         versions.add( adsv );
         current_version = 0;
     }
@@ -48,14 +48,14 @@ public class VersionedAudioDataSource
         }
     }
 
-    public AudioDataSourceVersion create_new() throws DataSourceException
+    public AudioDataSourceVersion create_next_version() throws DataSourceException
     {
         while( versions.size() > current_version + 1 )
         {
             versions.get( versions.size() - 1 ).close();
             versions.remove( versions.get( versions.size() - 1 ) );
         }
-        AudioDataSourceVersion ver = versions.get( current_version ).duplicate();
+        AudioDataSourceVersion ver = new AudioDataSourceVersion( versions.get( current_version ) );
         current_version++;
         versions.add( current_version, ver );
         return ver;
@@ -64,16 +64,11 @@ public class VersionedAudioDataSource
     public void dispose() throws DataSourceException
     {
         current_version = versions.size() - 1;
-        while( versions.size() > 1 )
+        while( versions.size() > 0 )
         {
             versions.get( current_version ).close();
             versions.remove( versions.get( current_version ) );
             current_version--;
         }
-    }
-
-    public int get_number_of_versions()
-    {
-        return current_version;
     }
 }

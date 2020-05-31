@@ -116,7 +116,7 @@ public class TestMain {
         {
             WAVFileAudioSource wav = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\1 minute shit.wav");
             VersionedAudioDataSource vads = new VersionedAudioDataSource( wav.getFile_path() );
-            CachedAudioDataSource cache = new CachedAudioDataSource( vads.create_new(), ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
+            CachedAudioDataSource cache = new CachedAudioDataSource( vads.create_next_version(), ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
             AudioSamplesWindow win;
             int i;
             for( i = 0; i < cache.get_sample_number(); )

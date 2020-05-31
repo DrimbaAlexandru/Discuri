@@ -2,7 +2,6 @@ package AudioDataSource.VersionedADS;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.CachedADS.CachedAudioDataSource;
-import AudioDataSource.Cached_ADS_Manager;
 import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
@@ -10,13 +9,12 @@ import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
 import ProjectManager.ProjectStatics;
 import Utils.Interval;
+import Utils.MyPair;
+import Utils.Tuple_3;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 
 import static Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 import static Exceptions.DataSourceExceptionCause.IO_ERROR;
@@ -58,56 +56,6 @@ class FileToProjectMapping
     }
 }
 
-class ProjectFilesManager
-{
-    public static String base_path = ProjectStatics.get_temp_files_path();
-
-    private static int file_id = 1;
-
-    private static TreeMap< String, List< Integer > > file_references = new TreeMap<>();    /* structure that keeps track of what ADS versions use each audio file */
-
-    public static void associate_file_with_version( String file, int version )
-    {
-        file_references.putIfAbsent( file, new ArrayList<>() );
-        if( !file_references.get( file ).contains( version ) )
-        {
-            file_references.get( file ).add( version );
-        }
-    }
-
-    public static void deassociate_file_from_version( String file, int version ) throws DataSourceException
-    {
-        List< Integer > assocs = file_references.get( file );
-        if( assocs == null )
-        {
-            return;
-        }
-        if( version != 0 )
-        {
-            assocs.remove( Integer.valueOf( version ) );
-        }
-
-        if( assocs.size() == 0 )
-        {
-            file_references.remove( file );
-            try
-            {
-                Cached_ADS_Manager.instant_release_file( file );
-                deleteIfExists( new File( file ).toPath() );
-            }
-            catch( IOException e )
-            {
-                throw new DataSourceException( e.getMessage(), IO_ERROR );
-            }
-        }
-    }
-
-    public static String gimme_a_new_files_name()
-    {
-        return base_path + "chunk_" + String.format( "%06d", file_id++ ) + ".au";
-    }
-}
-
 public class AudioDataSourceVersion implements IAudioDataSource
 {
     private int sample_rate;
@@ -115,10 +63,9 @@ public class AudioDataSourceVersion implements IAudioDataSource
     private int version;
     private int sample_number;
 
-    private CachedAudioDataSource read_cache = null;
-    private CachedAudioDataSource write_cache = null;
-    private String read_file_path = null;
-    private String write_file_path = null;
+    /* We need two different ADS variables, because the writes shall be made in full sequential chunk files and shall not be affected by reads. */
+    private IFileAudioDataSource r_fileAudioDataSource = null;
+    private IFileAudioDataSource w_fileAudioDataSource = null;
 
     private static final int max_samples_per_chunk = 1024 * 1024;
     private ArrayList< FileToProjectMapping > mapping = new ArrayList<>();
@@ -131,28 +78,36 @@ public class AudioDataSourceVersion implements IAudioDataSource
         this.sample_rate = sample_rate;
     }
 
-    public AudioDataSourceVersion( int version, String file ) throws DataSourceException
+    public AudioDataSourceVersion( int version, String file, boolean is_temp ) throws DataSourceException
     {
         this.version = version;
-        read_cache = Cached_ADS_Manager.get_cache( file );
-        read_file_path = file;
-        sample_number = read_cache.get_sample_number();
-        channel_number = read_cache.get_channel_number();
-        sample_rate = read_cache.get_sample_rate();
+
+        /* Call with null is_temp, as the entry shall already exist. */
+        FileADSManager.associate_file_with_version( file, is_temp, version );
+        r_fileAudioDataSource = FileADSManager.get_file_ADS( file );
+
+        sample_number = r_fileAudioDataSource.get_sample_number();
+        channel_number = r_fileAudioDataSource.get_channel_number();
+        sample_rate = r_fileAudioDataSource.get_sample_rate();
         map( 0, sample_number, 0, file );
     }
 
-    public AudioDataSourceVersion duplicate()
+    public AudioDataSourceVersion( AudioDataSourceVersion other ) throws DataSourceException
     {
-        AudioDataSourceVersion other = new AudioDataSourceVersion( version + 1, sample_rate, channel_number, sample_number );
-        other.read_cache = read_cache;
-        other.read_file_path = read_file_path;
-        other.write_file_path = write_file_path;
-        other.write_cache = write_cache;
-        Cached_ADS_Manager.mark_use( read_file_path );
-        Cached_ADS_Manager.mark_use( write_file_path );
-        other.mapping.addAll( this.mapping );
-        return other;
+        this.version = other.version + 1;
+        this.sample_number = other.sample_number;
+        this.sample_rate = other.sample_rate;
+        this.channel_number = other.channel_number;
+        this.r_fileAudioDataSource = other.r_fileAudioDataSource;
+        this.w_fileAudioDataSource = other.w_fileAudioDataSource;
+
+        for( FileToProjectMapping m : other.mapping )
+        {
+            this.mapping.add( new FileToProjectMapping( m.file_name, m.project_interval.l, m.file_interval.l, m.project_interval.get_length() ) );
+
+            /* Call with null is_temp, as the entry shall already exist. */
+            FileADSManager.associate_file_with_version( m.file_name, null, version );
+        }
     }
 
     private void move_project_mapping( int first_project_sample_index, int amount )
@@ -182,7 +137,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         sample_number += amount;
     }
 
-    private void map( int proj_start_sample_index, int length, int file_start_sample_index, String file_path )
+    private void map( int proj_start_sample_index, int length, int file_start_sample_index, String file_path ) throws DataSourceException
     {
         int index = 0;
         for( FileToProjectMapping m : mapping )
@@ -195,7 +150,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         }
         sample_number = Math.max( sample_number, proj_start_sample_index + length );
         mapping.add( index, new FileToProjectMapping( file_path, proj_start_sample_index, file_start_sample_index, length ) );
-        ProjectFilesManager.associate_file_with_version( file_path, version );
+        FileADSManager.associate_file_with_version( file_path, null, version );
     }
 
     private void demap( int proj_start_sample_index, int length ) throws DataSourceException
@@ -206,7 +161,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         }
 
         Interval demap_interval = new Interval( proj_start_sample_index, length );
-        ArrayList< String > demapped_files = new ArrayList<>();
+        HashSet< String > demapped_files = new HashSet<>();
 
         split_map( proj_start_sample_index );
         split_map( proj_start_sample_index + length );
@@ -239,12 +194,12 @@ public class AudioDataSourceVersion implements IAudioDataSource
             }
             if( !found )
             {
-                ProjectFilesManager.deassociate_file_from_version( file, version );
+                FileADSManager.deassociate_file_from_version( file, version );
             }
         }
     }
 
-    private void split_map( int proj_sample_index )
+    private void split_map( int proj_sample_index ) throws DataSourceException
     {
         FileToProjectMapping map = null;
         int left_length = 0;
@@ -264,7 +219,6 @@ public class AudioDataSourceVersion implements IAudioDataSource
         }
         if( left_length != 0 )
         {
-
             map( map.project_interval.l, left_length, map.file_interval.l, map.file_name );
             map( proj_sample_index, map.get_length() - left_length, map.file_interval.l + left_length, map.file_name );
         }
@@ -302,19 +256,6 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
     public void close() throws DataSourceException
     {
-        if( read_cache != null )
-        {
-            Cached_ADS_Manager.release_use( read_file_path );
-            read_cache = null;
-            read_file_path = null;
-        }
-        if( write_cache != null )
-        {
-            Cached_ADS_Manager.release_use( write_file_path );
-            write_cache = null;
-            write_file_path = null;
-        }
-
         demap( 0, Integer.MAX_VALUE );
     }
 
@@ -357,15 +298,13 @@ public class AudioDataSourceVersion implements IAudioDataSource
                 throw new DataSourceException( "Sample index not mapped", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
             }
 
-            if( read_cache == null || !read_file_path.equals( map.file_name ) )
+            if( r_fileAudioDataSource == null || !r_fileAudioDataSource.getFile_path().equals( map.file_name ) )
             {
-                Cached_ADS_Manager.release_use( read_file_path );
-                read_file_path = map.file_name;
-                read_cache = Cached_ADS_Manager.get_cache( read_file_path );
+                r_fileAudioDataSource = FileADSManager.get_file_ADS( map.file_name );
             }
             temp_len = Math.min( length - i, map.project_interval.r - i - first_sample_index );
             file_first_sample_index = i + first_sample_index - map.project_interval.l + map.file_interval.l;
-            win = read_cache.get_samples( file_first_sample_index, temp_len );
+            win = r_fileAudioDataSource.get_samples( file_first_sample_index, temp_len );
 
             if( temp_len == length )
             {
@@ -415,17 +354,16 @@ public class AudioDataSourceVersion implements IAudioDataSource
         while( index < samples.get_first_sample_index() + samples.get_length() )
         {
             /* If there's no write ADS, or if the current one is full, create a new chunk file */
-            if( write_cache == null || write_cache.get_sample_number() >= max_samples_per_chunk )
+            if( w_fileAudioDataSource == null || w_fileAudioDataSource.get_sample_number() >= max_samples_per_chunk )
             {
-                IFileAudioDataSource rwFileAudioSource = FileAudioSourceFactory.createFile( ProjectFilesManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 4 );
-                rwFileAudioSource.close();
+                /* Create and immediately release the file handle */
+                IFileAudioDataSource new_chunk_file_ADS = FileAudioSourceFactory.createFile( ProjectStatics.get_temp_files_path() + FileADSManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 4 );
+                new_chunk_file_ADS.close();
 
-                /* Release the previous cache if exists */
-                Cached_ADS_Manager.release_use( write_file_path );
-                write_file_path = rwFileAudioSource.getFile_path();
-                write_cache = Cached_ADS_Manager.get_cache( write_file_path );
+                FileADSManager.associate_file_with_version( new_chunk_file_ADS.getFile_path(), true, version );
+                w_fileAudioDataSource = FileADSManager.get_file_ADS( new_chunk_file_ADS.getFile_path() );
             }
-            temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, max_samples_per_chunk - write_cache.get_sample_number() );
+            temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, max_samples_per_chunk - w_fileAudioDataSource.get_sample_number() );
 
             float buf[][] = new float[ samples.get_channel_number() ][ temp_len ];
             for( int i = 0; i < temp_len; i++ )
@@ -435,9 +373,9 @@ public class AudioDataSourceVersion implements IAudioDataSource
                     buf[ k ][ i ] = samples.getSample( i + index, k );
                 }
             }
-            AudioSamplesWindow win = new AudioSamplesWindow( buf, write_cache.get_sample_number(), temp_len, channel_number );
-            write_cache.put_samples( win );
-            map( index, temp_len, write_cache.get_sample_number() - temp_len, write_file_path );
+            AudioSamplesWindow win = new AudioSamplesWindow( buf, w_fileAudioDataSource.get_sample_number(), temp_len, channel_number );
+            w_fileAudioDataSource.put_samples( win );
+            map( index, temp_len, w_fileAudioDataSource.get_sample_number() - temp_len, w_fileAudioDataSource.getFile_path() );
 
             index += temp_len;
         }

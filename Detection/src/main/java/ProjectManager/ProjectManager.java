@@ -1,7 +1,6 @@
 package ProjectManager;
 
 import AudioDataSource.CachedADS.CachedAudioDataSource;
-import AudioDataSource.Cached_ADS_Manager;
 import AudioDataSource.VersionedADS.AudioDataSourceVersion;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
 import Exceptions.DataSourceException;
@@ -78,12 +77,14 @@ public class ProjectManager
         {
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
         }
-        AudioDataSourceVersion sourceVersion = versionedADS.get_current_version();
+
         cache.flushAll();
 
-        AudioDataSourceVersion destinationVersion = versionedADS.create_new();
+        AudioDataSourceVersion destinationVersion = versionedADS.create_next_version();
         CachedAudioDataSource destCache = new CachedAudioDataSource( destinationVersion, ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
+
         effect.apply( cache, destCache, interval );
+
         cache = destCache;
     }
 
@@ -147,7 +148,6 @@ public class ProjectManager
             cache.flushAll();
             versionedADS.dispose();
         }
-        Cached_ADS_Manager.finish_all_caches();
     }
 
     public static CachedAudioDataSource getCache() throws DataSourceException
@@ -169,7 +169,7 @@ public class ProjectManager
         {
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
         }
-        effect.apply( getCache(), null, interval );
+        effect.apply( cache, null, interval );
     }
 
     public static void start_classifier_process() throws IOException, InterruptedException

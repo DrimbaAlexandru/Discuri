@@ -220,11 +220,12 @@ public class Multi_Band_Repair_Marked implements IEffect
                 }
             }
 
-            // LA vivaldi, sample 1613742 e reparat cu predictie nula dinspre stanga
-            if( marking.get_first_marked_sample() >= 1613742 )
+            /* If marking is not supposed to be repaired, continue */
+            if( !repair_direct && !repair_residue && ( nr_of_bands == 0 ) )
             {
-                repair_direct = repair_direct;
+                continue;
             }
+
             if( !repair_direct )
             {
                 /* Repair with splitting the signal into multiple frequency bands */

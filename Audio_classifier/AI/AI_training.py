@@ -24,7 +24,7 @@ metrics = {}
 
 model.create_model()
 #model.load_model()
-for i in range( 0, 10 ):
+for i in range( 0, 4 ):
     model.fit_model( 5 )
     model.save_model()
     #model.predict_from_model()
