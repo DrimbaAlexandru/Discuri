@@ -1,12 +1,48 @@
+import os
 
+import numpy as np
+
+from AI.AI_1D_classifier import BinaryClassifierModelWithGenerator
+from AI.AI_utils import SAMPLE_VALUE_MUL_FACTOR
 
 #----------------------------------------------
 # Global constants
 #----------------------------------------------
-AI_AUDIO_SAMPLE_RATE = 96000
-AI_AUDIO_INPUTS = 129
-AI_AUDIO_OUTPUTS = 1
-AI_AUDIO_OFFSET = 64
+IOP_AI_STATUS_OK = 0
+IOP_AI_STATUS_FAIL = 1
+IOP_AI_STATUS_MODEL_UNAVAILABLE = 2
 
-def AI_audio_classify( sample_rate, samples ):
-    return [ 1.0 ] + [ 0.0 ] * ( len(samples) - 2 - AI_AUDIO_INPUTS + AI_AUDIO_OUTPUTS ) +  [ 1.0 ]
+#             Sample rate : path                                    IN   OUT  OFFSET
+CLASSIFIER_DICT = { 96000: ("1d_classifier_model_96000_384_128.h5", 384, 128, 128 ) }
+model = None
+
+def AI_load_classifier( sample_rate ):
+    global model
+
+    if sample_rate not in CLASSIFIER_DICT:
+        return IOP_AI_STATUS_MODEL_UNAVAILABLE
+
+    path, inputs, outputs, offset = CLASSIFIER_DICT[ sample_rate ]; path = os.path.dirname(os.path.realpath(__file__)) + "\\" + path
+    success = False
+    if( model is None or model.MODEL_PATH != path ):
+        model = BinaryClassifierModelWithGenerator( inputs, outputs, offset, sample_rate, path )
+        success = model.load_model()
+
+    return IOP_AI_STATUS_OK if success else IOP_AI_STATUS_FAIL
+
+# Returns ( status, sample_rate, inputs, outputs, offset )
+def AI_get_properties():
+    if model is None:
+        return ( IOP_AI_STATUS_MODEL_UNAVAILABLE, None, None, None, None )
+    return IOP_AI_STATUS_OK, model.SAMPLE_RATE, model.INPUTS, model.OUTPUTS, model.OFFSET
+
+# Returns ( status, mark_probabilities )
+def AI_audio_classify( samples ):
+    global model
+
+    if model is None:
+        return ( IOP_AI_STATUS_MODEL_UNAVAILABLE, None )
+
+    float_samples = np.asarray( samples ) / SAMPLE_VALUE_MUL_FACTOR
+    return ( IOP_AI_STATUS_OK, model.predict_markings( float_samples ) )
+

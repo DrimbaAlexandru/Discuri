@@ -67,7 +67,6 @@ public class AudioDataSourceVersion implements IAudioDataSource
     private IFileAudioDataSource r_fileAudioDataSource = null;
     private IFileAudioDataSource w_fileAudioDataSource = null;
 
-    private static final int max_samples_per_chunk = 1024 * 1024;
     private ArrayList< FileToProjectMapping > mapping = new ArrayList<>();
 
     public AudioDataSourceVersion( int version, int sample_rate, int channel_number, int sample_number )
@@ -354,7 +353,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
         while( index < samples.get_first_sample_index() + samples.get_length() )
         {
             /* If there's no write ADS, or if the current one is full, create a new chunk file */
-            if( w_fileAudioDataSource == null || w_fileAudioDataSource.get_sample_number() >= max_samples_per_chunk )
+            if( w_fileAudioDataSource == null || w_fileAudioDataSource.get_sample_number() >= ProjectStatics.get_temp_file_max_samples() )
             {
                 /* Create and immediately release the file handle */
                 IFileAudioDataSource new_chunk_file_ADS = FileAudioSourceFactory.createFile( ProjectStatics.get_temp_files_path() + FileADSManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 4 );
@@ -363,7 +362,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
                 FileADSManager.associate_file_with_version( new_chunk_file_ADS.getFile_path(), true, version );
                 w_fileAudioDataSource = FileADSManager.get_file_ADS( new_chunk_file_ADS.getFile_path() );
             }
-            temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, max_samples_per_chunk - w_fileAudioDataSource.get_sample_number() );
+            temp_len = Math.min( samples.get_first_sample_index() + samples.get_length() - index, ProjectStatics.get_temp_file_max_samples() - w_fileAudioDataSource.get_sample_number() );
 
             float buf[][] = new float[ samples.get_channel_number() ][ temp_len ];
             for( int i = 0; i < temp_len; i++ )

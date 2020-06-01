@@ -652,6 +652,8 @@ public class Main_window
 
             window_size = Math.min( window_size, sample_number );
             window_size_changed = true;
+
+            set_first_sample_index( 0 );
         }
 
         channel_number = ProjectManager.getCache().get_channel_number();
@@ -1072,8 +1074,9 @@ public class Main_window
             Thread.sleep( 100 );
             ProjectManager.lock_access();
             ProjectManager.discard_project();
+            ProjectManager.stop_classifier_process( true );
         }
-        catch( DataSourceException | InterruptedException e1 )
+        catch( DataSourceException | InterruptedException | IOException e1 )
         {
             treatException( e1 );
         }

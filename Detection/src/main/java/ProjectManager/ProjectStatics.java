@@ -11,10 +11,9 @@ import java.net.URL;
  */
 public class ProjectStatics
 {
-    private static int project_cache_size = 1024 * 1024;    /* ALlow up to 2 ^ 20 samples to be cached into*/
+    private static int project_cache_size = 1024 * 1024;    /* ALlow up to 2 ^ 20 samples to be cached into 256 cache pages */
     private static int project_cache_page_size = 4096;
-    private static int temp_file_cache_size = 1024 * 64;
-    private static int temp_file_cache_page_size = 2048;
+    private static int temp_file_max_samples = 1024 * 1024; /* Maximum number of samples in temp files */
     private static String python_classifier_script_path = "main.py";
     private static String project_files_path = "D:\\";
     private static String python_scripts_resource_path = null;
@@ -56,12 +55,7 @@ public class ProjectStatics
 
     public static String getPython_classifier_script_path()
     {
-        return "D:\\git\\Discuri\\Audio_classifier\\main.py";
-    }
-
-    public static String getPython_classifier_mlp_path()
-    {
-        return python_scripts_resource_path + "TBD";
+        return python_scripts_resource_path + python_classifier_script_path;
     }
 
     public static String get_temp_files_path()
@@ -74,13 +68,8 @@ public class ProjectStatics
         return ProjectStatics.class.getClassLoader().getResource( "FXML/" + filename );
     }
 
-    public static int getTemp_file_cache_page_size()
+    public static int get_temp_file_max_samples()
     {
-        return temp_file_cache_page_size;
-    }
-
-    public static int getTemp_file_cache_size()
-    {
-        return temp_file_cache_size;
+        return temp_file_max_samples;
     }
 }

@@ -6,7 +6,6 @@ import Exceptions.DataSourceException;
 import Exceptions.DataSourceExceptionCause;
 import MarkerFile.MarkerFile;
 import ProjectManager.ProjectManager;
-import ProjectManager.ProjectStatics;
 import SignalProcessing.Effects.IEffect;
 import SignalProcessing.SampleClassifier.RemoteAIServer.IOP_IPC_stdio;
 import SignalProcessing.SampleClassifier.RemoteAIServer.IOP_msg_struct_type;
@@ -61,18 +60,21 @@ public class AIDamageRecognition implements IEffect
     public static final short IOP_MSG_SUBID_INFO = 2;
 
     public static final short IOP_MSG_ID_CMD = 8;
-    public static final short IOP_MSG_SUBID_CMD_SET_MODEL_PATH = 1;
     public static final short IOP_MSG_SUBID_CMD_TERMINATE = 0xFF;
 
     public static final short IOP_MSG_ID_LOG_EVENT = 100;
 
-    private static final int AUDIO_MS_PER_ROUND = 5000;         /* Amount of audio data (in seconds) to classify in each round                              */
-    private static final int CLASSIFICATION_TIMEOUT_RATE = 10; /* If it takes more than 10 seconds to process one second of data, consider it a timeout    */
-    private static final long COMMUNICATION_TIMEOUT_MS = 500;   /* Maximum amount of time to await for a request response                                   */
+    public static final short IOP_AI_STATUS_OK = 0;
+    public static final short IOP_AI_STATUS_FAIL = 1;
+    public static final short IOP_AI_STATUS_MODEL_NOT_EXISTING = 2;
+
+    private static final int AUDIO_MS_PER_ROUND = 1000;         /* Amount of audio data (in seconds) to classify in each round                              */
+    private static final int CLASSIFICATION_TIMEOUT_RATE = 10;  /* If it takes more than 10 seconds to process one second of data, consider it a timeout    */
+    private static final long SCRIPT_LOAD_TIMEOUT_MS = 30*1000; /* Maximum amount of time to await for the script to load                                   */
     private static final int SAMPLE_SIZE = 2;                   /* Bytes for each data sample                                                               */
     private static final int PERIOD_RATE_MS = 1;                /* Periodic processing rate                                                                 */
     private static final int TX_BAUD_RATE_PER_CYCLE = 8192;     /* Max TX bytes per processing cycle                                                        */
-    private static final int MAX_ATTEMPT_NBMR = 2;              /* Maximum number of attempts/retries                                                       */
+    // private static final int MAX_ATTEMPT_NBMR = 2;              /* Maximum number of attempts/retries                                                       */
 
     /******************************************
     * Local variables
@@ -124,6 +126,7 @@ public class AIDamageRecognition implements IEffect
         int window_size;
         long rqst_time = 0;
         long crnt_time = System.currentTimeMillis();
+        Interval orig_interval = new Interval( interval.l, interval.get_length() );
 
         progress = 0;
         state = effectState.iop_AUDIO_STATE_IDLE;
@@ -132,11 +135,11 @@ public class AIDamageRecognition implements IEffect
 
         try
         {
-            if( classifierInfo == null )
+            if( classifierInfo == null || classifierInfo.sample_rate != dataSource.get_sample_rate() )
             {
                 rqst_time = System.currentTimeMillis();
-                sendClassifierInfoRequest();
-                while( ( classifierInfo == null ) && ( crnt_time < rqst_time + COMMUNICATION_TIMEOUT_MS ) )
+                sendClassifierInfoRequest( dataSource.get_sample_rate() );
+                while( ( classifierInfo == null ) && ( crnt_time < rqst_time + SCRIPT_LOAD_TIMEOUT_MS ) )
                 {
                     Thread.sleep( PERIOD_RATE_MS );
                     processInput();
@@ -156,7 +159,8 @@ public class AIDamageRecognition implements IEffect
             }
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
-        if( classifierInfo == null )
+
+        if( classifierInfo == null || classifierInfo.sample_rate != dataSource.get_sample_rate() )
         {
             try
             {
@@ -167,11 +171,13 @@ public class AIDamageRecognition implements IEffect
                 ;
             }
 
-            throw new DataSourceException( "Failed getting Sample Classifier info", DataSourceExceptionCause.REMOTE_TIMEOUT );
+            throw new DataSourceException( "Failed getting a valid Sample Classifier info", DataSourceExceptionCause.REMOTE_TIMEOUT );
         }
 
         interval.l -= classifierInfo.offset;
         interval.r += classifierInfo.inputs - classifierInfo.outputs - classifierInfo.offset;
+        /* Make sure the sent interval contains sufficient samples for the classifier's inputs */
+        interval.r = Math.max( interval.r, interval.l + classifierInfo.inputs );
         interval.limit( 0, dataSource.get_sample_number() );
 
         try
@@ -388,20 +394,27 @@ public class AIDamageRecognition implements IEffect
     }
 
 
-    private void processClassifierInfoResponse( IOP_msg_struct_type msg )
+    private void processClassifierInfoResponse( IOP_msg_struct_type msg ) throws DataSourceException
     {
+        classifierInfo = null;
+
         ByteBuffer bb = ByteBuffer.wrap( msg.data ).order( ByteOrder.LITTLE_ENDIAN );
-        if( msg.subID == IOP_MSG_SUBID_INFO && msg.size == 10 )
+        if( msg.subID == IOP_MSG_SUBID_INFO && msg.size == 14 )
         {
-            classifierInfo = new classifierInfo();
-            classifierInfo.sample_rate = bb.getInt();
-            classifierInfo.inputs = bb.getShort();
-            classifierInfo.outputs = bb.getShort();
-            classifierInfo.offset = bb.getShort();
-        }
-        else
-        {
-            classifierInfo = null;
+            int status = bb.getInt();
+            if( status == IOP_AI_STATUS_OK )
+            {
+                classifierInfo = new classifierInfo();
+
+                classifierInfo.sample_rate = bb.getInt();
+                classifierInfo.inputs = bb.getShort();
+                classifierInfo.outputs = bb.getShort();
+                classifierInfo.offset = bb.getShort();
+            }
+            else
+            {
+                throw new DataSourceException( String.format( "Classifier Info response returned failed status %d", status ), DataSourceExceptionCause.REMOTE_ERROR );
+            }
         }
 
     }
@@ -416,7 +429,7 @@ public class AIDamageRecognition implements IEffect
         switch( state )
         {
             case iop_AUDIO_STATE_TX_AUDIO_START:
-                txd_bytes += sentAudioDataStartRX( sample_rate, seq_length );
+                txd_bytes += sendAudioDataStartRX( sample_rate, seq_length );
                 state = effectState.iop_AUDIO_STATE_TX_AUDIO;
                 /* intentional fallthrough */
 
@@ -458,20 +471,24 @@ public class AIDamageRecognition implements IEffect
     }
 
 
-    private void sendClassifierInfoRequest() throws IOException
+    private void sendClassifierInfoRequest( int sample_rate ) throws IOException
     {
         IOP_msg_struct_type msg = new IOP_msg_struct_type();
 
         msg.ID = IOP_MSG_ID_CLASSIFIER_INFO;
         msg.subID = IOP_MSG_SUBID_RQST_INFO;
-        msg.size = 0;
-        msg.data = null;
+
+        data_buffer.rewind();
+        data_buffer.putInt( sample_rate );
+
+        msg.size = data_buffer.position();
+        msg.data = data_buffer.array();
 
         ipc_io.IOP_put_frame( msg );
     }
 
 
-    private int sentAudioDataStartRX( int sample_rate, int seq_length ) throws IOException
+    private int sendAudioDataStartRX( int sample_rate, int seq_length ) throws IOException
     {
         IOP_msg_struct_type msg = new IOP_msg_struct_type();
 

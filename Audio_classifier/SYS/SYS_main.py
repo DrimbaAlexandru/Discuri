@@ -1,5 +1,13 @@
-import traceback
+import sys
+import os
+import logging
 import time
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # FATAL
+logging.getLogger('tensorflow').setLevel(logging.FATAL)
+
+# Redirect stderr to a file, because the client does not read from it
+sys.stderr = open( "log.txt", "w" )
 
 from SYS.SYS_time import *
 from IOP.IOP_audio_classifier import *

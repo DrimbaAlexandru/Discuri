@@ -12,7 +12,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras import backend as K, Sequential, metrics
 
 import numpy as np
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 
 from AI.AI_audio_data_generator import MarkedAudioDataGenerator
 import AI.AI_utils as utils
@@ -28,7 +28,8 @@ class BinaryClassifierModelWithGenerator:
                   outputs,
                   offset,
                   sample_rate,
-                  batch_size,
+                  model_path,
+                  batch_size = None,
                   train_path_in = None,     # Folder containing multiple signal files
                   test_path_in = None,      # Folder containing multiple signal files
                   train_test_same = False,
@@ -43,7 +44,7 @@ class BinaryClassifierModelWithGenerator:
 
         self.IS_TEST_DATA_LABELED = test_data_labeled
 
-        self.MODEL_PATH = "./1d_classifier_model_" + str( self.SAMPLE_RATE ) + ".h5"
+        self.MODEL_PATH = model_path
         self.LOG_DIR = "./logs/fit//" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
         self.VALIDATION_SPLIT = 0.125
@@ -117,11 +118,12 @@ class BinaryClassifierModelWithGenerator:
         self.model.save( self.MODEL_PATH )
 
     def load_model( self ):
-        self.model = load_model( self.MODEL_PATH, custom_objects={'Precision': metrics.Precision(),
-                                                                  'Recall': metrics.Recall(),
-                                                                  'metrics': [ "Precision", "Recall", "accuracy" ]} )
-        assert self.INPUTS == self.model.input_shape[ 2 ]
-        assert self.OUTPUTS == self.model.output_shape[ 2 ]
+        self.model = load_model( self.MODEL_PATH, compile = False )
+        self.model.compile(optimizer = Adam( learning_rate=0.005 ), loss="binary_crossentropy", metrics=[ "accuracy", metrics.Precision(), metrics.Recall() ], sample_weight_mode="temporal" )
+
+        if( self.INPUTS == self.model.input_shape[ 1 ] and self.OUTPUTS == self.model.output_shape[ 1 ] ):
+            return True
+        return False
 
 
     def create_model( self ):
@@ -146,7 +148,7 @@ class BinaryClassifierModelWithGenerator:
         print( self.model.output_shape )
 
         #self.model.compile(optimizer='adam', loss=iou_coef_loss, metrics=[ iou_coef_loss, dice_coef_loss, "accuracy" ])
-        self.model.compile(optimizer = Adam(learning_rate=0.01), loss="binary_crossentropy", metrics=[ "accuracy", metrics.Precision(), metrics.Recall() ], sample_weight_mode="temporal" )
+        self.model.compile(optimizer = Adam( learning_rate=0.005 ), loss="binary_crossentropy", metrics=[ "accuracy", metrics.Precision(), metrics.Recall() ], sample_weight_mode="temporal" )
         self.model.summary()
 
     def fit_model( self, epochs = 50 ):
@@ -168,13 +170,34 @@ class BinaryClassifierModelWithGenerator:
         self.epochs_measured += epochs
 
     def predict_markings( self, input_signal ):
-        length = len( input_signal )
-        i = 0
-        preds = []
+        input_length = input_signal.shape[ 0 ]
+        output_length = ( input_length - self.INPUTS + self.OUTPUTS )
+        batch_size = ( output_length + self.OUTPUTS - 1 ) // self.OUTPUTS
 
-        while( i < length - self.INPUTS ):
-            pred = self.model.predict( input_signal[ i : i + self.INPUTS ] , verbose=1)
-            preds = preds + pred
+        inputs = np.zeros( ( batch_size, ) + self.model.input_shape[ 1 : ] )
+        probabilities = np.zeros( output_length )
+
+        i = 0
+        item_nr = 0
+
+        while( i <= input_length - self.INPUTS ):
+            inputs[ item_nr ] = np.reshape( np.asarray( input_signal[ i : i + self.INPUTS ] ), self.model.input_shape[ 1 : ] )
+            item_nr += 1
             i += self.OUTPUTS
+
+        # If the input cannot be divided into sequen cial chunks, the last chunk must be completed individually, and will overlap with the previous one
+        if( ( input_length - ( self.INPUTS - self.OUTPUTS ) ) % self.OUTPUTS != 0 ):
+            assert item_nr == batch_size - 1
+            inputs[ batch_size - 1 ] = np.reshape( input_signal[ input_length - self.INPUTS : ], self.model.input_shape[ 1 : ] )
+        else:
+            assert item_nr == batch_size
+
+        # Flatten the predictions
+        preds = self.model.predict( inputs, verbose = 0, batch_size = batch_size )
+        preds = np.reshape( preds, newshape = ( -1, ) )
+
+        # The last batch item needs individual processing, because its input might not be in sequence with the previous inputs
+        probabilities[ 0 : ( batch_size - 1 ) * self.OUTPUTS ] = preds[  0 : ( batch_size - 1 ) * self.OUTPUTS ]
+        probabilities[ output_length - self.OUTPUTS : ] = preds[  ( batch_size - 1 ) * self.OUTPUTS : ]
 
         return preds

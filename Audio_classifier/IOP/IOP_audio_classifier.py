@@ -83,16 +83,19 @@ class IOP_audio_classifier:
 
         except BaseException as e:
             #traceback.print_exc( file = sys.stderr )
-            self._abort( b'Exception occurred' )
             IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, traceback.format_exc().encode("ascii") )
+            self._abort( str(e).encode("ascii") )
             SYS.SYS_main.SYS_main_stop_loop()
 
     def _process_message( self, message ):
         id, subid, len, data = message
 
         if( id == IOP_MSG_ID_CLASSIFIER_INFO ):
-            if( subid == IOP_MSG_SUBID_RQST_INFO ):
-                response_msg = struct.pack( '<IHHH', AI_AUDIO_SAMPLE_RATE, AI_AUDIO_INPUTS, AI_AUDIO_OUTPUTS, AI_AUDIO_OFFSET )
+            if( subid == IOP_MSG_SUBID_RQST_INFO and len == struct.calcsize("<I") ):
+                rqst_sample_rate, = struct.unpack( "<I", data )
+                AI_load_classifier( rqst_sample_rate )
+                status, sample_rate, inputs, outputs, offset = AI_get_properties()
+                response_msg = struct.pack( '<IIHHH', status, sample_rate, inputs, outputs, offset )
                 IOP_put_frame( IOP_MSG_ID_CLASSIFIER_INFO, IOP_MSG_SUBID_INFO, response_msg )
             return
 
@@ -103,8 +106,8 @@ class IOP_audio_classifier:
                     self._rx_sequence_length, self._rx_sample_rate = struct.unpack( "<II", data )
                     self._state = self.iop_AUDIO_STATE_RX
                 else:
-                    self._abort( b'Classifier not ready for receiving audio data START' )
                     IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, "RXd AUDIO START RX in non IDLE state %u" % self._state )
+                    self._abort( b'Classifier not ready for receiving audio data START' )
 
             elif( subid == IOP_MSG_SUBID_AUDIO_RX_DATA ):
                 if( self._state == self.iop_AUDIO_STATE_RX ):
@@ -114,8 +117,9 @@ class IOP_audio_classifier:
                     if( ( offset != self._rx_next_offset )
                      or ( sample_cnt * self.SAMPLE_SIZE_BYTES + hdr_size ) != len
                      or ( offset + sample_cnt > self._rx_sequence_length ) ):
-                        self._abort( b'Invalid audio offset/length' )
                         IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, "RXd AUDIO DATA RX with invalid offset %u, expected %u, or with invalid length" % ( offset, self._rx_next_offset ) )
+                        self._abort( b'Invalid audio offset/length' )
+
                     else:
                         self._rx_next_offset += sample_cnt
                         self._rx_audio_buffer += struct.unpack( "<" + ( "h" * sample_cnt ), data[ hdr_size: ] )
@@ -123,8 +127,8 @@ class IOP_audio_classifier:
                             self._state = self.iop_AUDIO_STATE_CLASSIFY
                             self._classify_samples()
                 else:
-                    self._abort( b'Classifier not ready for receiving audio data buffers' )
                     IOP_put_frame( IOP_MSG_ID_LOG_EVENT, 0, "RXd AUDIO DATA RX in unexpected state %u" % self._state )
+                    self._abort( b'Classifier not ready for receiving audio data buffers' )
             return
 
         if( id == IOP_MSG_ID_AUDIO_ABORT ):
@@ -154,12 +158,26 @@ class IOP_audio_classifier:
         self._tx_probability_buffer = []
         self._tx_offset = 0
 
-        outputs_cnt = self._rx_sequence_length - AI_AUDIO_INPUTS + AI_AUDIO_OUTPUTS
-        if( outputs_cnt <= 0 or self._rx_sequence_length < AI_AUDIO_INPUTS ):
+        status, sample_rate, inputs, outputs, _ = AI_get_properties()
+        if( status != IOP_AI_STATUS_OK ):
+            self._abort( b'Model not loaded!' )
+            return
+
+        if( sample_rate != self._rx_sample_rate ):
+            self._abort( b'Loaded model was trained for a different sample rate than the received audio\'s sample rate' )
+            return
+
+        outputs_cnt = self._rx_sequence_length - inputs + outputs
+        if( outputs_cnt <= 0 or self._rx_sequence_length < inputs ):
             self._abort( b'Not enough input data to run the classifier' )
             return
 
-        self._tx_probability_buffer = AI_audio_classify( self._rx_sample_rate, self._rx_audio_buffer )
+        status, probabilities = AI_audio_classify( self._rx_audio_buffer )
+        if( status == IOP_AI_STATUS_OK ):
+            self._tx_probability_buffer = probabilities
+        else:
+            self._abort( b'Running the classifier returned a failed status' )
+            return
 
     def audio_periodic_output( self ):
         tick_now = SYS_get_time_ms()
