@@ -1,10 +1,10 @@
 package GUI.UI_Components.Effect_Input_Dialogs;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 import ProjectManager.ProjectStatics;
-import SignalProcessing.Effects.FIR_Equalizer;
-import SignalProcessing.Effects.IEffect;
+import Effects.FIR_Equalizer;
+import Effects.IEffect;
 import SignalProcessing.Filters.FIR;
 import Utils.Util_Stuff;
 import javafx.fxml.FXML;

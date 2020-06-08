@@ -1,0 +1,7 @@
+Number of learning samples: 863
+Number of validation samples: 123
+Number of testing samples: 140
+
+  Epoch 0 
+validation dataset
+confusion matrix

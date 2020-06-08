@@ -1,0 +1,31 @@
+1d_classifier_model_96000_257_1_20200604-202223 150 epochs + weights.h5
+Number of learning samples: 126
+Number of validation samples: 42
+Number of testing samples: 24
+
+  Epoch 0 
+validation dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.94      0.77      0.85    310771
+           1       0.53      0.84      0.65     96709
+
+    accuracy                           0.79    407480
+   macro avg       0.73      0.80      0.75    407480
+weighted avg       0.84      0.79      0.80    407480
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.93      0.76      0.84    154985
+           1       0.57      0.84      0.68     58785
+
+    accuracy                           0.78    213770
+   macro avg       0.75      0.80      0.76    213770
+weighted avg       0.83      0.78      0.79    213770
+
+
+

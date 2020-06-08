@@ -1,0 +1,36 @@
+Number of learning samples: 101
+Number of validation samples: 14
+Number of testing samples: 16
+Learning results:
+  Epoch 0 
+learn dataset
+              precision    recall  f1-score   support
+
+           0       0.93      0.59      0.72  20726991
+           1       0.30      0.80      0.44   4556593
+
+    accuracy                           0.63  25283584
+   macro avg       0.62      0.70      0.58  25283584
+weighted avg       0.82      0.63      0.67  25283584
+
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.93      0.52      0.67   2969766
+           1       0.26      0.81      0.39    614234
+
+    accuracy                           0.57   3584000
+   macro avg       0.59      0.66      0.53   3584000
+weighted avg       0.81      0.57      0.62   3584000
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.84      0.54      0.65   3353478
+           1       0.20      0.53      0.29    742522
+
+    accuracy                           0.54   4096000
+   macro avg       0.52      0.53      0.47   4096000
+weighted avg       0.72      0.54      0.59   4096000
+
+

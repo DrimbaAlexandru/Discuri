@@ -1,9 +1,7 @@
 package Utils.DataStructures;
 
-import Utils.Interval;
+import Utils.DataTypes.Interval;
 import org.junit.Assert;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by Alex on 01.06.2018.

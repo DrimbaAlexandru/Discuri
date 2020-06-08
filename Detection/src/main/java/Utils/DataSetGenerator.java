@@ -2,14 +2,14 @@ package Utils;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
-import Exceptions.DataSourceException;
-import MarkerFile.*;
+import Utils.DataTypes.Interval;
+import Utils.Exceptions.DataSourceException;
+import Utils.DataStructures.MarkerFile.*;
 import ProjectManager.ProjectManager;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -49,14 +49,7 @@ public class DataSetGenerator
         marked_written = 0;
         unmarked_written = 0;
 
-        MarkerFile writes_prob_1 = new MarkerFile();
-        MarkerFile writes_prob_0_5 = new MarkerFile();
-        MarkerFile writes_prob_0_1 = new MarkerFile();
-
-        /* Selected markings will be exapnded near the endings, and further from the marking, lower the probability of exporting the interval */
-        final int prob_1_margin = near_window_size / 4;
-        final int prob_05_margin = near_window_size / 2;
-        final int prob_01_margin = near_window_size;
+        MarkerFile written_markings = new MarkerFile();
 
         for( Marking m : markerFile.get_all_markings( interval ) )
         {
@@ -64,16 +57,10 @@ public class DataSetGenerator
             {
                 continue;
             }
-            writes_prob_1.addMark( m.get_first_marked_sample(), m.get_last_marked_sample(), m.getChannel() );
+            written_markings.addMark( m.get_first_marked_sample(), m.get_last_marked_sample(), m.getChannel() );
 
-            writes_prob_1.addMark( m.get_first_marked_sample() - prob_1_margin, m.get_first_marked_sample() - 1, m.getChannel() );
-            writes_prob_1.addMark( m.get_last_marked_sample() + 1, m.get_last_marked_sample() + prob_1_margin, m.getChannel() );
-
-            writes_prob_0_5.addMark( m.get_first_marked_sample() - prob_05_margin, m.get_first_marked_sample() - 1 - prob_1_margin, m.getChannel() );
-            writes_prob_0_5.addMark( m.get_last_marked_sample() + 1 + prob_1_margin, m.get_last_marked_sample() + prob_05_margin, m.getChannel() );
-
-            writes_prob_0_1.addMark( m.get_first_marked_sample() - prob_01_margin, m.get_first_marked_sample() - prob_05_margin - 1, m.getChannel() );
-            writes_prob_0_1.addMark( m.get_last_marked_sample() + 1 + prob_05_margin, m.get_last_marked_sample() + prob_01_margin, m.getChannel() );
+            written_markings.addMark( m.get_first_marked_sample() - near_window_size, m.get_first_marked_sample() - 1, m.getChannel() );
+            written_markings.addMark( m.get_last_marked_sample() + 1, m.get_last_marked_sample() + near_window_size, m.getChannel() );
         }
 
         FileOutputStream fos = new FileOutputStream( destination_path );
@@ -81,8 +68,9 @@ public class DataSetGenerator
         DataOutputStream writer = new DataOutputStream( bos );
 
         int i, j, ch;
-        boolean willWrite, isMarked;
+        boolean willWrite;
         AudioSamplesWindow win;
+        float mark_ratio;
 
         for( i = interval.l; i < interval.r - input_size; )
         {
@@ -90,12 +78,17 @@ public class DataSetGenerator
 
             for( ch = 0; ch < win.get_channel_number(); ch++ )
             {
+                /* j is the index of the first output */
                 for( j = offset; j < win.get_length() - ( input_size - output_size ) - offset; j++ )
                 {
-                    isMarked = markerFile.isMarked( i + j, ch );
-                    willWrite = writes_prob_1.isMarked( i + j, ch );
-                    willWrite = willWrite || ( rand.nextFloat() < 0.5f && writes_prob_0_5.isMarked( i + j, ch ) );
-                    willWrite = willWrite || ( rand.nextFloat() < 0.1f && writes_prob_0_1.isMarked( i + j, ch ) );
+                    willWrite = false;
+                    mark_ratio = get_seq_mark_ratio( win, i + j - near_window_size, near_window_size * 2 + output_size, ch, written_markings );
+
+                    if( mark_ratio > 0 )
+                    {
+                        willWrite = rand.nextFloat() < mark_ratio;
+                    }
+
                     if( !willWrite )
                     {
                         willWrite = ( rand.nextFloat() < non_marked_probab );
@@ -103,17 +96,18 @@ public class DataSetGenerator
 
                     if( willWrite )
                     {
-                        if( ( marked_written + unmarked_written ) % 1000 == 0 )
+                        if( ( ( marked_written + unmarked_written ) / output_size ) % 50000 == 0 )
                         {
-//                            System.out.println( "Written " + ( marked_written + unmarked_written ) );
-//                            System.out.println( "At sample " + ( i + j ) + "/" + dataSource.get_sample_number() );
-//                            System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
+                            System.out.println( "Written " + ( marked_written + unmarked_written ) );
+                            System.out.println( "At sample " + ( i + j ) + "/" + dataSource.get_sample_number() );
+                            System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
                             // marked_written = 0;
                             // unmarked_written = 0;
                         }
 
                         write_case( win, i + j - offset, ch, markerFile, writer );
-                        if( isMarked )
+                        mark_ratio = get_seq_mark_ratio( win, i + j, output_size, ch, markerFile );
+                        if( mark_ratio >= 0.5f )
                         {
                             while( rand.nextFloat() < doubling_probab )
                             {
@@ -180,6 +174,16 @@ public class DataSetGenerator
         writer.flush();
         writer.close();
 
+    }
+
+    private float get_seq_mark_ratio( AudioSamplesWindow win, int sample_start_idx, int sample_cnt, int ch, MarkerFile mf )
+    {
+        int marked = 0;
+        for( int k = sample_start_idx; k < sample_start_idx + sample_cnt; k++ )
+        {
+            marked += mf.isMarked( k, ch ) ? 1 : 0;
+        }
+        return ( 1.0f * marked / sample_cnt );
     }
 
     private void write_case( AudioSamplesWindow win, int sample_start_idx, int ch, MarkerFile mf, DataOutputStream writer ) throws DataSourceException, IOException

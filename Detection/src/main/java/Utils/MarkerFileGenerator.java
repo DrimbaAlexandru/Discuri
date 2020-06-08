@@ -2,12 +2,11 @@ package Utils;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
-import Exceptions.DataSourceException;
-import AudioDataSource.FileADS.WAVFileAudioSource;
-import Exceptions.DataSourceExceptionCause;
-import MarkerFile.*;
-import SignalProcessing.Effects.IEffect;
-import Utils.Interval;
+import Utils.DataTypes.Interval;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
+import Utils.DataStructures.MarkerFile.*;
+import Effects.IEffect;
 
 import java.io.FileWriter;
 import java.io.IOException;

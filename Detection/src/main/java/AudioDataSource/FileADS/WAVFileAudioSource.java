@@ -1,8 +1,8 @@
 package AudioDataSource.FileADS;
 
 import AudioDataSource.AudioSamplesWindow;
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

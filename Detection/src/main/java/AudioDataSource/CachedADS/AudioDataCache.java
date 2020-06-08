@@ -1,12 +1,12 @@
 package AudioDataSource.CachedADS;
 
 import AudioDataSource.AudioSamplesWindow;
-import Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceException;
 
 import java.util.LinkedList;
 import java.util.TreeSet;
 
-import static Exceptions.DataSourceExceptionCause.*;
+import static Utils.Exceptions.DataSourceExceptionCause.*;
 
 /**
  * Created by Alex on 10.09.2017.

@@ -2,7 +2,7 @@ package Tests;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.CachedADS.CachedAudioDataSource;
-import Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 
 /**

@@ -1,14 +1,14 @@
 package AudioDataSource;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.Windowing.Windowing;
-import Utils.Interval;
+import Utils.DataTypes.Interval;
 
 import java.util.function.Function;
 
-import static Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
-import static Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
+import static Utils.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
+import static Utils.Exceptions.DataSourceExceptionCause.SAMPLE_NOT_CACHED;
 
 /**
  * Created by Alex on 10.09.2017.

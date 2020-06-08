@@ -1,0 +1,100 @@
+Number of learning samples: 10
+Number of validation samples: 1
+Number of testing samples: 1
+
+  Epoch 10 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.88      0.95      0.92    207371
+           1       0.70      0.47      0.56     48629
+
+    accuracy                           0.86    256000
+   macro avg       0.79      0.71      0.74    256000
+weighted avg       0.85      0.86      0.85    256000
+
+IoU0.4306604701799582
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.77      0.87      0.82    166190
+           1       0.68      0.52      0.59     89810
+
+    accuracy                           0.75    256000
+   macro avg       0.73      0.70      0.70    256000
+weighted avg       0.74      0.75      0.74    256000
+
+IoU0.4306604701799582
+
+  Epoch 20 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.89      0.95      0.92    207371
+           1       0.69      0.52      0.59     48629
+
+    accuracy                           0.86    256000
+   macro avg       0.79      0.73      0.76    256000
+weighted avg       0.85      0.86      0.86    256000
+
+IoU0.44828441425694143
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.78      0.89      0.83    166190
+           1       0.72      0.53      0.61     89810
+
+    accuracy                           0.76    256000
+   macro avg       0.75      0.71      0.72    256000
+weighted avg       0.76      0.76      0.75    256000
+
+IoU0.44828441425694143
+
+  Epoch 30 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.91      0.91      0.91    207371
+           1       0.63      0.62      0.62     48629
+
+    accuracy                           0.86    256000
+   macro avg       0.77      0.77      0.77    256000
+weighted avg       0.86      0.86      0.86    256000
+
+IoU0.467576959386039
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.81      0.85      0.83    166190
+           1       0.70      0.64      0.67     89810
+
+    accuracy                           0.78    256000
+   macro avg       0.75      0.74      0.75    256000
+weighted avg       0.77      0.78      0.77    256000
+
+IoU0.467576959386039
+
+  Epoch 40 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.92      0.91      0.91    207371
+           1       0.63      0.66      0.64     48629
+
+    accuracy                           0.86    256000
+   macro avg       0.77      0.78      0.78    256000
+weighted avg       0.86      0.86      0.86    256000
+
+IoU0.4749888351091863
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.81      0.86      0.83    166190
+           1       0.71      0.64      0.67     89810
+
+    accuracy                           0.78    256000
+   macro avg       0.76      0.75      0.75    256000
+weighted avg       0.78      0.78      0.78    256000
+
+IoU0.4749888351091863
+

@@ -1,7 +1,7 @@
 package GUI.UI_Components.Effect_Input_Dialogs;
 
-import Exceptions.DataSourceException;
-import SignalProcessing.Effects.IEffect;
+import Utils.Exceptions.DataSourceException;
+import Effects.IEffect;
 import javafx.stage.Window;
 
 /**

@@ -1,6 +1,7 @@
 import numpy as np
 from keras.utils import Sequence
-from sklearn.utils import compute_sample_weight
+from sklearn.preprocessing import StandardScaler
+from tqdm import tqdm
 
 import AI.AI_utils as utils
 
@@ -18,6 +19,7 @@ class MarkedAudioDataGenerator(Sequence):
         :param batch_size: batch size at each iteration
         :param shuffle: True to shuffle label indexes after every epoch
         """
+        self.cache = False
         self.to_fit = to_fit
         self.batch_size = batch_size
         self.shuffle = shuffle
@@ -25,9 +27,18 @@ class MarkedAudioDataGenerator(Sequence):
         self.output_cnt = outputs
         self.mark_offset = offset
         self.items = items
-
         self.on_epoch_end()
 
+        self.X_data = []
+        self.Y_data = []
+
+        if self.cache:
+            for i in range( 0, len( self.items ) ):
+                this_file, start_idx = self.items[ i ]
+                X, Y = utils.load_marked_signal_file( this_file, start_idx, self.batch_size )
+
+                self.X_data.append( X )
+                self.Y_data.append( Y )
 
     def __len__(self):
         """Denotes the number of batches per epoch
@@ -45,21 +56,36 @@ class MarkedAudioDataGenerator(Sequence):
         this_file, start_idx = self.items[ self.indexes[ index ] ]
 
         # Generate data
-        X, y = utils.load_marked_signal_file( this_file, start_idx, self.batch_size )
+        if self.cache:
+            X = self.X_data[ self.indexes[ index ] ]
+            y = self.Y_data[ self.indexes[ index ] ]
+        else:
+            X, y = utils.load_marked_signal_file( this_file, start_idx, self.batch_size )
 
         # Augment the data by varying the input signal amplitude
         factors = np.random.uniform( 0.25, 2.0, X.shape[ 0 ] ) * ( np.random.randint( 0, 2, X.shape[ 0 ] ) * 2 - 1 )
         X = np.asarray( [ X[ i ] * factors[ i ] for i in range( 0, X.shape[ 0 ] ) ] )
+
+        scaler = StandardScaler()
+        scaler.fit( X )
+        X = scaler.transform( X )
 
         if self.to_fit:
             return X, y, self._compute_weights( y )
         else:
             return X
 
+    def get_all_y_true(self):
+        y_true = []
+        for i in tqdm(range(0, len(self)), ascii=True, desc = "Get all Y true"):
+            y_true += [ x for x in self[ i ][ 1 ] ]
+        return np.asarray( y_true )
+
 
     def _compute_weights( self, y ):
-        weights = y * (utils.POSITIVE_CLASS_WEIGHT - utils.NEGATIVE_CLASS_WEIGHT) + utils.NEGATIVE_CLASS_WEIGHT
-        return np.reshape( weights, ( y.shape[ 0 ], y.shape[ 1 ] ) )
+        weights = np.sum( y, axis = ( 1 ) ) / self.output_cnt
+        weights = utils.POSITIVE_CLASS_WEIGHT * weights + ( utils.NEGATIVE_CLASS_WEIGHT * ( 1 - weights ) )
+        return weights
 
 
     def get_item_count( self ):

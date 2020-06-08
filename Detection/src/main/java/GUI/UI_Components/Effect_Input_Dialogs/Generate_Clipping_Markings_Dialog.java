@@ -1,10 +1,10 @@
 package GUI.UI_Components.Effect_Input_Dialogs;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 import ProjectManager.ProjectStatics;
-import SignalProcessing.SampleClassifier.Create_Marker_File_Clipping;
-import SignalProcessing.Effects.IEffect;
+import Effects.SampleClassifier.Create_Marker_File_Clipping;
+import Effects.IEffect;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

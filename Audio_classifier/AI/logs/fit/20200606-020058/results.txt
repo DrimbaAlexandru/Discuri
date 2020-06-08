@@ -1,0 +1,82 @@
+Number of learning samples: 126
+Number of validation samples: 42
+Number of testing samples: 24
+
+  Epoch 1 
+validation dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.84      0.94      0.89    261663
+           1       0.77      0.53      0.63     96570
+
+    accuracy                           0.83    358233
+   macro avg       0.81      0.73      0.76    358233
+weighted avg       0.82      0.83      0.82    358233
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.76      0.86      0.81    180569
+           1       0.26      0.16      0.20     58146
+
+    accuracy                           0.69    238715
+   macro avg       0.51      0.51      0.50    238715
+weighted avg       0.64      0.69      0.66    238715
+
+
+
+  Epoch 2 
+validation dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.84      0.95      0.89    261663
+           1       0.79      0.53      0.63     96570
+
+    accuracy                           0.84    358233
+   macro avg       0.82      0.74      0.76    358233
+weighted avg       0.83      0.84      0.82    358233
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.84      0.96      0.90    180569
+           1       0.77      0.45      0.57     58146
+
+    accuracy                           0.83    238715
+   macro avg       0.81      0.70      0.73    238715
+weighted avg       0.83      0.83      0.82    238715
+
+
+
+  Epoch 3 
+validation dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.85      0.94      0.90    261663
+           1       0.78      0.57      0.66     96570
+
+    accuracy                           0.84    358233
+   macro avg       0.82      0.75      0.78    358233
+weighted avg       0.83      0.84      0.83    358233
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.86      0.95      0.90    180569
+           1       0.76      0.50      0.60     58146
+
+    accuracy                           0.84    238715
+   macro avg       0.81      0.73      0.75    238715
+weighted avg       0.83      0.84      0.83    238715
+
+
+

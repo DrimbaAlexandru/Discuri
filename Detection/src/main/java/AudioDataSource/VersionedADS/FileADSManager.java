@@ -1,13 +1,10 @@
 package AudioDataSource.VersionedADS;
 
-import AudioDataSource.CachedADS.CachedAudioDataSource;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
-import ProjectManager.ProjectStatics;
-import Utils.MyPair;
-import Utils.Tuple_3;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
+import Utils.DataTypes.Tuple_3;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import static Exceptions.DataSourceExceptionCause.INVALID_PARAMETER;
-import static Exceptions.DataSourceExceptionCause.IO_ERROR;
+import static Utils.Exceptions.DataSourceExceptionCause.INVALID_PARAMETER;
+import static Utils.Exceptions.DataSourceExceptionCause.IO_ERROR;
 import static java.nio.file.Files.deleteIfExists;
 
 class FileADSManager

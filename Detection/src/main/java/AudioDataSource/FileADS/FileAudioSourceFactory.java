@@ -1,7 +1,7 @@
 package AudioDataSource.FileADS;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 
 /**
  * Created by Alex on 19.12.2017.

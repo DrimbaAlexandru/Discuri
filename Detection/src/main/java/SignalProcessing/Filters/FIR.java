@@ -1,14 +1,14 @@
 package SignalProcessing.Filters;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
 import SignalProcessing.FunctionApproximation.FunctionApproximation;
 import SignalProcessing.FunctionApproximation.LinearInterpolation;
 import SignalProcessing.Windowing.Windowing;
-import Utils.Complex;
-import Utils.Interval;
-import Utils.MyPair;
+import Utils.DataTypes.Complex;
+import Utils.DataTypes.Interval;
+import Utils.DataTypes.MyPair;
 import Utils.Util_Stuff;
 
 import java.util.Arrays;

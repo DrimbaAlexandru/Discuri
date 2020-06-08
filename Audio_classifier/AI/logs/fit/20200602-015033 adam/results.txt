@@ -1,0 +1,17 @@
+Number of learning samples: 863
+Number of validation samples: 123
+Number of testing samples: 140
+Learning results:
+  Accuracy, F1 score, Precision, Recall
+0.7809065580368042, 0.3934590220451355, 0.567638635635376, 
+
+
+Validation results:
+  Accuracy, F1 score, Precision, Recall
+0.7821640372276306, 0.42416301369667053, 0.5865197777748108, 
+
+
+Testing results:
+  Accuracy, F1 score, Precision, Recall
+0.7783285975456238, 0.4170987010002136, 0.5700109601020813, 
+

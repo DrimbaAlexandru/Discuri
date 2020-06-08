@@ -1,9 +1,9 @@
 package GUI.UI_Components;
 
-import Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceException;
 import ProjectManager.*;
-import SignalProcessing.Effects.IEffect;
-import Utils.Interval;
+import Effects.IEffect;
+import Utils.DataTypes.Interval;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

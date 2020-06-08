@@ -1,0 +1,158 @@
+Number of learning samples: 863
+Number of validation samples: 123
+Number of testing samples: 140
+
+  Epoch 10 
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.94      0.83      0.88  26466859
+           1       0.45      0.73      0.55   4944597
+
+    accuracy                           0.81  31411456
+   macro avg       0.69      0.78      0.72  31411456
+weighted avg       0.86      0.81      0.83  31411456
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.84      0.73      0.78  29532214
+           1       0.18      0.29      0.22   5983818
+
+    accuracy                           0.65  35516032
+   macro avg       0.51      0.51      0.50  35516032
+weighted avg       0.72      0.65      0.68  35516032
+
+
+  Epoch 20 
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.84      0.67      0.75  26466859
+           1       0.16      0.33      0.22   4944597
+
+    accuracy                           0.62  31411456
+   macro avg       0.50      0.50      0.48  31411456
+weighted avg       0.74      0.62      0.66  31411456
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.96      0.75      0.84  29532214
+           1       0.41      0.83      0.55   5983818
+
+    accuracy                           0.77  35516032
+   macro avg       0.68      0.79      0.69  35516032
+weighted avg       0.86      0.77      0.79  35516032
+
+
+  Epoch 30 
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.96      0.79      0.87  26466859
+           1       0.42      0.81      0.56   4944597
+
+    accuracy                           0.80  31411456
+   macro avg       0.69      0.80      0.71  31411456
+weighted avg       0.87      0.80      0.82  31411456
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.96      0.78      0.86  29532214
+           1       0.44      0.82      0.57   5983818
+
+    accuracy                           0.79  35516032
+   macro avg       0.70      0.80      0.72  35516032
+weighted avg       0.87      0.79      0.81  35516032
+
+
+  Epoch 40 
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.95      0.83      0.89  26466859
+           1       0.46      0.79      0.58   4944597
+
+    accuracy                           0.82  31411456
+   macro avg       0.71      0.81      0.73  31411456
+weighted avg       0.88      0.82      0.84  31411456
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.95      0.82      0.88  29532214
+           1       0.47      0.80      0.59   5983818
+
+    accuracy                           0.82  35516032
+   macro avg       0.71      0.81      0.74  35516032
+weighted avg       0.87      0.82      0.83  35516032
+
+
+  Epoch 50 
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.85      0.77      0.81  26466859
+           1       0.17      0.25      0.20   4944597
+
+    accuracy                           0.69  31411456
+   macro avg       0.51      0.51      0.50  31411456
+weighted avg       0.74      0.69      0.71  31411456
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.95      0.86      0.90  29532214
+           1       0.53      0.75      0.62   5983818
+
+    accuracy                           0.85  35516032
+   macro avg       0.74      0.81      0.76  35516032
+weighted avg       0.87      0.85      0.86  35516032
+
+
+  Epoch 60 
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.96      0.83      0.89  26466859
+           1       0.47      0.80      0.59   4944597
+
+    accuracy                           0.82  31411456
+   macro avg       0.71      0.81      0.74  31411456
+weighted avg       0.88      0.82      0.84  31411456
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.95      0.82      0.88  29532214
+           1       0.48      0.80      0.60   5983818
+
+    accuracy                           0.82  35516032
+   macro avg       0.72      0.81      0.74  35516032
+weighted avg       0.87      0.82      0.84  35516032
+
+
+  Epoch 70 
+validation dataset
+              precision    recall  f1-score   support
+
+           0       0.96      0.82      0.89  26466859
+           1       0.46      0.81      0.59   4944597
+
+    accuracy                           0.82  31411456
+   macro avg       0.71      0.82      0.74  31411456
+weighted avg       0.88      0.82      0.84  31411456
+
+test dataset
+              precision    recall  f1-score   support
+
+           0       0.96      0.81      0.88  29532214
+           1       0.47      0.82      0.60   5983818
+
+    accuracy                           0.81  35516032
+   macro avg       0.71      0.82      0.74  35516032
+weighted avg       0.88      0.81      0.83  35516032
+
+

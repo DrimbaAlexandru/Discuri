@@ -2,9 +2,9 @@ package AudioDataSource.MemoryADS;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
-import Utils.Interval;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
+import Utils.DataTypes.Interval;
 
 import java.util.Arrays;
 

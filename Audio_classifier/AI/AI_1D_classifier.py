@@ -12,7 +12,10 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras import backend as K, Sequential, metrics
 
 import numpy as np
-from keras.optimizers import Adam, SGD
+import tensorflow as tf
+from keras.optimizers import Adam, SGD, RMSprop, Adamax
+from sklearn.metrics import classification_report
+from tensorflow_core.python.keras.optimizer_v2.learning_rate_schedule import ExponentialDecay
 
 from AI.AI_audio_data_generator import MarkedAudioDataGenerator
 import AI.AI_utils as utils
@@ -21,6 +24,44 @@ seed = 42
 random.seed = seed
 np.random.seed = seed
 
+# m * x * y
+# m - number of images
+# x, y - image dimensions
+def iou_coef(y_true, y_pred, smooth=1):
+    intersection = K.sum(y_true * y_pred, axis=[1,2])
+    union = K.sum(y_true,[1,2])+K.sum(y_pred,[1,2])-intersection
+    iou = K.mean((intersection + smooth) / (union + smooth), axis=0)
+    return iou
+
+def iou_coef_loss(yt,yp,smooth=1):
+    return 1 - iou_coef(yt,yp,smooth)
+
+def f1(y_true, y_pred):
+    y_pred = K.round(y_pred)
+    tp = K.sum(K.cast(y_true*y_pred, 'float'), axis=0)
+    tn = K.sum(K.cast((1-y_true)*(1-y_pred), 'float'), axis=0)
+    fp = K.sum(K.cast((1-y_true)*y_pred, 'float'), axis=0)
+    fn = K.sum(K.cast(y_true*(1-y_pred), 'float'), axis=0)
+
+    p = tp / (tp + fp + K.epsilon())
+    r = tp / (tp + fn + K.epsilon())
+
+    f1 = 2*p*r / (p+r+K.epsilon())
+    f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
+    return K.mean(f1)
+
+def f1_loss(y_true, y_pred):
+    tp = K.sum(K.cast(y_true*y_pred, 'float'), axis=0)
+    tn = K.sum(K.cast((1-y_true)*(1-y_pred), 'float'), axis=0)
+    fp = K.sum(K.cast((1-y_true)*y_pred, 'float'), axis=0)
+    fn = K.sum(K.cast(y_true*(1-y_pred), 'float'), axis=0)
+
+    p = tp / (tp + fp + K.epsilon())
+    r = tp / (tp + fn + K.epsilon())
+
+    f1 = 2*p*r / (p+r+K.epsilon())
+    f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
+    return 1 - K.mean(f1)
 
 class BinaryClassifierModelWithGenerator:
     def __init__( self,
@@ -47,7 +88,7 @@ class BinaryClassifierModelWithGenerator:
         self.MODEL_PATH = model_path
         self.LOG_DIR = "./logs/fit//" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
-        self.VALIDATION_SPLIT = 0.125
+        self.VALIDATION_SPLIT = 0.25
         test_split = 0.125
 
         self.epochs_measured = 0
@@ -62,7 +103,6 @@ class BinaryClassifierModelWithGenerator:
         # Get training data files
         # Returns a list of file names in the training path
         training_files = next( os.walk( train_path_in ) )[2]
-
 
         training_sequences = []
         testing_sequences = []
@@ -119,36 +159,43 @@ class BinaryClassifierModelWithGenerator:
 
     def load_model( self ):
         self.model = load_model( self.MODEL_PATH, compile = False )
-        self.model.compile(optimizer = Adam( learning_rate=0.005 ), loss="binary_crossentropy", metrics=[ "accuracy", metrics.Precision(), metrics.Recall() ], sample_weight_mode="temporal" )
+        self.compile_model()
 
         if( self.INPUTS == self.model.input_shape[ 1 ] and self.OUTPUTS == self.model.output_shape[ 1 ] ):
             return True
         return False
 
 
+    def compile_model( self ):
+        self.model.compile(optimizer = Adam(),
+                           loss = "binary_crossentropy",
+                           metrics=[ "accuracy",
+                                     metrics.Precision(),
+                                     metrics.Recall(),
+                                     f1 ]#,
+                          # sample_weight_mode="temporal"
+                           )
+
     def create_model( self ):
         print( "Build model" )
 
         # Build U-Net model
         self.model = Sequential()
-        # self.model.add( Dense( 64, input_shape= ( 1, self.INPUTS ), activation="relu" ) )
-        # self.model.add( Dense( 32, activation="relu" ) )
-        # self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
-        self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS - 1, activation = 'relu', input_shape = ( self.INPUTS, 1 ) ) )
-        self.model.add( Dropout( 0.05 ) )
-        self.model.add( Conv1D( filters = 64, kernel_size = 3, activation = 'relu' ) )
-        # self.model.add( MaxPooling1D( pool_size = 2, data_format = "channels_first" ) )
-        assert self.model.output_shape[ 1 ] >= self.OUTPUTS
-        # self.model.add( Conv1D( filters = 1, kernel_size = self.model.output_shape[ 2 ] - self.OUTPUTS + 1, activation = 'sigmoid', data_format = "channels_first" ) )
-        # self.model.add( Flatten() )
-        # self.model.add( Reshape( ( 1, -1 ) ) )
+        self.model.add( Dense( 128, input_dim = self.INPUTS, activation="relu" ) )
+        self.model.add( Dense( 48, activation="relu" ) )
+        self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
+        # self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1 , activation = 'relu', input_shape = ( self.INPUTS, 1 ) ) )
+        # self.model.add( Dropout( 0.1 ) )
+        # self.model.add( Conv1D( filters = 64, kernel_size = 1, activation = 'relu' ) )
         # self.model.add( Dropout( 0.05 ) )
-        # self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
-        self.model.add( Conv1D( filters = 1, kernel_size = 1, activation = 'sigmoid' ) )
+        # self.model.add( Conv1D( filters = 32, kernel_size = 1, activation = 'relu' ) )
+        # self.model.add( MaxPooling1D( pool_size = 2, data_format = "channels_first" ) )
+        # assert self.model.output_shape[ 1 ] >= self.OUTPUTS
+        # self.model.add( Conv1D( filters = 1, kernel_size = self.model.output_shape[ 1 ] - self.OUTPUTS + 1, activation = 'sigmoid' ) )
+        # self.model.add( Conv1D( filters = 1, kernel_size = 1, activation = 'sigmoid' ) )
         print( self.model.output_shape )
 
-        #self.model.compile(optimizer='adam', loss=iou_coef_loss, metrics=[ iou_coef_loss, dice_coef_loss, "accuracy" ])
-        self.model.compile(optimizer = Adam( learning_rate=0.005 ), loss="binary_crossentropy", metrics=[ "accuracy", metrics.Precision(), metrics.Recall() ], sample_weight_mode="temporal" )
+        self.compile_model()
         self.model.summary()
 
     def fit_model( self, epochs = 50 ):
@@ -159,8 +206,8 @@ class BinaryClassifierModelWithGenerator:
             return
 
         # Fit model
-        earlystopper = EarlyStopping(patience=5, verbose=1, monitor="accuracy")
-        checkpointer = ModelCheckpoint(self.MODEL_PATH, verbose=1, save_best_only=True, monitor="accuracy")
+        earlystopper = EarlyStopping(patience=5, verbose=1, monitor="f1")
+        checkpointer = ModelCheckpoint(self.MODEL_PATH, verbose=1, save_best_only=True, monitor="f1")
         # checkpointer = ModelCheckpoint( self.MODEL_PATH, verbose=1, save_best_only=True )
 
         self.model.fit_generator(generator=self.learning_generator, epochs=epochs,

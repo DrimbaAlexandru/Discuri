@@ -1,11 +1,11 @@
 package AudioDataSource.CachedADS;
 
 import AudioDataSource.AudioSamplesWindow;
-import Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceException;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.FileADS.WAVFileAudioSource;
 import ProjectManager.ProjectStatics;
-import Utils.Interval;
+import Utils.DataTypes.Interval;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

@@ -1,5 +1,4 @@
-import MarkerFile.*;
-import Utils.Interval;
+import Utils.DataStructures.MarkerFile.*;
 
 import java.io.FileNotFoundException;
 import java.io.FileWriter;

@@ -1,12 +1,10 @@
 package SignalProcessing.FourierTransforms;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
-import Utils.Complex;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
+import Utils.DataTypes.Complex;
 import Utils.Util_Stuff;
 import net.jafama.FastMath;
-
-import static java.lang.Math.PI;
 
 /**
  * Created by Alex on 28.11.2017.

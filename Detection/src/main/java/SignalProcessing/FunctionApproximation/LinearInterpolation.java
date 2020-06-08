@@ -1,7 +1,7 @@
 package SignalProcessing.FunctionApproximation;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 
 /**
  * Created by Alex on 06.06.2018.

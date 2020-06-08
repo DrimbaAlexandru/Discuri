@@ -1,24 +1,17 @@
 package AudioDataSource.VersionedADS;
 
 import AudioDataSource.AudioSamplesWindow;
-import AudioDataSource.CachedADS.CachedAudioDataSource;
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.FileADS.FileAudioSourceFactory;
 import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.IAudioDataSource;
 import ProjectManager.ProjectStatics;
-import Utils.Interval;
-import Utils.MyPair;
-import Utils.Tuple_3;
+import Utils.DataTypes.Interval;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
-import static Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
-import static Exceptions.DataSourceExceptionCause.IO_ERROR;
-import static java.nio.file.Files.deleteIfExists;
+import static Utils.Exceptions.DataSourceExceptionCause.CHANNEL_NOT_VALID;
 
 /**
  * Created by Alex on 12.12.2017.

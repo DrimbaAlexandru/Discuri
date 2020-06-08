@@ -1,9 +1,9 @@
 package SignalProcessing.FunctionApproximation;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FourierTransforms.Fourier;
-import Utils.Complex;
+import Utils.DataTypes.Complex;
 import Utils.Util_Stuff;
 
 /**

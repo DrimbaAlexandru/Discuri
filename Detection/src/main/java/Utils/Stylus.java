@@ -1,7 +1,6 @@
 package Utils;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
 
 /**
  * Created by Alex on 26.06.2018.

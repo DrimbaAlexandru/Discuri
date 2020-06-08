@@ -1,11 +1,9 @@
 package AudioDataSource.CachedADS;
 
 import AudioDataSource.AudioSamplesWindow;
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
-import SignalProcessing.FunctionApproximation.FunctionApproximation;
-import SignalProcessing.FunctionApproximation.LinearInterpolation;
 
 /**
  * Created by Alex on 03.06.2018.

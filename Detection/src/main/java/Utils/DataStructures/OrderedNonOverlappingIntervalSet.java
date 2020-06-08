@@ -1,8 +1,8 @@
 package Utils.DataStructures;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
-import Utils.Interval;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
+import Utils.DataTypes.Interval;
 
 /**
  * Created by Alex on 31.05.2018.

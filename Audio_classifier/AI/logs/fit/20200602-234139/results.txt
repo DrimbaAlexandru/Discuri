@@ -1,0 +1,100 @@
+Number of learning samples: 10
+Number of validation samples: 1
+Number of testing samples: 1
+
+  Epoch 10 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    166190
+           1       0.35      1.00      0.52     89810
+
+    accuracy                           0.35    256000
+   macro avg       0.18      0.50      0.26    256000
+weighted avg       0.12      0.35      0.18    256000
+
+IoU0.355852713178294
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    196864
+           1       0.23      1.00      0.38     59136
+
+    accuracy                           0.23    256000
+   macro avg       0.12      0.50      0.19    256000
+weighted avg       0.05      0.23      0.09    256000
+
+IoU0.355852713178294
+
+  Epoch 20 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    166190
+           1       0.35      1.00      0.52     89810
+
+    accuracy                           0.35    256000
+   macro avg       0.18      0.50      0.26    256000
+weighted avg       0.12      0.35      0.18    256000
+
+IoU0.355852713178294
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    196864
+           1       0.23      1.00      0.38     59136
+
+    accuracy                           0.23    256000
+   macro avg       0.12      0.50      0.19    256000
+weighted avg       0.05      0.23      0.09    256000
+
+IoU0.355852713178294
+
+  Epoch 30 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    166190
+           1       0.35      1.00      0.52     89810
+
+    accuracy                           0.35    256000
+   macro avg       0.18      0.50      0.26    256000
+weighted avg       0.12      0.35      0.18    256000
+
+IoU0.355852713178294
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    196864
+           1       0.23      1.00      0.38     59136
+
+    accuracy                           0.23    256000
+   macro avg       0.12      0.50      0.19    256000
+weighted avg       0.05      0.23      0.09    256000
+
+IoU0.355852713178294
+
+  Epoch 40 
+validation dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    166190
+           1       0.35      1.00      0.52     89810
+
+    accuracy                           0.35    256000
+   macro avg       0.18      0.50      0.26    256000
+weighted avg       0.12      0.35      0.18    256000
+
+IoU0.355852713178294
+test dataset
+confusion matrix              precision    recall  f1-score   support
+
+           0       0.00      0.00      0.00    196864
+           1       0.23      1.00      0.38     59136
+
+    accuracy                           0.23    256000
+   macro avg       0.12      0.50      0.19    256000
+weighted avg       0.05      0.23      0.09    256000
+
+IoU0.355852713178294
+

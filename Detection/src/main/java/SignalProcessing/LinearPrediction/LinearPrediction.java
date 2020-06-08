@@ -1,7 +1,7 @@
 package SignalProcessing.LinearPrediction;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
 
 /**
  * Created by Alex on 12.06.2018.

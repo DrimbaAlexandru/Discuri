@@ -1,20 +1,18 @@
 package GUI;
 
 import AudioDataSource.AudioSamplesWindow;
-import Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceException;
 import GUI.UI_Components.Effect_Input_Dialogs.*;
 import GUI.UI_Components.Effect_Progress_Bar_Dialog;
 import GUI.UI_Components.Export_Progress_Bar_Dialog;
-import MarkerFile.Marking;
+import Utils.DataStructures.MarkerFile.Marking;
 import ProjectManager.*;
-import SignalProcessing.Effects.*;
+import Effects.*;
 import SignalProcessing.Filters.FIR;
 import SignalProcessing.Filters.IIR;
-import Utils.DataSetGenerator;
-import Utils.Interval;
+import Utils.DataTypes.Interval;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -28,7 +26,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;

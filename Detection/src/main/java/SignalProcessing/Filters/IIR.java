@@ -1,10 +1,8 @@
 package SignalProcessing.Filters;
 
-import Exceptions.DataSourceException;
-import Exceptions.DataSourceExceptionCause;
-import SignalProcessing.FourierTransforms.Fourier;
-import Utils.Complex;
-import Utils.Interval;
+import Utils.Exceptions.DataSourceException;
+import Utils.Exceptions.DataSourceExceptionCause;
+import Utils.DataTypes.Interval;
 
 /**
  * Created by Alex on 22.01.2018.
