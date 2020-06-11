@@ -8,7 +8,7 @@ from keras.models import load_model
 from keras.layers.core import Dropout, Dense, Flatten, Reshape
 from keras.layers.convolutional import Conv1D
 from keras.layers.pooling import MaxPooling1D
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, Callback
 from keras import backend as K, Sequential, metrics
 
 import numpy as np
@@ -63,6 +63,106 @@ def f1_loss(y_true, y_pred):
     f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
     return 1 - K.mean(f1)
 
+
+class ComputeConfusionMatrixCallback(Callback):
+    """Predict data from validation and test dataset, calculate the confusion matrix,
+       and write it to a file
+
+  Arguments:
+      patience: Number of epochs to wait each time before evaluating the performance
+      classifier: the BinaryClassifierModelWithGenerator object wrapping the model to be evaluated
+  """
+
+    def __init__(self, patience, classifier):
+        super(ComputeConfusionMatrixCallback, self).__init__()
+        self.patience = patience
+        self.classifier = classifier
+        self.metrics = {}
+        self.epochs_measured = 0
+
+    def on_train_begin(self, logs=None):
+        self.wait = self.patience
+
+    def on_epoch_end(self, epoch, logs=None):
+        self.metrics[ self.epochs_measured ] = {}
+        self.metrics[ self.epochs_measured ]["validation"] = {}
+        self.metrics[ self.epochs_measured ]["test"] = {}
+
+        if logs is not None:
+            self.add_model_logs( logs )
+
+        if( self.wait == 0 ):
+            self.evaluate_model_generator()
+            self.wait = self.patience
+
+        self.write_model_metrics()
+
+    def on_epoch_begin(self, epoch, logs=None):
+        self.wait -= 1
+        self.epochs_measured += 1
+
+    def add_model_logs( self, logs ):
+        for metric in logs:
+            self.metrics[ self.epochs_measured ]["validation"][ metric ] = logs[ metric ]
+
+    def evaluate_model_generator( self ):
+        self.classifier.learning_generator.shuffle = False
+        self.classifier.validation_generator.shuffle = False
+        self.classifier.test_generator.shuffle = False
+
+        # y_pred_learn = self.classifier.model.predict_generator( generator = self.classifier.learning_generator, verbose = 1 )
+        # y_pred_learn = np.where( y_pred_learn < 0.5, 0, 1 )
+        # y_true_learn = self.classifier.learning_generator.get_all_y_true()
+
+        y_pred_val = self.classifier.model.predict_generator( generator = self.classifier.validation_generator, verbose = 1 )
+        y_pred_val = np.where( y_pred_val < 0.5, 0, 1 )
+        y_true_val = self.classifier.validation_generator.get_all_y_true()
+
+        # self.metrics[ self.epochs_measured ]["learn"] = classification_report( np.reshape( y_true_learn, (-1,) ), np.reshape( y_pred_learn, (-1,) ) )
+        self.metrics[ self.epochs_measured ]["validation"]["confusion matrix"] = classification_report( np.reshape( y_true_val, (-1,) ), np.reshape( y_pred_val, (-1,) ) )
+        # self.metrics[ self.epochs_measured ]["validation"]["IoU"] = K.eval( iou_coef( y_true_val, y_pred_val ) )
+
+        if self.classifier.IS_TEST_DATA_LABELED:
+            y_pred_test = self.classifier.model.predict_generator( generator = self.classifier.test_generator, verbose = 1 )
+            y_pred_test = np.where( y_pred_test < 0.5, 0, 1 )
+            y_true_test = self.classifier.test_generator.get_all_y_true()
+
+            self.metrics[ self.epochs_measured ]["test"]["confusion matrix"] = classification_report( np.reshape( y_true_test, (-1,) ), np.reshape( y_pred_test, (-1,) ) )
+            # self.metrics[ self.epochs_measured ]["test"]["IoU"] = K.eval( iou_coef( y_true_val, y_pred_val ) )
+
+        self.classifier.learning_generator.shuffle = True
+        self.classifier.validation_generator.shuffle = True
+        self.classifier.test_generator.shuffle = True
+
+    def write_model_metrics(self):
+        learn_size = self.classifier.learning_generator.get_item_count() * self.classifier.learning_generator.batch_size
+        validation_size = self.classifier.validation_generator.get_item_count() * self.classifier.validation_generator.batch_size
+        test_size = self.classifier.test_generator.get_item_count() * self.classifier.test_generator.batch_size
+
+        os.makedirs(self.classifier.LOG_DIR, exist_ok = True )
+        results_file = open(self.classifier.LOG_DIR + "\\results.txt", "w")
+
+        results_file.write(self.classifier.MODEL_PATH)
+        results_file.write("\nNumber of learning samples: " + str(learn_size))
+        results_file.write("\nNumber of validation samples: " + str(validation_size))
+        if self.classifier.IS_TEST_DATA_LABELED:
+            results_file.write("\nNumber of testing samples: " + str(test_size))
+
+        results_file.write("\n")
+        for epoch in self.metrics:
+            results_file.write( "\n  Epoch %u \n" % epoch )
+            for dataset in self.metrics[ epoch ]:
+                results_file.write( "%s dataset\n" % dataset )
+                for metric in self.metrics[ epoch ][ dataset ]:
+                    results_file.write( metric + "\n")
+                    results_file.write( str( self.metrics[ epoch ][ dataset ][ metric ] ) )
+                    results_file.write("\n")
+                results_file.write("\n")
+        results_file.write("\n")
+
+        results_file.close()
+
+
 class BinaryClassifierModelWithGenerator:
     def __init__( self,
                   inputs,
@@ -91,7 +191,7 @@ class BinaryClassifierModelWithGenerator:
         self.VALIDATION_SPLIT = 0.25
         test_split = 0.125
 
-        self.epochs_measured = 0
+        self.evaluation_callback = ComputeConfusionMatrixCallback( 10, self )
 
         self.predict_only = train_path_in is None \
                             or ( test_path_in is None and not train_test_same ) \
@@ -167,7 +267,9 @@ class BinaryClassifierModelWithGenerator:
 
 
     def compile_model( self ):
-        self.model.compile(optimizer = Adam(),
+        learning_rate = 0.0003125  # initial learning rate
+
+        self.model.compile(optimizer = Adam(learning_rate=learning_rate),
                            loss = "binary_crossentropy",
                            metrics=[ "accuracy",
                                      metrics.Precision(),
@@ -181,7 +283,7 @@ class BinaryClassifierModelWithGenerator:
 
         # Build U-Net model
         self.model = Sequential()
-        self.model.add( Dense( 128, input_dim = self.INPUTS, activation="relu" ) )
+        self.model.add( Dense( 96, input_dim = self.INPUTS, activation="relu" ) )
         self.model.add( Dense( 48, activation="relu" ) )
         self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
         # self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1 , activation = 'relu', input_shape = ( self.INPUTS, 1 ) ) )
@@ -206,15 +308,20 @@ class BinaryClassifierModelWithGenerator:
             return
 
         # Fit model
-        earlystopper = EarlyStopping(patience=5, verbose=1, monitor="f1")
-        checkpointer = ModelCheckpoint(self.MODEL_PATH, verbose=1, save_best_only=True, monitor="f1")
+        min_learning_rate = 0.00001  # once the learning rate reaches this value, do not decrease it further
+        learning_rate_reduction_factor = 0.5  # the factor used when reducing the learning rate -> learning_rate *= learning_rate_reduction_factor
+        patience = 3  # how many epochs to wait before reducing the learning rate when the loss plateaus
+
+        # earlystopper = EarlyStopping(patience=5, verbose=1, mode="max", monitor="f1")
+        checkpointer = ModelCheckpoint(self.MODEL_PATH, verbose=1, save_best_only=True, mode="max", monitor="f1")
+        learning_rate_reduction = ReduceLROnPlateau(monitor='loss', mode="min", patience=patience, verbose=1,
+                                                    factor=learning_rate_reduction_factor, min_lr=min_learning_rate)
+
         # checkpointer = ModelCheckpoint( self.MODEL_PATH, verbose=1, save_best_only=True )
 
         self.model.fit_generator(generator=self.learning_generator, epochs=epochs,
-                                 callbacks=[earlystopper, checkpointer],
+                                 callbacks=[checkpointer, learning_rate_reduction, self.evaluation_callback],
                                  validation_data=self.validation_generator )
-
-        self.epochs_measured += epochs
 
     def predict_markings( self, input_signal ):
         input_length = input_signal.shape[ 0 ]
@@ -232,7 +339,7 @@ class BinaryClassifierModelWithGenerator:
             item_nr += 1
             i += self.OUTPUTS
 
-        # If the input cannot be divided into sequen cial chunks, the last chunk must be completed individually, and will overlap with the previous one
+        # If the input cannot be divided into sequencial chunks, the last chunk must be completed individually, and will overlap with the previous one
         if( ( input_length - ( self.INPUTS - self.OUTPUTS ) ) % self.OUTPUTS != 0 ):
             assert item_nr == batch_size - 1
             inputs[ batch_size - 1 ] = np.reshape( input_signal[ input_length - self.INPUTS : ], self.model.input_shape[ 1 : ] )

@@ -1,0 +1,1233 @@
+96000_257_1_20200609-210550.h5
+Number of learning samples: 6120000
+Number of validation samples: 2040000
+Number of testing samples: 1160000
+
+  Epoch 1 
+validation dataset
+val_loss
+0.8002923130989075
+val_accuracy
+0.7540504336357117
+val_precision_1
+0.5378437042236328
+val_recall_1
+0.831490159034729
+val_f1
+0.6357403993606567
+loss
+0.6907341423379776
+accuracy
+0.77518386
+precision_1
+0.5762985
+recall_1
+0.7935717
+f1
+0.6448503
+lr
+0.005
+
+test dataset
+
+
+  Epoch 2 
+validation dataset
+val_loss
+0.5597127676010132
+val_accuracy
+0.7695659399032593
+val_precision_1
+0.5584648251533508
+val_recall_1
+0.8248900175094604
+val_f1
+0.6483822464942932
+loss
+0.680669070857629
+accuracy
+0.78018
+precision_1
+0.58352154
+recall_1
+0.79534686
+f1
+0.65133095
+lr
+0.005
+
+test dataset
+
+
+  Epoch 3 
+validation dataset
+val_loss
+0.6195724606513977
+val_accuracy
+0.7454336881637573
+val_precision_1
+0.5267382860183716
+val_recall_1
+0.8478299975395203
+val_f1
+0.6324833035469055
+loss
+0.6840780583947098
+accuracy
+0.77908814
+precision_1
+0.58209527
+recall_1
+0.7935873
+f1
+0.64972633
+lr
+0.005
+
+test dataset
+
+
+  Epoch 4 
+validation dataset
+val_loss
+0.8274280428886414
+val_accuracy
+0.8119860291481018
+val_precision_1
+0.6451401710510254
+val_recall_1
+0.7223180532455444
+val_f1
+0.6573347449302673
+loss
+0.6839112196259061
+accuracy
+0.77847356
+precision_1
+0.5810224
+recall_1
+0.794872
+f1
+0.64931357
+lr
+0.005
+
+test dataset
+
+
+  Epoch 5 
+validation dataset
+val_loss
+0.5629485845565796
+val_accuracy
+0.7523677945137024
+val_precision_1
+0.5362200140953064
+val_recall_1
+0.8214241862297058
+val_f1
+0.6294531226158142
+loss
+0.6805229898245818
+accuracy
+0.77984035
+precision_1
+0.5830022
+recall_1
+0.7954203
+f1
+0.6513365
+lr
+0.005
+
+test dataset
+
+
+  Epoch 6 
+validation dataset
+val_loss
+0.6528545618057251
+val_accuracy
+0.7815765738487244
+val_precision_1
+0.5774431824684143
+val_recall_1
+0.8046610355377197
+val_f1
+0.6535370945930481
+loss
+0.6828019676597563
+accuracy
+0.77819437
+precision_1
+0.58051467
+recall_1
+0.7956488
+f1
+0.6499852
+lr
+0.005
+
+test dataset
+
+
+  Epoch 7 
+validation dataset
+val_loss
+0.5787796974182129
+val_accuracy
+0.7962990999221802
+val_precision_1
+0.6064620018005371
+val_recall_1
+0.7652930021286011
+val_f1
+0.6547212600708008
+loss
+0.6785319221979191
+accuracy
+0.78055793
+precision_1
+0.58402723
+recall_1
+0.79586047
+f1
+0.6523848
+lr
+0.005
+
+test dataset
+
+
+  Epoch 8 
+validation dataset
+val_loss
+0.7891708016395569
+val_accuracy
+0.7467665672302246
+val_precision_1
+0.5280869603157043
+val_recall_1
+0.8541708588600159
+val_f1
+0.6351816058158875
+loss
+0.6806043222327495
+accuracy
+0.77996314
+precision_1
+0.58321786
+recall_1
+0.79516464
+f1
+0.65070844
+lr
+0.005
+
+test dataset
+
+
+  Epoch 9 
+validation dataset
+val_loss
+0.8233851790428162
+val_accuracy
+0.8028524518013
+val_precision_1
+0.618120551109314
+val_recall_1
+0.7645769119262695
+val_f1
+0.6637813448905945
+loss
+0.6799181755328927
+accuracy
+0.77816296
+precision_1
+0.5800727
+recall_1
+0.7990313
+f1
+0.65051806
+lr
+0.005
+
+test dataset
+
+
+  Epoch 10 
+validation dataset
+val_loss
+0.7174606323242188
+val_accuracy
+0.7780618667602539
+val_precision_1
+0.5710445046424866
+val_recall_1
+0.8167024850845337
+val_f1
+0.6547309160232544
+loss
+0.6781615831731994
+accuracy
+0.7804229
+precision_1
+0.58370763
+recall_1
+0.7968085
+f1
+0.65252274
+lr
+0.005
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.92      0.76      0.83   1468492
+           1       0.57      0.82      0.67    566958
+
+    accuracy                           0.78   2035450
+   macro avg       0.74      0.79      0.75   2035450
+weighted avg       0.82      0.78      0.79   2035450
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.91      0.78      0.84    829557
+           1       0.59      0.81      0.68    326320
+
+    accuracy                           0.78   1155877
+   macro avg       0.75      0.79      0.76   1155877
+weighted avg       0.82      0.78      0.79   1155877
+
+
+
+  Epoch 11 
+validation dataset
+val_loss
+0.7506409287452698
+val_accuracy
+0.7983197569847107
+val_precision_1
+0.6089394688606262
+val_recall_1
+0.7712193727493286
+val_f1
+0.6600388288497925
+loss
+0.6759764926229527
+accuracy
+0.78130877
+precision_1
+0.58496517
+recall_1
+0.79742044
+f1
+0.65344685
+lr
+0.005
+
+test dataset
+
+
+  Epoch 12 
+validation dataset
+val_loss
+0.5372928380966187
+val_accuracy
+0.7992503046989441
+val_precision_1
+0.6100563406944275
+val_recall_1
+0.7740520238876343
+val_f1
+0.6624031066894531
+loss
+0.6760623710251332
+accuracy
+0.7809083
+precision_1
+0.5843617
+recall_1
+0.7974222
+f1
+0.6526945
+lr
+0.005
+
+test dataset
+
+
+  Epoch 13 
+validation dataset
+val_loss
+0.6278632879257202
+val_accuracy
+0.7834542989730835
+val_precision_1
+0.5804305076599121
+val_recall_1
+0.8031070828437805
+val_f1
+0.6546187400817871
+loss
+0.6789865567161748
+accuracy
+0.7798166
+precision_1
+0.5827737
+recall_1
+0.79701036
+f1
+0.65187085
+lr
+0.005
+
+test dataset
+
+
+  Epoch 14 
+validation dataset
+val_loss
+0.6941580772399902
+val_accuracy
+0.7725033760070801
+val_precision_1
+0.5627732276916504
+val_recall_1
+0.8214735388755798
+val_f1
+0.6509006023406982
+loss
+0.6745355214310588
+accuracy
+0.78235173
+precision_1
+0.5864415
+recall_1
+0.7982088
+f1
+0.6549212
+lr
+0.005
+
+test dataset
+
+
+  Epoch 15 
+validation dataset
+val_loss
+0.625818133354187
+val_accuracy
+0.7748812437057495
+val_precision_1
+0.5656483769416809
+val_recall_1
+0.8262869715690613
+val_f1
+0.654392421245575
+loss
+0.673779468000031
+accuracy
+0.7824745
+precision_1
+0.5867242
+recall_1
+0.79744995
+f1
+0.6549685
+lr
+0.005
+
+test dataset
+
+
+  Epoch 16 
+validation dataset
+val_loss
+0.5762612223625183
+val_accuracy
+0.7801856994628906
+val_precision_1
+0.5748780965805054
+val_recall_1
+0.8093615174293518
+val_f1
+0.6541158556938171
+loss
+0.6734219089130855
+accuracy
+0.7816438
+precision_1
+0.5851324
+recall_1
+0.8001262
+f1
+0.65454006
+lr
+0.005
+
+test dataset
+
+
+  Epoch 17 
+validation dataset
+val_loss
+0.557892382144928
+val_accuracy
+0.7878410220146179
+val_precision_1
+0.5877666473388672
+val_recall_1
+0.7980149984359741
+val_f1
+0.6581553220748901
+loss
+0.679845015246233
+accuracy
+0.7812102
+precision_1
+0.58531004
+recall_1
+0.7934763
+f1
+0.6517043
+lr
+0.005
+
+test dataset
+
+
+  Epoch 18 
+validation dataset
+val_loss
+0.5013259649276733
+val_accuracy
+0.7998447418212891
+val_precision_1
+0.6126973628997803
+val_recall_1
+0.7649860978126526
+val_f1
+0.6585659980773926
+loss
+0.6757211205484657
+accuracy
+0.7812479
+precision_1
+0.58478206
+recall_1
+0.7981544
+f1
+0.6531955
+lr
+0.005
+
+test dataset
+
+
+  Epoch 19 
+validation dataset
+val_loss
+0.7219569087028503
+val_accuracy
+0.8015117049217224
+val_precision_1
+0.6158429980278015
+val_recall_1
+0.7639419436454773
+val_f1
+0.6624330878257751
+loss
+0.6820142534905291
+accuracy
+0.7791084
+precision_1
+0.5819267
+recall_1
+0.7952427
+f1
+0.6502009
+lr
+0.005
+
+test dataset
+
+
+  Epoch 20 
+validation dataset
+val_loss
+0.7253960371017456
+val_accuracy
+0.7803335785865784
+val_precision_1
+0.5741646885871887
+val_recall_1
+0.8181875944137573
+val_f1
+0.6561117768287659
+loss
+0.6605665743969733
+accuracy
+0.7853965
+precision_1
+0.5899963
+recall_1
+0.8063932
+f1
+0.66131014
+lr
+0.0025
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.92      0.77      0.83   1468492
+           1       0.57      0.82      0.67    566958
+
+    accuracy                           0.78   2035450
+   macro avg       0.74      0.79      0.75   2035450
+weighted avg       0.82      0.78      0.79   2035450
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.91      0.78      0.84    829557
+           1       0.59      0.81      0.68    326320
+
+    accuracy                           0.79   1155877
+   macro avg       0.75      0.79      0.76   1155877
+weighted avg       0.82      0.79      0.79   1155877
+
+
+
+  Epoch 21 
+validation dataset
+val_loss
+0.6243228316307068
+val_accuracy
+0.7814099788665771
+val_precision_1
+0.5756473541259766
+val_recall_1
+0.8189266324043274
+val_f1
+0.6586630344390869
+loss
+0.6605823805355416
+accuracy
+0.7859577
+precision_1
+0.59095937
+recall_1
+0.8055626
+f1
+0.6610713
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 22 
+validation dataset
+val_loss
+0.5521276593208313
+val_accuracy
+0.7837382555007935
+val_precision_1
+0.57973313331604
+val_recall_1
+0.8128644227981567
+val_f1
+0.6594296097755432
+loss
+0.6614815535686601
+accuracy
+0.78544176
+precision_1
+0.5902755
+recall_1
+0.80479914
+f1
+0.66053176
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 23 
+validation dataset
+val_loss
+0.5040191411972046
+val_accuracy
+0.7780112624168396
+val_precision_1
+0.5701900720596313
+val_recall_1
+0.8246695399284363
+val_f1
+0.6572529077529907
+loss
+0.66053163190065
+accuracy
+0.7849785
+precision_1
+0.58927816
+recall_1
+0.8070433
+f1
+0.6601802
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 24 
+validation dataset
+val_loss
+0.7026111483573914
+val_accuracy
+0.7849792242050171
+val_precision_1
+0.581198513507843
+val_recall_1
+0.8161574602127075
+val_f1
+0.6605290174484253
+loss
+0.6542663699557296
+accuracy
+0.7871598
+precision_1
+0.5922092
+recall_1
+0.80988675
+f1
+0.66374004
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 25 
+validation dataset
+val_loss
+0.6295661926269531
+val_accuracy
+0.7983350157737732
+val_precision_1
+0.6057268977165222
+val_recall_1
+0.7906176447868347
+val_f1
+0.6667624711990356
+loss
+0.6542053968822564
+accuracy
+0.78762937
+precision_1
+0.59303933
+recall_1
+0.80904347
+f1
+0.6639595
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 26 
+validation dataset
+val_loss
+0.9207363128662109
+val_accuracy
+0.7991490960121155
+val_precision_1
+0.6072311997413635
+val_recall_1
+0.7897375226020813
+val_f1
+0.6673669219017029
+loss
+0.6548314138373208
+accuracy
+0.7874509
+precision_1
+0.59277016
+recall_1
+0.80901915
+f1
+0.6639597
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 27 
+validation dataset
+val_loss
+0.7316511273384094
+val_accuracy
+0.7860050797462463
+val_precision_1
+0.5828189253807068
+val_recall_1
+0.8153778314590454
+val_f1
+0.6618852615356445
+loss
+0.6539914931851585
+accuracy
+0.788232
+precision_1
+0.5940543
+recall_1
+0.80836964
+f1
+0.6641994
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 28 
+validation dataset
+val_loss
+0.8898422122001648
+val_accuracy
+0.7983261942863464
+val_precision_1
+0.6057653427124023
+val_recall_1
+0.790289580821991
+val_f1
+0.6662879586219788
+loss
+0.654006873254495
+accuracy
+0.7870156
+precision_1
+0.5919691
+recall_1
+0.8100418
+f1
+0.6635921
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 29 
+validation dataset
+val_loss
+0.5671107172966003
+val_accuracy
+0.7899211645126343
+val_precision_1
+0.58975750207901
+val_recall_1
+0.8074918985366821
+val_f1
+0.6635916233062744
+loss
+0.6541728872972157
+accuracy
+0.78796864
+precision_1
+0.5936473
+recall_1
+0.80839336
+f1
+0.66386765
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 30 
+validation dataset
+val_loss
+0.5832843780517578
+val_accuracy
+0.7739065289497375
+val_precision_1
+0.5634230971336365
+val_recall_1
+0.836370587348938
+val_f1
+0.6566396951675415
+loss
+0.6539017153905292
+accuracy
+0.7879693
+precision_1
+0.59366465
+recall_1
+0.80827475
+f1
+0.6640972
+lr
+0.00125
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.72      0.59      0.65   1468492
+           1       0.28      0.41      0.33    566958
+
+    accuracy                           0.54   2035450
+   macro avg       0.50      0.50      0.49   2035450
+weighted avg       0.60      0.54      0.56   2035450
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.92      0.76      0.83    829557
+           1       0.58      0.83      0.68    326320
+
+    accuracy                           0.78   1155877
+   macro avg       0.75      0.79      0.76   1155877
+weighted avg       0.82      0.78      0.79   1155877
+
+
+
+  Epoch 31 
+validation dataset
+val_loss
+0.7262912392616272
+val_accuracy
+0.792693018913269
+val_precision_1
+0.5962655544281006
+val_recall_1
+0.8055279850959778
+val_f1
+0.6677747964859009
+loss
+0.6511312302677171
+accuracy
+0.78751606
+precision_1
+0.592387
+recall_1
+0.81258386
+f1
+0.6649602
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 32 
+validation dataset
+val_loss
+0.6641561388969421
+val_accuracy
+0.7770178318023682
+val_precision_1
+0.5681143403053284
+val_recall_1
+0.831834077835083
+val_f1
+0.658357560634613
+loss
+0.6505850215288674
+accuracy
+0.78900415
+precision_1
+0.5950158
+recall_1
+0.8099782
+f1
+0.66570085
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 33 
+validation dataset
+val_loss
+0.5446529984474182
+val_accuracy
+0.7952094078063965
+val_precision_1
+0.5993514060974121
+val_recall_1
+0.7986499667167664
+val_f1
+0.6663340926170349
+loss
+0.6507512179959599
+accuracy
+0.78837526
+precision_1
+0.5938868
+recall_1
+0.81117487
+f1
+0.6655376
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 34 
+validation dataset
+val_loss
+0.6659119725227356
+val_accuracy
+0.796705424785614
+val_precision_1
+0.6021368503570557
+val_recall_1
+0.7963111996650696
+val_f1
+0.6671357750892639
+loss
+0.6506713958497843
+accuracy
+0.788043
+precision_1
+0.59332573
+recall_1
+0.8115705
+f1
+0.664949
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 35 
+validation dataset
+val_loss
+0.7334702610969543
+val_accuracy
+0.7932722568511963
+val_precision_1
+0.5954340100288391
+val_recall_1
+0.804302990436554
+val_f1
+0.6663509607315063
+loss
+0.6506306614594515
+accuracy
+0.7889256
+precision_1
+0.5948936
+recall_1
+0.8099903
+f1
+0.6653812
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 36 
+validation dataset
+val_loss
+0.7116016149520874
+val_accuracy
+0.7909253239631653
+val_precision_1
+0.591046154499054
+val_recall_1
+0.8095043897628784
+val_f1
+0.6651787757873535
+loss
+0.6493044367204055
+accuracy
+0.7891174
+precision_1
+0.5950383
+recall_1
+0.81106323
+f1
+0.66607326
+lr
+0.0003125
+
+test dataset
+
+
+  Epoch 37 
+validation dataset
+val_loss
+0.6507712602615356
+val_accuracy
+0.7870721220970154
+val_precision_1
+0.5842692852020264
+val_recall_1
+0.8166195750236511
+val_f1
+0.6637235283851624
+loss
+0.6491082875477091
+accuracy
+0.7893031
+precision_1
+0.5953645
+recall_1
+0.81076825
+f1
+0.6663303
+lr
+0.0003125
+
+test dataset
+
+
+  Epoch 38 
+validation dataset
+val_loss
+0.5789045095443726
+val_accuracy
+0.7825311422348022
+val_precision_1
+0.5767057538032532
+val_recall_1
+0.8242427110671997
+val_f1
+0.6611948013305664
+loss
+0.6490282801693034
+accuracy
+0.7893469
+precision_1
+0.59545094
+recall_1
+0.81063175
+f1
+0.66638994
+lr
+0.0003125
+
+test dataset
+
+
+  Epoch 39 
+validation dataset
+val_loss
+0.626497209072113
+val_accuracy
+0.7868549823760986
+val_precision_1
+0.5838991403579712
+val_recall_1
+0.8169899582862854
+val_f1
+0.6636071801185608
+loss
+0.6491338241560595
+accuracy
+0.7887748
+precision_1
+0.5944311
+recall_1
+0.8116567
+f1
+0.6657352
+lr
+0.0003125
+
+test dataset
+
+
+  Epoch 40 
+validation dataset
+val_loss
+0.5143175721168518
+val_accuracy
+0.7887557744979858
+val_precision_1
+0.5870563983917236
+val_recall_1
+0.8146264553070068
+val_f1
+0.6649547815322876
+loss
+0.6489119579475456
+accuracy
+0.7891683
+precision_1
+0.59508336
+recall_1
+0.8112992
+f1
+0.6662947
+lr
+0.0003125
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.92      0.78      0.84   1468492
+           1       0.59      0.81      0.68    566958
+
+    accuracy                           0.79   2035450
+   macro avg       0.75      0.80      0.76   2035450
+weighted avg       0.82      0.79      0.80   2035450
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.91      0.79      0.85    829557
+           1       0.60      0.80      0.69    326320
+
+    accuracy                           0.79   1155877
+   macro avg       0.76      0.80      0.77   1155877
+weighted avg       0.82      0.79      0.80   1155877
+
+
+
+  Epoch 41 
+validation dataset
+val_loss
+0.7255539298057556
+val_accuracy
+0.7905883193016052
+val_precision_1
+0.5905314087867737
+val_recall_1
+0.8094515204429626
+val_f1
+0.6652957797050476
+loss
+0.6489211699244098
+accuracy
+0.78877777
+precision_1
+0.5943718
+recall_1
+0.8121188
+f1
+0.66603243
+lr
+0.0003125
+
+test dataset
+
+

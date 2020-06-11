@@ -1,0 +1,83 @@
+96000_257_1_20200609-123139.h5
+Number of learning samples: 1611
+Number of validation samples: 536
+Number of testing samples: 306
+
+  Epoch 10 
+validation dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.89      0.81      0.85   1623624
+           1       0.56      0.72      0.63    559330
+
+    accuracy                           0.78   2182954
+   macro avg       0.73      0.76      0.74   2182954
+weighted avg       0.81      0.78      0.79   2182954
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.89      0.81      0.84    905692
+           1       0.58      0.72      0.65    340344
+
+    accuracy                           0.78   1246036
+   macro avg       0.74      0.76      0.75   1246036
+weighted avg       0.80      0.78      0.79   1246036
+
+
+
+  Epoch 20 
+validation dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.92      0.73      0.81   1623624
+           1       0.50      0.81      0.62    559330
+
+    accuracy                           0.75   2182954
+   macro avg       0.71      0.77      0.72   2182954
+weighted avg       0.81      0.75      0.76   2182954
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.91      0.72      0.81    905692
+           1       0.52      0.81      0.64    340344
+
+    accuracy                           0.75   1246036
+   macro avg       0.72      0.77      0.72   1246036
+weighted avg       0.81      0.75      0.76   1246036
+
+
+
+  Epoch 30 
+validation dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.91      0.81      0.85   1623624
+           1       0.58      0.75      0.65    559330
+
+    accuracy                           0.79   2182954
+   macro avg       0.74      0.78      0.75   2182954
+weighted avg       0.82      0.79      0.80   2182954
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.90      0.81      0.85    905692
+           1       0.59      0.76      0.67    340344
+
+    accuracy                           0.79   1246036
+   macro avg       0.75      0.78      0.76   1246036
+weighted avg       0.81      0.79      0.80   1246036
+
+
+
