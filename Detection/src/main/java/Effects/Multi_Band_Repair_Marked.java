@@ -247,6 +247,7 @@ public class Multi_Band_Repair_Marked implements IEffect
                     for( i = 0; i < nr_of_bands; i++ )
                     {
                         fft_equalizer.setFilter( filters[ i ] );
+                        fft_equalizer.setFFT_length( Util_Stuff.next_power_of_two( filters[ i ].getFf_coeff_nr() ) * 2 );
                         fft_equalizer.apply( dataSource, freq_band_ADS[ i ], missing_region );
                     }
 
