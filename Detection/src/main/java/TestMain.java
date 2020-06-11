@@ -344,18 +344,16 @@ public class TestMain {
             long fir_total_duration;
             long fft_total_duration;
             int i;
-            int fft_length_ratio;
             int filter_length;
 
             src_cache.get_samples( 0, src.get_sample_number() );
 
-            for( fft_length_ratio = 2; fft_length_ratio <= 32; fft_length_ratio*=2 )
+            for( filter_length = 8; filter_length <= 1024*16; filter_length *= 2 )
             {
-                filter_length = ( int )Math.pow( 2, 12 );
                 fir_total_duration = 0;
                 fft_total_duration = 0;
 
-                System.out.println( "Filter ratio: " + fft_length_ratio );
+                System.out.println( "Filter length: " + filter_length );
 
                 FFT_Equalizer fft_filter = new FFT_Equalizer();
                 FIR_Equalizer fir_filter = new FIR_Equalizer();
@@ -363,7 +361,7 @@ public class TestMain {
                 FIR fir = FIR.fromFreqResponse( FIR.get_flat_response().getLeft(), FIR.get_flat_response().getRight(), FIR.get_flat_response().getLeft().length, src.get_sample_rate(), filter_length - 1 );
 
                 fft_filter.setFilter( fir );
-                fft_filter.setFFT_length( Util_Stuff.next_power_of_two( fir.getFf_coeff_nr() ) * fft_length_ratio );
+                // fft_filter.setFFT_length( Util_Stuff.next_power_of_two( fir.getFf_coeff_nr() ) * 2 );
 
                 fir_filter.setFilter( fir );
                 fir_filter.setMax_chunk_size( filter_length * 2 );
@@ -377,14 +375,14 @@ public class TestMain {
                 }
                 System.out.println( fft_total_duration / i + " ms" );
 
-//                System.out.println( "FIR:" );
-//                for( i = 0; i < 10; i++ )
-//                {
-//                    start_ms = System.currentTimeMillis();
-//                    fir_filter.apply( src_cache, fir_cache, new Interval( 0, src.get_sample_number() ) );
-//                    fir_total_duration += ( System.currentTimeMillis() - start_ms );
-//                }
-//                System.out.println( fir_total_duration / i + " ms" );
+                System.out.println( "FIR:" );
+                for( i = 0; i < 10; i++ )
+                {
+                    start_ms = System.currentTimeMillis();
+                    fir_filter.apply( src_cache, fir_cache, new Interval( 0, src.get_sample_number() ) );
+                    fir_total_duration += ( System.currentTimeMillis() - start_ms );
+                }
+                System.out.println( fir_total_duration / i + " ms" );
             }
 
             fft_cache.flushAll();
