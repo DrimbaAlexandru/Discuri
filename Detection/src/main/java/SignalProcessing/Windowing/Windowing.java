@@ -18,7 +18,7 @@ public class Windowing
         int i;
         for( i = 0; i < len; i++ )
         {
-            samples[ start_offset + i ] *= window_function.apply( ( float )i / ( len - 1 ) );
+            samples[ start_offset + i ] *= window_function.apply( ( float )i / ( len ) );
         }
     }
     public static void apply( float[] samples, int len, Function< Float, Float > window_function )

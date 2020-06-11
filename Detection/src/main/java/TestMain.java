@@ -333,36 +333,59 @@ public class TestMain {
         {
             ProjectManager.lock_access();
             WAVFileAudioSource src = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\signal.wav" );
-            WAVFileAudioSource dst_FFT = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fft_fade.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
+            WAVFileAudioSource dst_FFT = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fft.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
             WAVFileAudioSource dst_FIR = new WAVFileAudioSource( "C:\\Users\\Alex\\Desktop\\fir.wav", src.get_channel_number(), src.get_sample_rate(), src.getByte_depth() );
 
-            CachedAudioDataSource src_cache = new CachedAudioDataSource( src, 44100 * 10, 44100 );
-            CachedAudioDataSource fft_cache = new CachedAudioDataSource( dst_FFT, 44100 * 10, 44100 );
-            CachedAudioDataSource fir_cache = new CachedAudioDataSource( dst_FIR, 44100 * 10, 44100 );
+            CachedAudioDataSource src_cache = new CachedAudioDataSource( src, src.get_sample_number(), src.get_sample_rate() );
+            CachedAudioDataSource fft_cache = new CachedAudioDataSource( dst_FFT, src.get_sample_number(), src.get_sample_rate() );
+            CachedAudioDataSource fir_cache = new CachedAudioDataSource( dst_FIR, src.get_sample_number(), src.get_sample_rate() );
 
             long start_ms;
-            int filter_length = ( int )Math.pow( 2, 13 );
+            long fir_total_duration;
+            long fft_total_duration;
+            int i;
+            int fft_length_ratio;
+            int filter_length;
 
-            FFT_Equalizer filter = new FFT_Equalizer();
-            FIR_Equalizer fir_filter = new FIR_Equalizer();
-            FIR fir = FIR.fromFreqResponse( FIR.get_RIAA_response().getLeft(), FIR.get_RIAA_response().getRight(), FIR.get_RIAA_response().getLeft().length, src.get_sample_rate(), filter_length - 1 );
-            filter.setFilter( fir );
-            fir_filter.setFilter( fir );
-            filter.setFFT_length( filter_length );
-            fir_filter.setMax_chunk_size( filter_length );
-            filter.set_OLA_window_size( filter_length / 2 );
+            src_cache.get_samples( 0, src.get_sample_number() );
 
-            start_ms = System.currentTimeMillis();
-            System.out.println( "FFT:" );
-            filter.apply( src_cache, fft_cache, new Interval( 0, src_cache.get_sample_number() ) );
-            System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
+            for( fft_length_ratio = 2; fft_length_ratio <= 32; fft_length_ratio*=2 )
+            {
+                filter_length = ( int )Math.pow( 2, 12 );
+                fir_total_duration = 0;
+                fft_total_duration = 0;
 
-            start_ms = System.currentTimeMillis();
-            System.out.println( "FIR:" );
-            fir_filter.apply( src_cache, fir_cache, new Interval( 0, src.get_sample_number() ) );
-            System.out.println( ( System.currentTimeMillis() - start_ms ) + " ms" );
+                System.out.println( "Filter ratio: " + fft_length_ratio );
 
-            System.out.println( "Closing..." );
+                FFT_Equalizer fft_filter = new FFT_Equalizer();
+                FIR_Equalizer fir_filter = new FIR_Equalizer();
+                //FIR fir = FIR.fromFreqResponse( FIR.get_RIAA_response().getLeft(), FIR.get_RIAA_response().getRight(), FIR.get_RIAA_response().getLeft().length, src.get_sample_rate(), filter_length - 1 );
+                FIR fir = FIR.fromFreqResponse( FIR.get_flat_response().getLeft(), FIR.get_flat_response().getRight(), FIR.get_flat_response().getLeft().length, src.get_sample_rate(), filter_length - 1 );
+
+                fft_filter.setFilter( fir );
+                fft_filter.setFFT_length( Util_Stuff.next_power_of_two( fir.getFf_coeff_nr() ) * fft_length_ratio );
+
+                fir_filter.setFilter( fir );
+                fir_filter.setMax_chunk_size( filter_length * 2 );
+
+                System.out.println( "FFT:" );
+                for( i = 0; i < 10; i++ )
+                {
+                    start_ms = System.currentTimeMillis();
+                    fft_filter.apply( src_cache, fft_cache, new Interval( 0, src_cache.get_sample_number() ) );
+                    fft_total_duration += ( System.currentTimeMillis() - start_ms );
+                }
+                System.out.println( fft_total_duration / i + " ms" );
+
+//                System.out.println( "FIR:" );
+//                for( i = 0; i < 10; i++ )
+//                {
+//                    start_ms = System.currentTimeMillis();
+//                    fir_filter.apply( src_cache, fir_cache, new Interval( 0, src.get_sample_number() ) );
+//                    fir_total_duration += ( System.currentTimeMillis() - start_ms );
+//                }
+//                System.out.println( fir_total_duration / i + " ms" );
+            }
 
             fft_cache.flushAll();
             fir_cache.flushAll();
@@ -371,7 +394,7 @@ public class TestMain {
             fft_cache.close();
             fir_cache.close();
         }
-        catch( DataSourceException e )
+        catch( Exception e )
         {
             e.printStackTrace();
         }
@@ -610,6 +633,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        main18( args );
+        main15( args );
     }
 }
