@@ -209,6 +209,7 @@ public class FFT_Equalizer implements IEffect
 
     public void setFilter( FIR filter ) throws DataSourceException
     {
+        init_done = false;
         fir_filter = filter;
         if( filter.getFf_coeff_nr() % 2 == 0 )
         {
