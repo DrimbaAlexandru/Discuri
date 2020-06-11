@@ -267,7 +267,7 @@ class BinaryClassifierModelWithGenerator:
 
 
     def compile_model( self ):
-        learning_rate = 0.0003125  # initial learning rate
+        learning_rate = 0.01  # initial learning rate
 
         self.model.compile(optimizer = Adam(learning_rate=learning_rate),
                            loss = "binary_crossentropy",
@@ -283,8 +283,8 @@ class BinaryClassifierModelWithGenerator:
 
         # Build U-Net model
         self.model = Sequential()
-        self.model.add( Dense( 96, input_dim = self.INPUTS, activation="relu" ) )
-        self.model.add( Dense( 48, activation="relu" ) )
+        self.model.add( Dense( 64, input_dim = self.INPUTS, activation="relu" ) )
+        self.model.add( Dense( 32, activation="relu" ) )
         self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
         # self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1 , activation = 'relu', input_shape = ( self.INPUTS, 1 ) ) )
         # self.model.add( Dropout( 0.1 ) )
@@ -354,4 +354,4 @@ class BinaryClassifierModelWithGenerator:
         probabilities[ 0 : ( batch_size - 1 ) * self.OUTPUTS ] = preds[  0 : ( batch_size - 1 ) * self.OUTPUTS ]
         probabilities[ output_length - self.OUTPUTS : ] = preds[  ( batch_size - 1 ) * self.OUTPUTS : ]
 
-        return preds
+        return probabilities

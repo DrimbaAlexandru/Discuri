@@ -528,13 +528,13 @@ public class TestMain {
 
         markedFile files[] = new markedFile[]
         {
-//        new markedFile( "Bach triosonata 3.wav","Bach triosonata 3 mark diff s 4 m 4 0.2000 avg 18.txt", "Bach triosonata.bin",  0.00033f, 0.02f,  0.0f ),
-//        new markedFile( "Boccherini cello.wav", "Boccherini cello mark diff s 2 m 4 0.1000 avg 12.txt",  "Boccherini cello.bin", 0.0025f,  0.15f,  0.0f ),
-//        new markedFile( "les preludes.wav",     "les preludes mark diff s 4 m 1 0.1000 avg 17.txt",      "les preludes.bin",     0.01f,    0.03f,  0.0f ),
-//        new markedFile( "Marie, osanca me.wav", "Marie, osanca me mark diff s 3 m 1 0.1000 avg 21.txt",  "petreusi.bin",         0.01f,    0.0125f,0.0f ),
-//        new markedFile( "mendelssohn.wav",      "mendelssohn mark diff s 3 m 1 0.1500 avg 19.txt",       "mendelssohn.bin",      0.01f,    0.0175f,0.0f ),
-//        new markedFile( "phoenix.wav",          "phoenix mark diff s 3 m 5 0.1000 avg 15.txt",           "phoenix.bin",          0.005f,   0.033f, 0.0f ),
-//        new markedFile( "vivaldi.wav",          "vivaldi mark diff s 3 m 1 0.1000 avg 12.txt",           "vivaldi.bin",          0.0025f,  0.075f, 0.0f ),
+        new markedFile( "Bach triosonata 3.wav","Bach triosonata 3 mark diff s 4 m 4 0.2000 avg 18.txt", "Bach triosonata.bin",  0.00033f, 0.02f,  0.0f ),
+        new markedFile( "Boccherini cello.wav", "Boccherini cello mark diff s 2 m 4 0.1000 avg 12.txt",  "Boccherini cello.bin", 0.0025f,  0.15f,  0.0f ),
+        new markedFile( "les preludes.wav",     "les preludes mark diff s 4 m 1 0.1000 avg 17.txt",      "les preludes.bin",     0.01f,    0.03f,  0.0f ),
+        new markedFile( "Marie, osanca me.wav", "Marie, osanca me mark diff s 3 m 1 0.1000 avg 21.txt",  "petreusi.bin",         0.01f,    0.0125f,0.0f ),
+        new markedFile( "mendelssohn.wav",      "mendelssohn mark diff s 3 m 1 0.1500 avg 19.txt",       "mendelssohn.bin",      0.01f,    0.0175f,0.0f ),
+        new markedFile( "phoenix.wav",          "phoenix mark diff s 3 m 5 0.1000 avg 15.txt",           "phoenix.bin",          0.005f,   0.033f, 0.0f ),
+        new markedFile( "vivaldi.wav",          "vivaldi mark diff s 3 m 1 0.1000 avg 12.txt",           "vivaldi.bin",          0.0025f,  0.075f, 0.0f ),
 
         new markedFile( "bagpipe.wav",       null, "neg_bagpipe.bin",    0.05f,  0.0f, 0.0f ),
         new markedFile( "bathory.wav",       null, "neg_bathory.bin",    0.1f,   0.0f, 0.0f ),
@@ -544,12 +544,12 @@ public class TestMain {
         new markedFile( "prokofiev 2.wav",   null, "neg_prokofiev.bin",  0.05f,  0.0f, 0.0f ),
         new markedFile( "trumpet.wav",       null, "neg_trumpet.bin",    0.075f, 0.0f, 0.0f ),
 
-//        new markedFile( "andries - dracula blues.wav",                                 "andries - dracula blues mark diff s 2 m 4 0.1750 avg 16.txt",                                 "andries.bin",           0.0025f, 0.033f, 0.0f ),
-//        new markedFile( "Beethoven - Quartet no 4 - IV.wav",                           "Beethoven - Quartet no 4 - IV mark diff s 3 m 1 0.1000 avg 15.txt",                           "beethoven quartet.bin", 0.002f,  0.025f, 0.0f ),
-//        new markedFile( "Chopin - Etude op. 25 no. 11.wav",                            "Chopin - Etude op. 25 no. 11 mark diff s 3 m 5 0.1000 avg 11.txt",                            "chopin.bin",            0.0005f, 0.066f, 0.0f ),
-//        new markedFile( "dvorak 4th symph fin.wav",                                    "dvorak 4th symph fin mark diff s 3 m 1 0.1000 avg 12.txt",                                    "dvorak.bin",            0.0025f, 0.033f, 0.0f ),
-//        new markedFile( "Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2.wav", "Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark diff s 4 m 1 0.1000 avg 16.txt", "enescu.bin",            0.0015f, 0.0125f,0.0f ),
-//        new markedFile( "Shostakovich - Simfoniya nr. 10 2 chast.wav",                 "Shostakovich - Simfoniya nr. 10 2 chast mark diff s 3 m 1 0.1000 avg 25.txt",                 "shostakovich.bin",      0.01f,   0.025f, 0.0f ),
+        new markedFile( "andries - dracula blues.wav",                                 "andries - dracula blues mark diff s 2 m 4 0.1750 avg 16.txt",                                 "andries.bin",           0.0025f, 0.033f, 0.0f ),
+        new markedFile( "Beethoven - Quartet no 4 - IV.wav",                           "Beethoven - Quartet no 4 - IV mark diff s 3 m 1 0.1000 avg 15.txt",                           "beethoven quartet.bin", 0.002f,  0.025f, 0.0f ),
+        new markedFile( "Chopin - Etude op. 25 no. 11.wav",                            "Chopin - Etude op. 25 no. 11 mark diff s 3 m 5 0.1000 avg 11.txt",                            "chopin.bin",            0.0005f, 0.066f, 0.0f ),
+        new markedFile( "dvorak 4th symph fin.wav",                                    "dvorak 4th symph fin mark diff s 3 m 1 0.1000 avg 12.txt",                                    "dvorak.bin",            0.0025f, 0.033f, 0.0f ),
+        new markedFile( "Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2.wav", "Enescu - Rapsodia romana nr. 2 in re major op. 11 nr. 2 mark diff s 4 m 1 0.1000 avg 16.txt", "enescu.bin",            0.0015f, 0.0125f,0.0f ),
+        new markedFile( "Shostakovich - Simfoniya nr. 10 2 chast.wav",                 "Shostakovich - Simfoniya nr. 10 2 chast mark diff s 3 m 1 0.1000 avg 25.txt",                 "shostakovich.bin",      0.01f,   0.025f, 0.0f ),
         };
 
         ProjectManager.lock_access();
@@ -557,10 +557,10 @@ public class TestMain {
         String marking_base_path="e:\\datasets\\inv riaa\\markings\\";
         String dest_base_path="e:\\datasets\\257-1 reduced\\";
 
-        float master_nonmarked = 0.2f;
-        float master_marked = 0.33f;
+        float master_nonmarked = 0.1f;
+        float master_marked = 0.2f;
         float master_doubling_prob = 0.0f;
-        int side_grab = 128;
+        int side_grab = 64;
         int outputs = 1;
 
         DataSetGenerator dse = new DataSetGenerator( side_grab * 2 + outputs, outputs, side_grab );
@@ -631,6 +631,6 @@ public class TestMain {
 
     public static void main( String[] args )
     {
-        main15( args );
+        main18( args );
     }
 }

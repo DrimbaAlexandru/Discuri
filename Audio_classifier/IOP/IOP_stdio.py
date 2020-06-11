@@ -29,7 +29,7 @@ iop_PARSE_STATUS_ERROR = 2
 #----------------------------------------------
 IOP_MSG_DLE_BYTES_SIZE = 4
 IOP_MSG_HDR_SIZE = 4
-IOP_MSG_MAX_DATA_LENGTH = 2**16 - 1
+IOP_MSG_MAX_DATA_LENGTH = 2**13 - 1
 IOP_MSG_MAX_LENGTH = IOP_MSG_MAX_DATA_LENGTH * 2 + IOP_MSG_DLE_BYTES_SIZE + IOP_MSG_HDR_SIZE
 
 #----------------------------------------------
@@ -178,7 +178,7 @@ def iop_parse_byte( byte ):
 
 def IOP_put_bytes( raw_bytes ):
     byte_cnt = sys.stdout.buffer.write( raw_bytes )
-    #sys.stdout.flush()
+    sys.stdout.flush()
     return byte_cnt
 
 def IOP_put_frame( id, subid, data ):

@@ -71,7 +71,7 @@ class MarkedAudioDataGenerator(Sequence):
         X = scaler.transform( X )
 
         if self.to_fit:
-            return X, y, self._compute_weights( y )
+            return X, y#, self._compute_weights( y )
         else:
             return X
 
