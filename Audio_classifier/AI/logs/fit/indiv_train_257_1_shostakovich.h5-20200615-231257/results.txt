@@ -1,0 +1,53 @@
+indiv_train_257_1_shostakovich.h5
+Number of learning samples: 761856
+Number of validation samples: 249856
+Number of testing samples: 143360
+
+  Epoch 1 
+validation dataset
+val_loss
+0.08121730387210846
+val_accuracy
+0.862841010093689
+val_precision_1
+0.8138981461524963
+val_recall_1
+0.8204724192619324
+val_f1
+0.7712933421134949
+loss
+0.30953095305274475
+accuracy
+0.8601313
+precision_1
+0.8177329
+recall_1
+0.80013156
+f1
+0.7578971
+lr
+0.0025
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.89      0.89      0.89    156511
+           1       0.81      0.82      0.82     93345
+
+    accuracy                           0.86    249856
+   macro avg       0.85      0.85      0.85    249856
+weighted avg       0.86      0.86      0.86    249856
+
+
+test dataset
+confusion matrix
+              precision    recall  f1-score   support
+
+           0       0.92      0.88      0.90     97538
+           1       0.77      0.83      0.80     45822
+
+    accuracy                           0.87    143360
+   macro avg       0.84      0.86      0.85    143360
+weighted avg       0.87      0.87      0.87    143360
+
+
+

@@ -19,7 +19,7 @@ class MarkedAudioDataGenerator(Sequence):
         :param batch_size: batch size at each iteration
         :param shuffle: True to shuffle label indexes after every epoch
         """
-        self.cache = True
+        self.cache = False
         self.to_fit = to_fit
         self.batch_size = batch_size
         self.shuffle = shuffle

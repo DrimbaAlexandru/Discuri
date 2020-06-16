@@ -68,7 +68,7 @@ public class MarkerFileGenerator implements IEffect
                     moving_sum[ k ] = 0.0;
                     for( int j = 0; j < moving_avg_size; j++ )
                     {
-                        moving_sum[ k ] += Math.sqrt( Math.abs( win.getSample( i + j, k ) ) );
+                        moving_sum[ k ] += Math.abs( win.getSample( i + j, k ) );
                     }
                 }
             }
@@ -79,8 +79,8 @@ public class MarkerFileGenerator implements IEffect
                 /* If not at the beginning or the end of the window, update the moving average */
                 if( ( i - win.get_first_sample_index() >= moving_avg_size / 2 ) && ( win.get_after_last_sample_index() - 1 - i >= moving_avg_size / 2 ) )
                 {
-                    moving_sum[ k ] -= Math.sqrt( Math.abs( win.getSample( i - moving_avg_size / 2, k ) ) );
-                    moving_sum[ k ] += Math.sqrt( Math.abs( win.getSample( i + moving_avg_size / 2, k ) ) );
+                    moving_sum[ k ] -= Math.abs( win.getSample( i - moving_avg_size / 2, k ) );
+                    moving_sum[ k ] += Math.abs( win.getSample( i + moving_avg_size / 2, k ) );
                 }
 
                 mark = ( Math.abs( win.getSample( i, k ) ) >= abs_threshold && Math.abs( win.getSample( i, k ) ) >= ( moving_sum[ k ] / moving_avg_size ) * spike_threshold );
@@ -138,12 +138,10 @@ public class MarkerFileGenerator implements IEffect
             {
                 dataDest.put_samples( new AudioSamplesWindow( moving_avg, i, 1, dataSource.get_channel_number() ) );
             }
-
         }
 
         try
         {
-
             mf.writeMarkingsToFile( new FileWriter( dest_path + " s " + side_extend + " m " + min_marking_spacing + " " + String.format( "%.4f", spike_threshold ) + " avg " + ( sum_length / cnt ) + ".txt" ) );
             System.out.println( "Longest: " + longest_marking );
             System.out.println( "Average: " + sum_length / cnt );

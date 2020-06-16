@@ -15,12 +15,11 @@ public class ProjectStatics
     private static int project_cache_page_size = 4096;
     private static int temp_file_max_samples = 1024 * 1024; /* Maximum number of samples in temp files */
     private static String python_classifier_script_path = "main.py";
-    private static String project_files_path = "D:\\";
+    private static String project_files_path = "E:\\";
     private static String python_scripts_resource_path = null;
 
     static
     {
-        /*
         try
         {
             python_scripts_resource_path = new File( ProjectStatics.class.getClassLoader().getResource( "Python scripts" ).toURI() ).getAbsolutePath() + "/";
@@ -29,8 +28,6 @@ public class ProjectStatics
         {
             e.printStackTrace();
         }
-        */
-        python_scripts_resource_path = "D:/git/Discuri/Audio_classifier/";
 
     }
 

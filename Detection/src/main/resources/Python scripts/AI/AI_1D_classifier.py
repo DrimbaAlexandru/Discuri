@@ -186,12 +186,12 @@ class BinaryClassifierModelWithGenerator:
         self.IS_TEST_DATA_LABELED = test_data_labeled
 
         self.MODEL_PATH = model_path
-        self.LOG_DIR = "./logs/fit//" + model_path + "-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.LOG_DIR = "./logs/fit//" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
         self.VALIDATION_SPLIT = 0.25
         test_split = 0.125
 
-        self.evaluation_callback = ComputeConfusionMatrixCallback( 50, self )
+        self.evaluation_callback = ComputeConfusionMatrixCallback( 10, self )
 
         self.predict_only = train_path_in is None \
                             or ( test_path_in is None and not train_test_same ) \
@@ -267,7 +267,7 @@ class BinaryClassifierModelWithGenerator:
 
 
     def compile_model( self ):
-        learning_rate = 0.0025  # initial learning rate
+        learning_rate = 0.000625  # initial learning rate
 
         self.model.compile(optimizer = Adam(learning_rate=learning_rate),
                            loss = "binary_crossentropy",
@@ -283,8 +283,8 @@ class BinaryClassifierModelWithGenerator:
 
         # Build U-Net model
         self.model = Sequential()
-        self.model.add( Dense( 96, input_dim = self.INPUTS, activation="relu" ) )
-        self.model.add( Dense( 48, activation="relu" ) )
+        self.model.add( Dense( 64, input_dim = self.INPUTS, activation="relu" ) )
+        self.model.add( Dense( 32, activation="relu" ) )
         self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
         # self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1 , activation = 'relu', input_shape = ( self.INPUTS, 1 ) ) )
         # self.model.add( Dropout( 0.1 ) )
@@ -310,7 +310,7 @@ class BinaryClassifierModelWithGenerator:
         # Fit model
         min_learning_rate = 0.00001  # once the learning rate reaches this value, do not decrease it further
         learning_rate_reduction_factor = 0.5  # the factor used when reducing the learning rate -> learning_rate *= learning_rate_reduction_factor
-        patience = 2  # how many epochs to wait before reducing the learning rate when the loss plateaus
+        patience = 3  # how many epochs to wait before reducing the learning rate when the loss plateaus
 
         # earlystopper = EarlyStopping(patience=5, verbose=1, mode="max", monitor="f1")
         checkpointer = ModelCheckpoint(self.MODEL_PATH, verbose=1, save_best_only=True, mode="max", monitor="f1")
