@@ -2,6 +2,7 @@ package Effects;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.DataTypes.Interval;
 
@@ -40,5 +41,11 @@ public class Copy_to_ADS implements IEffect
     public float getProgress()
     {
         return progress;
+    }
+
+    @Override
+    public EffectType getEffectType()
+    {
+        return EffectType.NORMAL_AUDIO_EFFECT;
     }
 }

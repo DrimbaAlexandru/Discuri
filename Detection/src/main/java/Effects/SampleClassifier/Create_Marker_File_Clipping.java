@@ -2,6 +2,7 @@ package Effects.SampleClassifier;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.DataStructures.MarkerFile.MarkerFile;
 import ProjectManager.ProjectManager;
@@ -78,6 +79,12 @@ public class Create_Marker_File_Clipping implements IEffect
     public float getProgress()
     {
         return progress;
+    }
+
+    @Override
+    public EffectType getEffectType()
+    {
+        return EffectType.READ_ONLY_AUDIO_EFFECT;
     }
 
     public void setThreshold( float threshold )

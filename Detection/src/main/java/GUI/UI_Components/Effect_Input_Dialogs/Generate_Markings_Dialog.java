@@ -3,8 +3,8 @@ package GUI.UI_Components.Effect_Input_Dialogs;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import ProjectManager.ProjectStatics;
-import Effects.SampleClassifier.AIDamageRecognition;
 import Effects.IEffect;
+import Effects.SampleClassifier.MarkerFileGenerator;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -21,9 +21,9 @@ import java.io.IOException;
 public class Generate_Markings_Dialog implements Effect_UI_Component
 {
     @FXML
-    private Label lbl_threshold;
+    private Label lbl_damage_threshold, lbl_spike_threshold;
     @FXML
-    private Slider sld_threshold;
+    private Slider sld_damage_threshold, sld_spike_threshold;
     @FXML
     private Button btn_apply, btn_cancel;
 
@@ -31,7 +31,7 @@ public class Generate_Markings_Dialog implements Effect_UI_Component
     private Stage onTop = new Stage();
     private DataSourceException close_exception = null;
 
-    private AIDamageRecognition effect = null;
+    private MarkerFileGenerator effect = null;
 
     @Override
     public void show( Window parent ) throws DataSourceException
@@ -51,22 +51,34 @@ public class Generate_Markings_Dialog implements Effect_UI_Component
         {
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.IO_ERROR );
         }
-        lbl_threshold.setText( String.format( "%.2f", sld_threshold.getValue() ) );
-        sld_threshold.setOnMouseDragged( ev ->
+        lbl_damage_threshold.setText( String.format( "%.2f", sld_damage_threshold.getValue() ) );
+        sld_damage_threshold.setOnMouseDragged( ev ->
                                          {
-                                             lbl_threshold.setText( String.format( "%.2f", sld_threshold.getValue() ) );
+                                             lbl_damage_threshold.setText( String.format( "%.2f", sld_damage_threshold.getValue() ) );
                                          } );
+
+        lbl_spike_threshold.setText( String.format( "%.2f", sld_spike_threshold.getValue() ) );
+        sld_spike_threshold.setOnMouseDragged( ev ->
+                                                {
+                                                    lbl_spike_threshold.setText( String.format( "%.2f", sld_spike_threshold.getValue() ) );
+                                                } );
 
         btn_apply.setOnAction( ev ->
                                {
                                    try
                                    {
-                                       effect = new AIDamageRecognition();
-                                       effect.setThreshold( ( float )sld_threshold.getValue() );
-                                   }
-                                   catch( DataSourceException dse )
-                                   {
-                                       close_exception = dse;
+                                       effect = new MarkerFileGenerator();
+                                       effect.setMoving_avg_size( 8 );
+                                       effect.setGen_mvg_avg( false );
+                                       effect.setGen_marker( true );
+                                       effect.setDest_path( null );
+                                       effect.setAbs_threshold( ( float )sld_damage_threshold.getValue() );
+                                       effect.setDuplicate_L_to_R( false );
+                                       effect.setMin_marking_spacing( 1 );
+                                       effect.setSide_extend( 2 );
+                                       effect.setSpike_threshold( ( float )sld_spike_threshold.getValue() );
+
+                                       effect.setGen_mvg_avg( true );
                                    }
                                    catch( Exception e )
                                    {

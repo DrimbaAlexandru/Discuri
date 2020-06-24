@@ -1,6 +1,7 @@
 package Effects;
 
 import AudioDataSource.AudioSamplesWindow;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
@@ -69,6 +70,12 @@ public class FIR_Filter implements IEffect
     public float getProgress()
     {
         return progress;
+    }
+
+    @Override
+    public EffectType getEffectType()
+    {
+        return EffectType.NORMAL_AUDIO_EFFECT;
     }
 
     public void setFilter( FIR filter )

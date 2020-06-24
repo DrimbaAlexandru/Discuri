@@ -1,5 +1,6 @@
 package Effects;
 
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import AudioDataSource.IAudioDataSource;
 import Utils.DataTypes.Interval;
@@ -11,4 +12,5 @@ public interface IEffect
 {
     void apply( IAudioDataSource dataSource, IAudioDataSource dataDest, Interval interval ) throws DataSourceException;
     float getProgress();
+    EffectType getEffectType();
 }

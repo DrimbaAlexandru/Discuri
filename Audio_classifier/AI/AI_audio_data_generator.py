@@ -66,9 +66,9 @@ class MarkedAudioDataGenerator(Sequence):
         factors = np.random.uniform( 0.25, 2.0, X.shape[ 0 ] ) * ( np.random.randint( 0, 2, X.shape[ 0 ] ) * 2 - 1 )
         X = np.asarray( [ X[ i ] * factors[ i ] for i in range( 0, X.shape[ 0 ] ) ] )
 
-        scaler = StandardScaler()
-        scaler.fit( X )
-        X = scaler.transform( X )
+        # scaler = StandardScaler()
+        # scaler.fit( y )
+        # y = scaler.transform( y )
 
         if self.to_fit:
             return X, y#, self._compute_weights( y )

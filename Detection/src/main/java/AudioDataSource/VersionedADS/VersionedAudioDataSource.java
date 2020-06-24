@@ -27,7 +27,7 @@ public class VersionedAudioDataSource
 
     public VersionedAudioDataSource( int sample_rate, int channel_number, int sample_number ) throws DataSourceException
     {
-        AudioDataSourceVersion adsv = new AudioDataSourceVersion( 0, sample_rate, channel_number, sample_number );
+        AudioDataSourceVersion adsv = new AudioDataSourceVersion( sample_rate, channel_number, sample_number );
         versions.add( adsv );
         current_version = 0;
     }

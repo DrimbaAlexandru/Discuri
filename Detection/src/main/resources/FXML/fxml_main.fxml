@@ -7,10 +7,11 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollBar?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.layout.Pane?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="485.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="508.0" prefWidth="775.0" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <Button fx:id="btn_prev_sample" layoutX="70.0" layoutY="36.0" mnemonicParsing="false" text="&lt;" />
       <Button fx:id="btn_next_sample" layoutX="97.0" layoutY="36.0" mnemonicParsing="false" text="&gt;" />
@@ -22,10 +23,10 @@
       <Button fx:id="btn_expand_select" layoutX="257.0" layoutY="36.0" mnemonicParsing="false" text="Zoom out" />
       <Button fx:id="btn_constrict_select" layoutX="189.0" layoutY="36.0" mnemonicParsing="false" text="Zoom in" />
       <Canvas fx:id="main_canvas" height="325.0" layoutX="15.0" layoutY="81.0" width="745.0" />
-      <Label layoutX="40.0" layoutY="439.0" text="Position:" />
+      <Label layoutX="36.0" layoutY="439.0" text="Sel. start:" />
       <Label fx:id="position_indicator" layoutX="183.0" layoutY="439.0" text="samples" />
       <Spinner fx:id="current_sample_spinner" editable="true" layoutX="93.0" layoutY="438.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="84.0" />
-      <Label alignment="CENTER_RIGHT" layoutX="25.0" layoutY="460.0" prefHeight="17.0" prefWidth="60.0" text="Sel. length:" />
+      <Label alignment="CENTER_RIGHT" layoutX="24.0" layoutY="460.0" prefHeight="17.0" prefWidth="60.0" text="Sel. length:" />
       <Label fx:id="sel_len_indicator" layoutX="183.0" layoutY="460.0" text="samples" />
       <Spinner fx:id="sel_len_spinner" editable="true" layoutX="93.0" layoutY="459.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="84.0" />
       <MenuBar layoutX="-1.0" layoutY="2.0" prefHeight="25.0" prefWidth="775.0">
@@ -34,11 +35,12 @@
             <items>
                   <MenuItem fx:id="menu_open_file" mnemonicParsing="false" text="Open file..." />
                   <MenuItem fx:id="menu_export" mnemonicParsing="false" text="Export project" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="menu_export_selected" mnemonicParsing="false" text="Export selection" />
               <MenuItem fx:id="menu_close" mnemonicParsing="false" text="Close" />
             </items>
           </Menu>
-          <Menu id="menu_edit" fx:id="menu_markings" mnemonicParsing="false" text="Markings">
+          <Menu id="menu_edit" fx:id="menu_markings" mnemonicParsing="false" text="Damage &amp; Markings">
                <items>
                   <MenuItem fx:id="menu_load_marker" mnemonicParsing="false" text="Add markings from file" />
                   <MenuItem fx:id="menu_save_marker" mnemonicParsing="false" text="Export markings to file" />
@@ -49,5 +51,12 @@
       </MenuBar>
       <Button fx:id="btn_undo" layoutX="437.0" layoutY="36.0" mnemonicParsing="false" text="Undo" />
       <Button fx:id="btn_redo" layoutX="493.0" layoutY="36.0" mnemonicParsing="false" text="Redo" />
+      <Label layoutX="552.0" layoutY="450.0" text="Zoom factor:" />
+      <Label layoutX="551.0" layoutY="471.0" text="Window size:" />
+      <Label fx:id="lbl_zoom" layoutX="630.0" layoutY="450.0" prefHeight="17.0" prefWidth="60.0" text="1" />
+      <Label fx:id="lbl_win_size" layoutX="630.0" layoutY="471.0" prefHeight="17.0" prefWidth="92.0" text="N/A" />
+      <Label alignment="CENTER_RIGHT" layoutX="25.0" layoutY="481.0" prefHeight="17.0" prefWidth="60.0" text="Sel. end:" />
+      <Label fx:id="sel_end_indicator" layoutX="183.0" layoutY="481.0" text="samples" />
+      <Spinner fx:id="sel_end_spinner" editable="true" layoutX="93.0" layoutY="480.0" maxHeight="20.0" minHeight="20.0" prefHeight="20.0" prefWidth="84.0" />
    </children>
 </Pane>

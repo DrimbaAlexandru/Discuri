@@ -1,8 +1,11 @@
 package ProjectManager;
 
 import AudioDataSource.CachedADS.CachedAudioDataSource;
+import AudioDataSource.FileADS.FileAudioSourceFactory;
+import AudioDataSource.FileADS.IFileAudioDataSource;
 import AudioDataSource.VersionedADS.AudioDataSourceVersion;
 import AudioDataSource.VersionedADS.VersionedAudioDataSource;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import Utils.DataStructures.MarkerFile.MarkerFile;
@@ -25,8 +28,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ProjectManager
 {
     private static VersionedAudioDataSource versionedADS = null;
+    private static CachedAudioDataSource currentAudioCache = null;
+    private static CachedAudioDataSource prevAudioCache = null;
+
     private static MarkerFile markerFile = new MarkerFile();
-    private static CachedAudioDataSource cache = null;
+
+    private static CachedAudioDataSource damageCache = null;
+    private static AudioDataSourceVersion damageADS = null;
 
     private static IOP_IPC_stdio classifier_ipc = null;
 
@@ -55,19 +63,49 @@ public class ProjectManager
         check_thread_access();
         if( versionedADS != null )
         {
-            cache.flushAll();
+            currentAudioCache.flushAll();
             versionedADS.dispose();
         }
+        if( damageCache != null )
+        {
+            damageADS.close();
+            damageCache.close();
+
+            damageADS = null;
+            damageCache = null;
+        }
+
         versionedADS = new VersionedAudioDataSource( filepath );
 
-        if( cache == null )
+        if( currentAudioCache == null )
         {
-            cache = new CachedAudioDataSource( versionedADS.get_current_version(), ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
+            currentAudioCache = new CachedAudioDataSource( versionedADS.get_current_version(), ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
         }
         else
         {
-            cache.setDataSource( versionedADS.get_current_version() );
+            currentAudioCache.setDataSource( versionedADS.get_current_version() );
         }
+        prevAudioCache = null;
+
+        damageADS = new AudioDataSourceVersion( currentAudioCache.get_sample_rate(), currentAudioCache.get_channel_number(), currentAudioCache.get_sample_number() );
+        damageADS.setAllow_unmapped_get( true );
+        damageADS.setByte_depth( ( byte )2 );
+        damageCache = new CachedAudioDataSource( damageADS, ProjectStatics.get_temp_file_max_samples(), ProjectStatics.getProject_cache_page_size() );
+    }
+
+    private static void create_next_version() throws DataSourceException
+    {
+        check_thread_access();
+        if( versionedADS == null )
+        {
+            throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
+        }
+
+        currentAudioCache.flushAll();
+        prevAudioCache = currentAudioCache;
+
+        AudioDataSourceVersion newVersion = versionedADS.create_next_version();
+        currentAudioCache = new CachedAudioDataSource( newVersion, ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
     }
 
     public static void apply_effect( IEffect effect, Interval interval ) throws DataSourceException
@@ -78,14 +116,30 @@ public class ProjectManager
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
         }
 
-        cache.flushAll();
+        switch( effect.getEffectType() )
+        {
+            case NORMAL_AUDIO_EFFECT:
+                create_next_version();
+                effect.apply( prevAudioCache, currentAudioCache, interval );
+                break;
 
-        AudioDataSourceVersion destinationVersion = versionedADS.create_next_version();
-        CachedAudioDataSource destCache = new CachedAudioDataSource( destinationVersion, ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
+            case READ_ONLY_AUDIO_EFFECT:
+                effect.apply( currentAudioCache, null, interval );
+                break;
 
-        effect.apply( cache, destCache, interval );
+            case DAMAGE_GENERATION_EFFECT:
+                effect.apply( currentAudioCache, damageCache, interval );
+                break;
 
-        cache = destCache;
+            case DAMAGE_READ_EFFECT:
+                IFileAudioDataSource dest = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\damage_mvg_avg.wav", damageCache.get_channel_number(), damageCache.get_sample_rate(), 2 );
+                CachedAudioDataSource dest_cache = new CachedAudioDataSource( dest, ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
+                effect.apply( damageCache, dest_cache, interval );
+                dest_cache.flushAll();
+                dest_cache.close();
+                dest.close();
+                break;
+        }
     }
 
     public static void undo() throws DataSourceException
@@ -96,7 +150,7 @@ public class ProjectManager
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
         }
         versionedADS.undo();
-        cache.setDataSource( versionedADS.get_current_version() );
+        currentAudioCache.setDataSource( versionedADS.get_current_version() );
     }
 
     public static void redo() throws DataSourceException
@@ -107,7 +161,7 @@ public class ProjectManager
             throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
         }
         versionedADS.redo();
-        cache.setDataSource( versionedADS.get_current_version() );
+        currentAudioCache.setDataSource( versionedADS.get_current_version() );
     }
 
     public static void clear_all_markings() throws DataSourceException
@@ -145,31 +199,29 @@ public class ProjectManager
         check_thread_access();
         if( versionedADS != null )
         {
-            cache.flushAll();
+            currentAudioCache.flushAll();
             versionedADS.dispose();
+        }
+        if( damageADS != null )
+        {
+            damageCache.flushAll();
+            damageADS.close();
         }
     }
 
-    public static CachedAudioDataSource getCache() throws DataSourceException
+    public static CachedAudioDataSource getCurrentAudioCache() throws DataSourceException
     {
-        check_thread_access();
-        return cache;
+        return currentAudioCache;
+    }
+
+    public static CachedAudioDataSource getDamageCache() throws DataSourceException
+    {
+        return damageCache;
     }
 
     public static MarkerFile getMarkerFile() throws DataSourceException
     {
-        check_thread_access();
         return markerFile;
-    }
-
-    public static void apply_read_only_effect( IEffect effect, Interval interval ) throws DataSourceException
-    {
-        check_thread_access();
-        if( versionedADS == null )
-        {
-            throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
-        }
-        effect.apply( cache, null, interval );
     }
 
     public static void start_classifier_process() throws IOException, InterruptedException

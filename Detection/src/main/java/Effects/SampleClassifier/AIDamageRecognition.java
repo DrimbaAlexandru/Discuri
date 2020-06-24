@@ -2,6 +2,7 @@ package Effects.SampleClassifier;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import Utils.DataStructures.MarkerFile.MarkerFile;
@@ -70,8 +71,10 @@ public class AIDamageRecognition implements IEffect
 
     private static final int AUDIO_MS_PER_ROUND = 1000;         /* Amount of audio data (in seconds) to classify in each round                              */
     private static final int CLASSIFICATION_TIMEOUT_RATE = 10;  /* If it takes more than 10 seconds to process one second of data, consider it a timeout    */
-    private static final long SCRIPT_LOAD_TIMEOUT_MS = 30*1000; /* Maximum amount of time to await for the script to load                                   */
+    private static final long SCRIPT_LOAD_TIMEOUT_MS = 60*1000; /* Maximum amount of time to await for the script to load                                   */
+    private static final long SCRIPT_LOAD_ATTEMPT_RATE = 10*1000;/* Rate of sending the classifier info request                                              */
     private static final int SAMPLE_SIZE = 2;                   /* Bytes for each data sample                                                               */
+    private static final int DAMAGE_SIZE = 2;                   /* Bytes for each damage value                                                              */
     private static final int PERIOD_RATE_MS = 1;                /* Periodic processing rate                                                                 */
     private static final int TX_BAUD_RATE_PER_CYCLE = 8192;     /* Max TX bytes per processing cycle                                                        */
     // private static final int MAX_ATTEMPT_NBMR = 2;              /* Maximum number of attempts/retries                                                       */
@@ -95,7 +98,7 @@ public class AIDamageRecognition implements IEffect
     private int round_channel = -1;
     private int round_size = -1;
 
-    private float threshold = 0.5f;
+    private float flush_array[][] = null;
 
     /******************************************
     * Procedures
@@ -111,7 +114,7 @@ public class AIDamageRecognition implements IEffect
                 ipc_io = ProjectManager.get_classifier_ipc();
             }
         }
-        catch( IOException | InterruptedException e )
+        catch( Exception e )
         {
             throw new DataSourceException( e.getMessage(), DataSourceExceptionCause.REMOTE_ERROR );
         }
@@ -141,6 +144,10 @@ public class AIDamageRecognition implements IEffect
                 sendClassifierInfoRequest( dataSource.get_sample_rate() );
                 while( ( classifierInfo == null ) && ( crnt_time < rqst_time + SCRIPT_LOAD_TIMEOUT_MS ) )
                 {
+//                    if( crnt_time - last_tx > SCRIPT_LOAD_ATTEMPT_RATE )
+//                    {
+//                        sendClassifierInfoRequest( dataSource.get_sample_rate() );
+//                    }
                     Thread.sleep( PERIOD_RATE_MS );
                     processInput();
                     crnt_time = System.currentTimeMillis();
@@ -172,7 +179,7 @@ public class AIDamageRecognition implements IEffect
             }
             if( classifierInfo == null )
             {
-                throw new DataSourceException( "Failed getting Sample Classifier info within 30s timeout", DataSourceExceptionCause.REMOTE_TIMEOUT );
+                throw new DataSourceException( "Failed getting Sample Classifier info within 60s timeout", DataSourceExceptionCause.REMOTE_TIMEOUT );
             }
             else
             {
@@ -197,6 +204,7 @@ public class AIDamageRecognition implements IEffect
                 }
 
                 AudioSamplesWindow asw = dataSource.get_samples( window_start_idx, window_size );
+                flush_array = new float[ dataSource.get_channel_number() ][ window_size - classifierInfo.inputs + classifierInfo.outputs ];
 
                 for( channel = 0; channel < asw.get_channel_number(); channel++ )
                 {
@@ -210,7 +218,7 @@ public class AIDamageRecognition implements IEffect
 
                     do
                     {
-                        //crnt_time = System.currentTimeMillis();
+
 
                         if( aborted )
                         {
@@ -221,7 +229,8 @@ public class AIDamageRecognition implements IEffect
 
                         processPeriodicOutput( asw, channel, 0, asw.get_length(), dataSource.get_sample_rate() );
 
-                        Thread.sleep( PERIOD_RATE_MS );                        crnt_time = System.currentTimeMillis();
+                        Thread.sleep( PERIOD_RATE_MS );
+                        crnt_time = System.currentTimeMillis();
                     }
                     while( ( state != effectState.iop_AUDIO_STATE_IDLE ) && ( crnt_time - last_tx <  CLASSIFICATION_TIMEOUT_RATE * AUDIO_MS_PER_ROUND ) );
 
@@ -242,7 +251,7 @@ public class AIDamageRecognition implements IEffect
                 window_start_idx += window_size - ( classifierInfo.inputs - classifierInfo.outputs );
             }
         }
-        catch( IOException|InterruptedException|DataSourceException e )
+        catch( Exception e )
         {
             if( aborted && !aborted_by_remote )
             {
@@ -271,6 +280,12 @@ public class AIDamageRecognition implements IEffect
     public float getProgress()
     {
         return progress;
+    }
+
+    @Override
+    public EffectType getEffectType()
+    {
+        return EffectType.DAMAGE_GENERATION_EFFECT;
     }
 
 
@@ -343,10 +358,8 @@ public class AIDamageRecognition implements IEffect
             if( state == effectState.iop_AUDIO_STATE_RX_PROBABILITY )
             {
                 int offset, count, i;
-                short probability;
+                float damage_amt;
                 ByteBuffer bb = ByteBuffer.wrap( msg.data ).order( ByteOrder.LITTLE_ENDIAN );
-                MarkerFile mf = ProjectManager.getMarkerFile();
-                Interval mark = null;
 
                 offset = bb.getInt();
                 count = bb.getShort();
@@ -355,45 +368,32 @@ public class AIDamageRecognition implements IEffect
                 {
                     throw new DataSourceException( "Received offset does not match expected offset", DataSourceExceptionCause.REMOTE_ERROR );
                 }
-                for( i = 0; i < count; i++ )
+                if( count * DAMAGE_SIZE + 4 + 2 != msg.size )
                 {
-                    probability = ( short )( bb.get() & 0xFF ); /* cast to short, to allow range of unsigned byte */
-                    if( probability >= threshold * 255 )
-                    {
-                        if( mark == null )
-                        {
-                            mark = new Interval( round_index + last_rxd_offset + i + classifierInfo.offset, 1 );
-                        }
-                        else
-                        {
-                            mark.r = round_index + last_rxd_offset + i + classifierInfo.offset + 1;
-                        }
-                    }
-                    else
-                    {
-                        if( mark != null )
-                        {
-                            if( mark.get_length() > 0 )
-                            {
-                                mf.addMark( mark.l, mark.r - 1, round_channel );
-                            }
-                            mark = null;
-                        }
-                    }
+                    throw new DataSourceException( "Received count does not match message size", DataSourceExceptionCause.REMOTE_ERROR );
                 }
 
-                if( mark != null )
+                for( i = 0; i < count; i++ )
                 {
-                    if( mark.get_length() > 0 )
-                    {
-                        mf.addMark( mark.l, mark.r - 1, round_channel );
-                    }
+                    damage_amt = ( ( float )( bb.getShort() & 0xFFFF ) ) / 0x10000; /* cast to unsigned short */
+                    flush_array[ round_channel ][ offset + i ] = damage_amt;
                 }
 
                 last_rxd_offset += count;
                 if( last_rxd_offset >= ( round_size - ( classifierInfo.inputs - classifierInfo.outputs ) ) )
                 {
                     state = effectState.iop_AUDIO_STATE_IDLE;
+
+                    /* If the round for the last channel just completed, save the damage amounts into the Project-level damageADS.
+                    * flush_array.length is the round's number of channels */
+                    if( round_channel == flush_array.length - 1 )
+                    {
+                        AudioSamplesWindow asw = new AudioSamplesWindow( flush_array,
+                                                                         round_index + classifierInfo.offset,
+                                                                         round_size - classifierInfo.inputs + classifierInfo.outputs,
+                                                                         flush_array.length );
+                        ProjectManager.getDamageCache().put_samples( asw );
+                    }
                 }
             }
         }
@@ -457,7 +457,6 @@ public class AIDamageRecognition implements IEffect
 
                     txd_bytes += sendAudioData( asw, channel, window_idx + last_txd_offset, chunk_length );
                     last_txd_offset += chunk_length;
-                    last_tx = System.currentTimeMillis();
 
                     /* If we sent all our cycle bandwidth, exit the loop */
                     if( txd_bytes >= TX_BAUD_RATE_PER_CYCLE )
@@ -490,7 +489,9 @@ public class AIDamageRecognition implements IEffect
         msg.size = data_buffer.position();
         msg.data = data_buffer.array();
 
+        last_tx = System.currentTimeMillis();
         ipc_io.IOP_put_frame( msg );
+
     }
 
 
@@ -508,7 +509,9 @@ public class AIDamageRecognition implements IEffect
         msg.size = data_buffer.position();
         msg.data = data_buffer.array();
 
+        last_tx = System.currentTimeMillis();
         return ipc_io.IOP_put_frame( msg );
+
     }
 
 
@@ -544,13 +547,9 @@ public class AIDamageRecognition implements IEffect
 
         msg.data = data_buffer.array();
         msg.size = data_buffer.position();
+
+        last_tx = System.currentTimeMillis();
         return ipc_io.IOP_put_frame( msg );
 
     }
-
-    public void setThreshold( float threshold )
-    {
-        this.threshold = threshold;
-    }
-
 }

@@ -4,6 +4,7 @@ import Utils.Exceptions.DataSourceException;
 import ProjectManager.*;
 import Effects.IEffect;
 import Utils.DataTypes.Interval;
+import Utils.Exceptions.DataSourceExceptionCause;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -36,33 +37,26 @@ public class Effect_Progress_Bar_Dialog
     private IEffect effect;
     private Interval applying_interval;
     private boolean finished_working = false;
-    private final boolean create_new_project_version;
 
     private long ms_started = System.currentTimeMillis() - 1;
-    private long ms_last_progress_update = ms_started;
-    private float last_progress = 0;
-    private float progress_delta = 0;
-    private long progress_ms_delta = 1;
+    private float last_progress = -1;
     private long ms_est_end = ms_started + 1;
-    private final long min_progress_ms_delta = 5000;
 
     private void worker_thread()
     {
         try
         {
             ProjectManager.lock_access();
-            if( create_new_project_version )
-            {
-                ProjectManager.apply_effect( effect, applying_interval );
-            }
-            else
-            {
-                ProjectManager.apply_read_only_effect( effect, applying_interval );
-            }
+            ProjectManager.apply_effect( effect, applying_interval );
         }
         catch( DataSourceException e )
         {
             close_exception = e;
+        }
+        catch( Exception e )
+        {
+            close_exception = new DataSourceException( e.getMessage(), DataSourceExceptionCause.GENERIC_ERROR );
+            close_exception.setStackTrace( e.getStackTrace() );
         }
         finally
         {
@@ -91,20 +85,22 @@ public class Effect_Progress_Bar_Dialog
                                {
                                    if( effect.getProgress() != last_progress )
                                    {
-                                       if( System.currentTimeMillis() - ms_last_progress_update >= min_progress_ms_delta )
+                                       if( effect.getProgress() != 0.0 )
                                        {
-                                           progress_ms_delta = System.currentTimeMillis() - ms_last_progress_update;
-                                           progress_delta = effect.getProgress() - last_progress;
-
-                                           ms_last_progress_update = System.currentTimeMillis();
-                                           last_progress = effect.getProgress();
-                                           ms_est_end = ms_started + ( long )( 1.0 / progress_delta * progress_ms_delta );
+                                           ms_est_end = ms_started + ( long )( ( System.currentTimeMillis() - ms_started ) / effect.getProgress() );
                                        }
+                                       else
+                                       {
+                                           ms_est_end = -1;
+                                       }
+
+                                       last_progress = effect.getProgress();
+
                                        progress_bar.setProgress( effect.getProgress() );
                                        lbl_progress.setText( String.format( "%.2f%%", effect.getProgress() * 100 ) );
                                    }
 
-                                   if( progress_delta != 0 )
+                                   if( ms_est_end != -1 )
                                    {
                                        long remaining_time = ms_est_end - System.currentTimeMillis();
                                        lbl_time_remaining.setText( String.format( "Remaining: %02dh:%02dm:%02ds", remaining_time / 1000 / 60 / 60, remaining_time / 1000 / 60 % 60, remaining_time / 1000 % 60 ) );
@@ -145,7 +141,7 @@ public class Effect_Progress_Bar_Dialog
         onTop.showAndWait();
     }
 
-    public Effect_Progress_Bar_Dialog( IEffect effect, Interval interval, boolean create_new_project_version ) throws IOException, DataSourceException
+    public Effect_Progress_Bar_Dialog( IEffect effect, Interval interval ) throws IOException, DataSourceException
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
@@ -157,7 +153,6 @@ public class Effect_Progress_Bar_Dialog
         }
         this.effect = effect;
         this.applying_interval = new Interval( interval.l, interval.get_length() );
-        this.create_new_project_version = create_new_project_version;
     }
 
     public DataSourceException get_close_exception()

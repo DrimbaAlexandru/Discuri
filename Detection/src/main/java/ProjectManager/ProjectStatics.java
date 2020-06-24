@@ -11,8 +11,8 @@ import java.net.URL;
  */
 public class ProjectStatics
 {
-    private static int project_cache_size = 1024 * 1024;    /* ALlow up to 2 ^ 20 samples to be cached into 256 cache pages */
-    private static int project_cache_page_size = 4096;
+    private static int project_cache_size = 1024 * 1024;    /* ALlow up to 2 ^ 20 samples to be cached into 64 cache pages */
+    private static int project_cache_page_size = 16384;
     private static int temp_file_max_samples = 1024 * 1024; /* Maximum number of samples in temp files */
     private static String python_classifier_script_path = "main.py";
     private static String project_files_path = "E:\\";
@@ -32,8 +32,8 @@ public class ProjectStatics
     }
 
     final public static Color signal_color = Color.BLUE;
-    final public static Color other_signal_color = Color.GREEN;
     final public static Color marked_signal_color = Color.RED;
+    final public static Color damage_amount_color = Color.ROSYBROWN.deriveColor( 0,1.0,1.0,0.5 );
 
     public static int getProject_cache_page_size()
     {
@@ -52,7 +52,8 @@ public class ProjectStatics
 
     public static String getPython_classifier_script_path()
     {
-        return python_scripts_resource_path + python_classifier_script_path;
+//        return python_scripts_resource_path + python_classifier_script_path;
+        return "D:\\git\\Discuri\\Audio_classifier\\main.py";
     }
 
     public static String get_temp_files_path()

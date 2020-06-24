@@ -1,6 +1,7 @@
 package GUI;
 
 import AudioDataSource.AudioSamplesWindow;
+import Effects.SampleClassifier.AIDamageRecognition;
 import Utils.Exceptions.DataSourceException;
 import GUI.UI_Components.Effect_Input_Dialogs.*;
 import GUI.UI_Components.Effect_Progress_Bar_Dialog;
@@ -59,11 +60,13 @@ public class Main_window
     @FXML
     private Spinner current_sample_spinner;
     @FXML
-    private Spinner sel_len_spinner;
+    private Spinner sel_len_spinner, sel_end_spinner;
     @FXML
     private Label position_indicator;
     @FXML
-    private Label sel_len_indicator;
+    private Label sel_len_indicator, sel_end_indicator;
+    @FXML
+    private Label lbl_zoom, lbl_win_size;
     @FXML
     private ScrollBar time_scroll;
     @FXML
@@ -82,6 +85,7 @@ public class Main_window
     private int selection_started_index = 0;
 
     private AudioSamplesWindow visible_samples = null;
+    private AudioSamplesWindow visible_damage = null;
     private Interval visible_samples_interval = new Interval( 0, 0 );
 
     private int sample_number;
@@ -141,12 +145,23 @@ public class Main_window
         if( selection_changed || displayed_interval_changed || window_size_changed || markings_changed )
         {
             drawSamples();
+            update_labels();
         }
         if( selection_changed )
         {
             refreshSelection();
         }
     } /* refresh_view */
+
+    /*----------------------------------------
+    Method name: update_labels
+    Description: Update the zoom factor and window size labels
+    ----------------------------------------*/
+    private void update_labels()
+    {
+        lbl_win_size.setText( "" + window_size );
+        lbl_zoom.setText( "" + Math.pow( 2, zoom_index ) );
+    }
 
     /*----------------------------------------
     Method name: drawSamples
@@ -160,7 +175,6 @@ public class Main_window
         --------------------------------*/
         int i;
         int display_window_size;
-        AudioSamplesWindow win;
         final GraphicsContext gc = main_canvas.getGraphicsContext2D();
         Interval visible_selection = new Interval( selection.l, selection.r, false );
         visible_selection.limit( first_sample_index, first_sample_index + window_size );
@@ -170,7 +184,7 @@ public class Main_window
             ProjectManager.lock_access();
 
             /* Handle no WAV file loaded case */
-            if( ProjectManager.getCache() == null )
+            if( ProjectManager.getCurrentAudioCache() == null )
             {
                 return;
             }
@@ -193,9 +207,18 @@ public class Main_window
 
                 if( !visible_samples_interval.includes( new Interval( first_sample_index, window_size ) ) || ( window_size_changed  ) )
                 {
-                    visible_samples = ProjectManager.getCache().get_resized_samples( first_sample_index, window_size, display_window_size );
+                    visible_samples = ProjectManager.getCurrentAudioCache().get_resized_samples( first_sample_index, window_size, display_window_size );
                     visible_samples_interval.l = first_sample_index;
                     visible_samples_interval.r = first_sample_index + window_size;
+
+                    if( ProjectManager.getDamageCache() != null )
+                    {
+                        visible_damage = ProjectManager.getDamageCache().get_resized_samples( first_sample_index, window_size, display_window_size );
+                    }
+                    else
+                    {
+                        visible_damage = null;
+                    }
                 }
 
                 window_size_changed = false;
@@ -215,13 +238,14 @@ public class Main_window
             gc.strokeLine( window_left_pad, main_canvas.getHeight() / 2, main_canvas.getWidth(), main_canvas.getHeight() / 2 );
             gc.strokeRect( 0, 0, main_canvas.getWidth(), main_canvas.getHeight() );
 
-
-            for( i = 0; i < display_window_size - 1; i++ )
+            for( int k = 0; k < channel_number; k++ )
             {
-                /* Draw L channel */
-                if( channel_number >= 1 )
+                int channel_vertical_size = display_window_height / channel_number;
+                float src[] = visible_samples.getSamples()[ k ];
+
+                for( i = 0; i < display_window_size - 1; i++ )
                 {
-                    if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 0 ) )
+                    if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), k ) )
                     {
                         gc.setStroke( ProjectStatics.marked_signal_color );
                     }
@@ -229,20 +253,24 @@ public class Main_window
                     {
                         gc.setStroke( ProjectStatics.signal_color );
                     }
-                    gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2, ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 0 ][ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
+                    gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                                   Math.min( Math.max( -src[ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) * channel_vertical_size / 2 + channel_vertical_size * ( 0.5 + k ),
+                                   ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                                   Math.min( Math.max( -src[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) * channel_vertical_size / 2 + channel_vertical_size * ( 0.5 + k ) );
                 }
-                /* Draw R channel */
-                if( channel_number >= 2 )
+
+                if( visible_damage != null )
                 {
-                    if( ProjectManager.getMarkerFile().isMarked( remap_to_interval( i, 0, display_window_size, first_sample_index, first_sample_index + window_size ), 1 ) )
+                    src = visible_damage.getSamples()[ k ];
+                    for( i = 0; i < display_window_size - 1; i++ )
                     {
-                        gc.setStroke( ProjectStatics.marked_signal_color );
+                        gc.setStroke( ProjectStatics.damage_amount_color );
+
+                        gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                                       Math.min( Math.max( -src[ i ] * Math.pow( 2, zoom_index ), -1 ), 0 ) * channel_vertical_size + channel_vertical_size * ( 1.0 + k ),
+                                       ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad,
+                                       Math.min( Math.max( -src[ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 0 ) * channel_vertical_size + channel_vertical_size * ( 1.0 + k ) );
                     }
-                    else
-                    {
-                        gc.setStroke( ProjectStatics.other_signal_color );
-                    }
-                    gc.strokeLine( i * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 1 ][ i ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2, ( i + 1 ) * display_window_width / ( display_window_size - 1 ) + window_left_pad, ( 1 + Math.min( Math.max( -visible_samples.getSamples()[ 1 ][ i + 1 ] * Math.pow( 2, zoom_index ), -1 ), 1 ) ) * display_window_height / 2 );
                 }
             }
             main_canvas.getGraphicsContext2D().setFill( Color.BLACK );
@@ -292,6 +320,12 @@ public class Main_window
                                            ":" + String.format( "%02d", sel_len / sample_rate % 60 ) +
                                            "." + String.format( "%03d", ( sel_len % sample_rate * 1000 ) / sample_rate ) + " )" );
         sel_len_spinner.getValueFactory().setValue( sel_len );
+        sel_end_indicator.setText( "samples ( "+
+                                           String.format( "%02d", sel_end_seconds / 3600 ) +
+                                           ":" + String.format( "%02d", sel_end_seconds / 60 % 60 ) +
+                                           ":" + String.format( "%02d", sel_end_seconds % 60 ) +
+                                           "." + String.format( "%03d", sel_end_millisecods ) + " )" );
+        sel_end_spinner.getValueFactory().setValue( selection.r );
         time_scroll.setBlockIncrement( window_size );
         time_scroll.setValue( first_sample_index );
         selection_changed = false;
@@ -452,6 +486,8 @@ public class Main_window
 
                                            } );
 
+            // EFFECTS MENU
+
             MenuItem mi;
             mi = new MenuItem( "Amplify" );
             menu_effects.getItems().add( mi );
@@ -477,6 +513,36 @@ public class Main_window
             menu_effects.getItems().add( mi );
             mi.setOnAction( this::on_groove_retracking );
 
+            // MARKINGS MENU
+
+            mi = new MenuItem( "Generate damage levels" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_generate_damage );
+
+            mi = new MenuItem( "Export damage levels" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( ev -> {
+                                      on_export_damage( false );
+                                  } );
+
+            mi = new MenuItem( "Export selected damage levels" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( ev -> {
+                                      on_export_damage( true );
+                                  } );
+
+            menu_markings.getItems().add( new SeparatorMenuItem() );
+
+            mi = new MenuItem( "Generate markings" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_generate_markings );
+
+            mi = new MenuItem( "Mark clipping" );
+            menu_markings.getItems().add( mi );
+            mi.setOnAction( this::on_mark_clipping );
+
+            menu_markings.getItems().add( new SeparatorMenuItem() );
+
             mi = new MenuItem( "Mark selection" );
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_add_marking );
@@ -497,13 +563,6 @@ public class Main_window
             menu_markings.getItems().add( mi );
             mi.setOnAction( this::on_clear_markings );
 
-            mi = new MenuItem( "Generate markings" );
-            menu_markings.getItems().add( mi );
-            mi.setOnAction( this::on_generate_markings );
-
-            mi = new MenuItem( "Mark clipping" );
-            menu_markings.getItems().add( mi );
-            mi.setOnAction( this::on_mark_clipping );
         }
         catch( IOException e )
         {
@@ -637,12 +696,13 @@ public class Main_window
     ----------------------------------------*/
     private void on_data_source_changed() throws DataSourceException
     {
-        if( sample_number != ProjectManager.getCache().get_sample_number() )
+        if( sample_number != ProjectManager.getCurrentAudioCache().get_sample_number() )
         {
-            sample_number = ProjectManager.getCache().get_sample_number();
+            sample_number = ProjectManager.getCurrentAudioCache().get_sample_number();
 
             current_sample_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
             sel_len_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
+            sel_end_spinner.setValueFactory( new SpinnerValueFactory.IntegerSpinnerValueFactory( 0, sample_number, 0 ) );
 
             time_scroll.setMin( 0 );
             time_scroll.setMax( sample_number );
@@ -653,8 +713,8 @@ public class Main_window
             set_first_sample_index( 0 );
         }
 
-        channel_number = ProjectManager.getCache().get_channel_number();
-        sample_rate = ProjectManager.getCache().get_sample_rate();
+        channel_number = ProjectManager.getCurrentAudioCache().get_channel_number();
+        sample_rate = ProjectManager.getCurrentAudioCache().get_sample_rate();
 
         selection_changed = true;
         displayed_interval_changed = true;
@@ -662,7 +722,7 @@ public class Main_window
         visible_samples_interval.r = 0;
     }
 
-    private void start_effect_with_UI( Effect_UI_Component component, boolean create_new_project_version )
+    private void start_effect_with_UI( Effect_UI_Component component )
     {
         try
         {
@@ -673,7 +733,7 @@ public class Main_window
             }
             else
             {
-                apply_effect( component.get_prepared_effect(), false, create_new_project_version );
+                apply_effect( component.get_prepared_effect(), false );
             }
         }
         catch( DataSourceException e )
@@ -683,7 +743,7 @@ public class Main_window
 
     }
 
-    private void apply_effect( IEffect effect, boolean allow_zero_selection, boolean create_new_project_version )
+    private void apply_effect( IEffect effect, boolean allow_zero_selection )
     {
         Interval interval = new Interval( selection.l, selection.r, false );
         if( effect == null || interval.get_length() < 0 )
@@ -702,10 +762,10 @@ public class Main_window
                 interval.r = sample_number;
             }
         }
-        apply_effect( effect, interval, create_new_project_version );
+        apply_effect( effect, interval );
     }
 
-    private void apply_effect( IEffect effect, Interval interval, boolean create_new_project_version )
+    private void apply_effect( IEffect effect, Interval interval )
     {
         try
         {
@@ -713,7 +773,7 @@ public class Main_window
             ProjectManager.lock_access();
             ProjectManager.apply_effect( effect, interval );
             */
-            Effect_Progress_Bar_Dialog progress_bar_dialog = new Effect_Progress_Bar_Dialog( effect, interval, create_new_project_version );
+            Effect_Progress_Bar_Dialog progress_bar_dialog = new Effect_Progress_Bar_Dialog( effect, interval );
             is_updater_suspended = true;
             progress_bar_dialog.show( localScene.getWindow() );
             if( progress_bar_dialog.get_close_exception() != null )
@@ -799,7 +859,38 @@ public class Main_window
         {
             try
             {
-                Export_Progress_Bar_Dialog exporter = new Export_Progress_Bar_Dialog( f.getAbsolutePath(), only_export_selection && selection.get_length() > 0 ? selection : new Interval( 0, sample_number ) );
+                Export_Progress_Bar_Dialog exporter = new Export_Progress_Bar_Dialog( f.getAbsolutePath(),
+                                                                                      only_export_selection && selection.get_length() > 0 ? selection : new Interval( 0, sample_number ),
+                                                                                      ProjectManager.getCurrentAudioCache() );
+                is_updater_suspended = true;
+                exporter.show( localScene.getWindow() );
+                if( exporter.get_close_exception() != null )
+                {
+                    throw exporter.get_close_exception();
+                }
+                displayed_interval_changed = true;
+            }
+            catch( DataSourceException | IOException e )
+            {
+                treatException( e );
+            }
+            is_updater_suspended = false;
+        }
+    }
+
+    private void on_export_damage( boolean only_export_selection )
+    {
+        FileChooser fc = new FileChooser();
+
+        fc.setSelectedExtensionFilter( new FileChooser.ExtensionFilter( "Audio files", "*.wav" ) );
+        File f = fc.showSaveDialog( null );
+        if( f != null )
+        {
+            try
+            {
+                Export_Progress_Bar_Dialog exporter = new Export_Progress_Bar_Dialog( f.getAbsolutePath(),
+                                                                                      only_export_selection && selection.get_length() > 0 ? selection : new Interval( 0, sample_number ),
+                                                                                      ProjectManager.getDamageCache() );
                 is_updater_suspended = true;
                 exporter.show( localScene.getWindow() );
                 if( exporter.get_close_exception() != null )
@@ -873,31 +964,31 @@ public class Main_window
 
     private void on_amplify( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Amplify_Dialog(), true );
+        start_effect_with_UI( new Amplify_Dialog() );
     }
 
     private void on_equalizer( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Equalizer_Dialog( sample_rate ), true );
+        start_effect_with_UI( new Equalizer_Dialog( sample_rate ) );
     }
 
     private void on_Repair( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Repair_Marked_Dialog(), true );
+        start_effect_with_UI( new Repair_Marked_Dialog() );
     }
 
     private void on_derivation( @Nullable ActionEvent ev )
     {
         FIR_Filter effect = new FIR_Filter();
         effect.setFilter( FIR.derivation_FIR );
-        apply_effect( effect, false, true );
+        apply_effect( effect, false );
     }
 
     private void on_integration( @Nullable ActionEvent ev )
     {
         IIR_Filter effect = new IIR_Filter();
         effect.setFilter( IIR.integration_IIR );
-        apply_effect( effect, false, true );
+        apply_effect( effect, false );
     }
 
     private void on_extend_markings_5( @Nullable ActionEvent ev )
@@ -1025,15 +1116,27 @@ public class Main_window
         }
     }
 
+    private void on_generate_damage( @Nullable ActionEvent ev )
+    {
+        try
+        {
+            apply_effect( new AIDamageRecognition(), false );
+        }
+        catch( DataSourceException e )
+        {
+            treatException( e );
+        }
+    }
+
     private void on_generate_markings( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Generate_Markings_Dialog(), false );
+        start_effect_with_UI( new Generate_Markings_Dialog() );
         markings_changed = true;
     }
 
     private void on_mark_clipping( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Generate_Clipping_Markings_Dialog(), false );
+        start_effect_with_UI( new Generate_Clipping_Markings_Dialog() );
         markings_changed = true;
     }
 
@@ -1060,7 +1163,7 @@ public class Main_window
         Groove_Retracking eff = new Groove_Retracking();
         eff.setStylus_length( 1 );
         eff.setStylus_width( 1 );
-        apply_effect( eff, false, true );
+        apply_effect( eff, false );
     }
 
     private void on_close_application()

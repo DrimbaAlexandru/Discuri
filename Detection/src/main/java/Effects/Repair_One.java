@@ -1,6 +1,7 @@
 package Effects;
 
 import AudioDataSource.AudioSamplesWindow;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import AudioDataSource.IAudioDataSource;
@@ -101,6 +102,12 @@ public class Repair_One implements IEffect
     public float getProgress()
     {
         return progress;
+    }
+
+    @Override
+    public EffectType getEffectType()
+    {
+        return EffectType.NORMAL_AUDIO_EFFECT;
     }
 
     public void set_fetch_ratio( float ratio )

@@ -26,6 +26,8 @@ public class DataSetGenerator
     private long total_unmarked_written = 0;
     private int marked_written = 0;
     private int unmarked_written = 0;
+    private float total_avg = 0.0f;
+    private double avg = 0.0;
 
     public DataSetGenerator( int input_size, int output_size, int offset )
     {
@@ -34,20 +36,20 @@ public class DataSetGenerator
         this.output_size = output_size;
     }
 
-    public void generate( IAudioDataSource dataSource, Interval interval, String destination_path, int near_window_size, float non_marked_probab, float doubling_probab, float prob_of_skipping_marking ) throws DataSourceException, IOException
+    public void generate( IAudioDataSource dataSource, IAudioDataSource damageSource, Interval interval, String destination_path, int near_window_size, float non_marked_probab, float doubling_probab, float prob_of_skipping_marking ) throws DataSourceException, IOException
     {
-
         final int fetch_size = dataSource.get_sample_rate() + ( input_size - output_size );
 
         Random rand = new Random();
 
         MarkerFile markerFile = ProjectManager.getMarkerFile();
         interval.limit( 0, dataSource.get_sample_number() );
-        buf = ByteBuffer.allocate( input_size * 2 + output_size * 1 );
+        buf = ByteBuffer.allocate( input_size * 2 + output_size * 2 );
         buf.order( ByteOrder.LITTLE_ENDIAN );
 
         marked_written = 0;
         unmarked_written = 0;
+        avg = 0.0;
 
         MarkerFile written_markings = new MarkerFile();
 
@@ -59,8 +61,8 @@ public class DataSetGenerator
             }
             written_markings.addMark( m.get_first_marked_sample(), m.get_last_marked_sample(), m.getChannel() );
 
-            written_markings.addMark( m.get_first_marked_sample() - near_window_size, m.get_first_marked_sample() - 1, m.getChannel() );
-            written_markings.addMark( m.get_last_marked_sample() + 1, m.get_last_marked_sample() + near_window_size, m.getChannel() );
+            written_markings.addMark( m.get_first_marked_sample() - near_window_size / 2, m.get_first_marked_sample() - 1, m.getChannel() );
+            written_markings.addMark( m.get_last_marked_sample() + 1, m.get_last_marked_sample() + near_window_size / 2, m.getChannel() );
         }
 
         FileOutputStream fos = new FileOutputStream( destination_path );
@@ -70,11 +72,15 @@ public class DataSetGenerator
         int i, j, ch;
         boolean willWrite;
         AudioSamplesWindow win;
+        AudioSamplesWindow damageWin = null;
         float mark_ratio;
 
         for( i = interval.l; i < interval.r - input_size; )
         {
             win = dataSource.get_samples( i, Math.min( fetch_size, dataSource.get_sample_number() - i ) );
+            if( damageSource != null ) damageWin = damageSource.get_samples( i, Math.min( fetch_size, dataSource.get_sample_number() - i ) );
+
+            System.out.println( "Processed " + i / dataSource.get_sample_rate() + " seconds" );
 
             for( ch = 0; ch < win.get_channel_number(); ch++ )
             {
@@ -82,7 +88,7 @@ public class DataSetGenerator
                 for( j = offset; j < win.get_length() - ( input_size - output_size ) - offset; j++ )
                 {
                     willWrite = false;
-                    mark_ratio = get_seq_mark_ratio( win, i + j - near_window_size, near_window_size * 2 + output_size, ch, written_markings );
+                    mark_ratio = get_seq_mark_ratio( i + j - near_window_size / 2, near_window_size + output_size, ch, written_markings );
 
                     if( mark_ratio > 0 )
                     {
@@ -96,22 +102,23 @@ public class DataSetGenerator
 
                     if( willWrite )
                     {
-                        if( ( ( marked_written + unmarked_written ) / output_size ) % 50000 == 0 )
-                        {
-                            System.out.println( "Written " + ( marked_written + unmarked_written ) );
-                            System.out.println( "At sample " + ( i + j ) + "/" + dataSource.get_sample_number() );
-                            System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
-                            // marked_written = 0;
-                            // unmarked_written = 0;
-                        }
+//                        if( ( ( marked_written + unmarked_written ) / output_size ) % 50000 == 0 )
+//                        {
+//                            System.out.println( "Written " + ( marked_written + unmarked_written ) / output_size);
+//                            System.out.println( "At sample " + ( i + j ) + "/" + dataSource.get_sample_number() );
+//                            System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
+//                            System.out.println( "Mean average: " + avg / ( marked_written + unmarked_written ) / output_size );
+//                            // marked_written = 0;
+//                            // unmarked_written = 0;
+//                        }
 
-                        write_case( win, i + j - offset, ch, markerFile, writer );
-                        mark_ratio = get_seq_mark_ratio( win, i + j, output_size, ch, markerFile );
+                        write_case( win, damageWin, i + j - offset, ch, markerFile, writer );
+                        mark_ratio = get_seq_mark_ratio( i + j, output_size, ch, markerFile );
                         if( mark_ratio >= 0.5f )
                         {
                             while( rand.nextFloat() < doubling_probab )
                             {
-                                write_case( win, i + j - offset, ch, markerFile, writer );
+                                write_case( win, damageWin, i + j - offset, ch, markerFile, writer );
                             }
                         }
                     }
@@ -125,9 +132,11 @@ public class DataSetGenerator
         System.out.println( destination_path );
         System.out.println( "Written " + ( marked_written + unmarked_written ) / output_size );
         System.out.println( "Ratio ( unmarked / marked ): " + ( float )unmarked_written / marked_written );
+        System.out.println( "Mean average: " + avg / ( marked_written + unmarked_written ) );
 
         total_marked_written += marked_written;
         total_unmarked_written += unmarked_written;
+        total_avg += avg;
     }
 
     public static void generateV2( IAudioDataSource dataSource, Interval interval, String out_path ) throws DataSourceException, IOException
@@ -176,7 +185,7 @@ public class DataSetGenerator
 
     }
 
-    private float get_seq_mark_ratio( AudioSamplesWindow win, int sample_start_idx, int sample_cnt, int ch, MarkerFile mf )
+    private float get_seq_mark_ratio( int sample_start_idx, int sample_cnt, int ch, MarkerFile mf )
     {
         int marked = 0;
         for( int k = sample_start_idx; k < sample_start_idx + sample_cnt; k++ )
@@ -186,28 +195,44 @@ public class DataSetGenerator
         return ( 1.0f * marked / sample_cnt );
     }
 
-    private void write_case( AudioSamplesWindow win, int sample_start_idx, int ch, MarkerFile mf, DataOutputStream writer ) throws DataSourceException, IOException
+    private void write_case( AudioSamplesWindow win, AudioSamplesWindow damageWin, int sample_start_idx, int ch, MarkerFile mf, DataOutputStream writer ) throws DataSourceException, IOException
     {
         boolean isMarked;
+        float damage = 0.0f;
 
-         buf.rewind();
-         for( int k = sample_start_idx; k < sample_start_idx + input_size; k++ )
-         {
-             buf.putShort( ( short )( win.getSample( k, ch ) * 32768 ) );
-         }
+        buf.rewind();
+        for( int k = sample_start_idx; k < sample_start_idx + input_size; k++ )
+        {
+            buf.putShort( ( short )( win.getSample( k, ch ) * 32768 ) );
+        }
+
         for( int k = sample_start_idx + offset; k < sample_start_idx + offset + output_size; k++ )
         {
             isMarked = mf.isMarked( k, ch );
             if( isMarked )
             {
                 marked_written++;
+                if( damageWin == null )
+                {
+                    damage = 1.0f;
+                }
             }
             else
             {
                 unmarked_written++;
+                if( damageWin == null )
+                {
+                    damage = 0.0f;
+                }
             }
-             buf.put( ( byte )( isMarked ? 1 : 0 ) );
+            if( damageWin != null )
+            {
+                damage = damageWin.getSample( k, ch );
+            }
 
+            avg += damage;
+
+            buf.putShort( ( short )( damage * 32767 ) );
         }
         writer.write( buf.array(), 0, buf.position() );
     }
@@ -218,5 +243,6 @@ public class DataSetGenerator
         System.out.println( "Marked: " + ( total_marked_written ) );
         System.out.println( "Unmarked: " + ( total_unmarked_written ) );
         System.out.println( "Ratio ( unmarked / marked ): " + ( float )total_unmarked_written / total_marked_written );
+        System.out.println( "Mean average: " + total_avg / ( total_marked_written + total_unmarked_written ) / output_size );
     }
 }

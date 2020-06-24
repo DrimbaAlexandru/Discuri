@@ -2,6 +2,7 @@ package Effects;
 
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import SignalProcessing.FunctionApproximation.FourierInterpolator;
@@ -138,6 +139,12 @@ public class Groove_Retracking implements IEffect
     public float getProgress()
     {
         return progress;
+    }
+
+    @Override
+    public EffectType getEffectType()
+    {
+        return EffectType.NORMAL_AUDIO_EFFECT;
     }
 
     public void setStylus_length( float stylus_length )

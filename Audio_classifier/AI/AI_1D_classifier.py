@@ -3,13 +3,13 @@ import random
 import warnings
 import datetime
 
-
+from keras.layers import Add, concatenate
 from keras.models import load_model
 from keras.layers.core import Dropout, Dense, Flatten, Reshape
 from keras.layers.convolutional import Conv1D
 from keras.layers.pooling import MaxPooling1D
 from keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau, Callback
-from keras import backend as K, Sequential, metrics
+from keras import backend as K, Sequential, metrics, Input, Model
 
 import numpy as np
 import tensorflow as tf
@@ -23,46 +23,6 @@ import AI.AI_utils as utils
 seed = 42
 random.seed = seed
 np.random.seed = seed
-
-# m * x * y
-# m - number of images
-# x, y - image dimensions
-def iou_coef(y_true, y_pred, smooth=1):
-    intersection = K.sum(y_true * y_pred, axis=[1,2])
-    union = K.sum(y_true,[1,2])+K.sum(y_pred,[1,2])-intersection
-    iou = K.mean((intersection + smooth) / (union + smooth), axis=0)
-    return iou
-
-def iou_coef_loss(yt,yp,smooth=1):
-    return 1 - iou_coef(yt,yp,smooth)
-
-def f1(y_true, y_pred):
-    y_pred = K.round(y_pred)
-    tp = K.sum(K.cast(y_true*y_pred, 'float'), axis=0)
-    tn = K.sum(K.cast((1-y_true)*(1-y_pred), 'float'), axis=0)
-    fp = K.sum(K.cast((1-y_true)*y_pred, 'float'), axis=0)
-    fn = K.sum(K.cast(y_true*(1-y_pred), 'float'), axis=0)
-
-    p = tp / (tp + fp + K.epsilon())
-    r = tp / (tp + fn + K.epsilon())
-
-    f1 = 2*p*r / (p+r+K.epsilon())
-    f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
-    return K.mean(f1)
-
-def f1_loss(y_true, y_pred):
-    tp = K.sum(K.cast(y_true*y_pred, 'float'), axis=0)
-    tn = K.sum(K.cast((1-y_true)*(1-y_pred), 'float'), axis=0)
-    fp = K.sum(K.cast((1-y_true)*y_pred, 'float'), axis=0)
-    fn = K.sum(K.cast(y_true*(1-y_pred), 'float'), axis=0)
-
-    p = tp / (tp + fp + K.epsilon())
-    r = tp / (tp + fn + K.epsilon())
-
-    f1 = 2*p*r / (p+r+K.epsilon())
-    f1 = tf.where(tf.is_nan(f1), tf.zeros_like(f1), f1)
-    return 1 - K.mean(f1)
-
 
 class ComputeConfusionMatrixCallback(Callback):
     """Predict data from validation and test dataset, calculate the confusion matrix,
@@ -188,10 +148,10 @@ class BinaryClassifierModelWithGenerator:
         self.MODEL_PATH = model_path
         self.LOG_DIR = "./logs/fit//" + model_path + "-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
-        self.VALIDATION_SPLIT = 0.25
-        test_split = 0.125
+        self.VALIDATION_SPLIT = 0.0
+        test_split = 0.0
 
-        self.evaluation_callback = ComputeConfusionMatrixCallback( 50, self )
+        self.evaluation_callback = ComputeConfusionMatrixCallback( -1, self )
 
         self.predict_only = train_path_in is None \
                             or ( test_path_in is None and not train_test_same ) \
@@ -263,38 +223,46 @@ class BinaryClassifierModelWithGenerator:
 
         if( self.INPUTS == self.model.input_shape[ 1 ] and self.OUTPUTS == self.model.output_shape[ 1 ] ):
             return True
+
+        # If this is a variable input length convolution, Dumnezeu cu mila
+        if( self.model.input_shape[ 1 ] is None and self.model.output_shape[ 1 ] is None ):
+            return True
         return False
 
 
     def compile_model( self ):
-        learning_rate = 0.0025  # initial learning rate
+        learning_rate = 0.001  # initial learning rate
 
         self.model.compile(optimizer = Adam(learning_rate=learning_rate),
-                           loss = "binary_crossentropy",
-                           metrics=[ "accuracy",
-                                     metrics.Precision(),
-                                     metrics.Recall(),
-                                     f1 ]#,
-                          # sample_weight_mode="temporal"
+                           loss = "mae",
+                           metrics = ['mse','mae']
                            )
 
     def create_model( self ):
         print( "Build model" )
 
-        # Build U-Net model
         self.model = Sequential()
-        self.model.add( Dense( 96, input_dim = self.INPUTS, activation="relu" ) )
-        self.model.add( Dense( 48, activation="relu" ) )
-        self.model.add( Dense( self.OUTPUTS , activation="sigmoid") )
-        # self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1 , activation = 'relu', input_shape = ( self.INPUTS, 1 ) ) )
-        # self.model.add( Dropout( 0.1 ) )
-        # self.model.add( Conv1D( filters = 64, kernel_size = 1, activation = 'relu' ) )
-        # self.model.add( Dropout( 0.05 ) )
-        # self.model.add( Conv1D( filters = 32, kernel_size = 1, activation = 'relu' ) )
-        # self.model.add( MaxPooling1D( pool_size = 2, data_format = "channels_first" ) )
-        # assert self.model.output_shape[ 1 ] >= self.OUTPUTS
-        # self.model.add( Conv1D( filters = 1, kernel_size = self.model.output_shape[ 1 ] - self.OUTPUTS + 1, activation = 'sigmoid' ) )
-        # self.model.add( Conv1D( filters = 1, kernel_size = 1, activation = 'sigmoid' ) )
+        # self.model.add( Dense( 128, input_dim = self.INPUTS, activation="relu" ) )
+        # self.model.add( Dense( 96, activation="relu" ) )
+        # # self.model.add( Dense( 32, activation="relu" ) )
+        # self.model.add( Dense( 32, activation="tanh" ) )
+        # self.model.add( Dense( self.OUTPUTS , activation="linear") )
+
+        self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1 , activation = 'relu', input_shape = ( None, 1 ) ) )
+        self.model.add( Conv1D( filters = 64, kernel_size = 1, activation = 'relu' ) )
+        self.model.add( Conv1D( filters = 32, kernel_size = 1, activation = 'tanh' ) )
+        self.model.add( Conv1D( filters = 1, kernel_size = 1, activation = 'linear' ) )
+
+        # inputs = Input(shape = (self.INPUTS,) )
+        # layer_1 = Dense( 96, activation="relu")(inputs)
+        # added1 = concatenate( [ inputs, layer_1 ] )
+        # layer_2 = Dense( 48, activation = "relu")(added1)
+        # added2 = concatenate( [ inputs, layer_2 ] )
+        # layer_3 = Dense( 16, activation = "tanh")(added2)
+        # outputs = Dense( 1, activation="linear")(layer_3)
+        #
+        # self.model = Model(inputs = inputs, outputs = outputs)
+
         print( self.model.output_shape )
 
         self.compile_model()
@@ -309,11 +277,11 @@ class BinaryClassifierModelWithGenerator:
 
         # Fit model
         min_learning_rate = 0.00001  # once the learning rate reaches this value, do not decrease it further
-        learning_rate_reduction_factor = 0.5  # the factor used when reducing the learning rate -> learning_rate *= learning_rate_reduction_factor
-        patience = 2  # how many epochs to wait before reducing the learning rate when the loss plateaus
+        learning_rate_reduction_factor = 0.707  # the factor used when reducing the learning rate -> learning_rate *= learning_rate_reduction_factor
+        patience = 5  # how many epochs to wait before reducing the learning rate when the loss plateaus
 
         # earlystopper = EarlyStopping(patience=5, verbose=1, mode="max", monitor="f1")
-        checkpointer = ModelCheckpoint(self.MODEL_PATH, verbose=1, save_best_only=True, mode="max", monitor="f1")
+        checkpointer = ModelCheckpoint(self.MODEL_PATH, verbose=1, save_best_only=True, mode="min", monitor="loss")
         learning_rate_reduction = ReduceLROnPlateau(monitor='loss', mode="min", patience=patience, verbose=1,
                                                     factor=learning_rate_reduction_factor, min_lr=min_learning_rate)
 
@@ -326,32 +294,12 @@ class BinaryClassifierModelWithGenerator:
     def predict_markings( self, input_signal ):
         input_length = input_signal.shape[ 0 ]
         output_length = ( input_length - self.INPUTS + self.OUTPUTS )
-        batch_size = ( output_length + self.OUTPUTS - 1 ) // self.OUTPUTS
 
-        inputs = np.zeros( ( batch_size, ) + self.model.input_shape[ 1 : ] )
-        probabilities = np.zeros( output_length )
-
-        i = 0
-        item_nr = 0
-
-        while( i <= input_length - self.INPUTS ):
-            inputs[ item_nr ] = np.reshape( np.asarray( input_signal[ i : i + self.INPUTS ] ), self.model.input_shape[ 1 : ] )
-            item_nr += 1
-            i += self.OUTPUTS
-
-        # If the input cannot be divided into sequencial chunks, the last chunk must be completed individually, and will overlap with the previous one
-        if( ( input_length - ( self.INPUTS - self.OUTPUTS ) ) % self.OUTPUTS != 0 ):
-            assert item_nr == batch_size - 1
-            inputs[ batch_size - 1 ] = np.reshape( input_signal[ input_length - self.INPUTS : ], self.model.input_shape[ 1 : ] )
-        else:
-            assert item_nr == batch_size
+        inputs = np.reshape( input_signal, ( 1, input_length, 1 ) )
 
         # Flatten the predictions
-        preds = self.model.predict( inputs, verbose = 0, batch_size = batch_size )
-        preds = np.reshape( preds, newshape = ( -1, ) )
+        preds = self.model.predict( inputs, verbose = 0 )
+        assert preds.shape[ 1 ] == output_length, "Output shape different than the configured model INPUT/OUTPUT sizes. Expected %d, got %d. Check the model structure" % ( output_length, preds.shape[ 1 ] )
+        preds = np.reshape( preds, newshape = ( output_length, ) )
 
-        # The last batch item needs individual processing, because its input might not be in sequence with the previous inputs
-        probabilities[ 0 : ( batch_size - 1 ) * self.OUTPUTS ] = preds[  0 : ( batch_size - 1 ) * self.OUTPUTS ]
-        probabilities[ output_length - self.OUTPUTS : ] = preds[  ( batch_size - 1 ) * self.OUTPUTS : ]
-
-        return probabilities
+        return preds

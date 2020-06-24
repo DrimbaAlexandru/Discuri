@@ -55,6 +55,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
     private int channel_number;
     private int version;
     private int sample_number;
+    private byte byte_depth = 4;
 
     /* We need two different ADS variables, because the writes shall be made in full sequential chunk files and shall not be affected by reads. */
     private IFileAudioDataSource r_fileAudioDataSource = null;
@@ -62,11 +63,14 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
     private ArrayList< FileToProjectMapping > mapping = new ArrayList<>();
 
-    public AudioDataSourceVersion( int version, int sample_rate, int channel_number, int sample_number )
+    private boolean allow_unmapped_get = false;
+
+
+    public AudioDataSourceVersion( int sample_rate, int channel_number, int sample_number )
     {
         this.sample_number = sample_number;
         this.channel_number = channel_number;
-        this.version = version;
+        this.version = 0;
         this.sample_rate = sample_rate;
     }
 
@@ -92,6 +96,8 @@ public class AudioDataSourceVersion implements IAudioDataSource
         this.channel_number = other.channel_number;
         this.r_fileAudioDataSource = other.r_fileAudioDataSource;
         this.w_fileAudioDataSource = other.w_fileAudioDataSource;
+        this.allow_unmapped_get = other.allow_unmapped_get;
+        this.byte_depth = other.byte_depth;
 
         for( FileToProjectMapping m : other.mapping )
         {
@@ -246,6 +252,19 @@ public class AudioDataSourceVersion implements IAudioDataSource
         return null;
     }
 
+    private int get_distance_to_next_mapping( int project_index )
+    {
+        int distance = sample_number - project_index;
+        for( FileToProjectMapping map : mapping )
+        {
+            if( map.project_interval.l >= project_index && map.project_interval.l - project_index < distance )
+            {
+                distance = map.project_interval.l - project_index;
+            }
+        }
+        return distance;
+    }
+
     public void close() throws DataSourceException
     {
         demap( 0, Integer.MAX_VALUE );
@@ -273,6 +292,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
     public AudioSamplesWindow get_samples( int first_sample_index, int length ) throws DataSourceException
     {
         float buf[][] = null;
+        float src[][] = null;
         int i, j, k;
 
         first_sample_index = Math.min( first_sample_index, get_sample_number() );
@@ -287,16 +307,31 @@ public class AudioDataSourceVersion implements IAudioDataSource
 
             if( map == null )
             {
-                throw new DataSourceException( "Sample index not mapped", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
+                if( !allow_unmapped_get )
+                {
+                    throw new DataSourceException( "Sample index not mapped", DataSourceExceptionCause.SAMPLE_NOT_CACHED );
+                }
+                else
+                {
+                    temp_len = this.get_distance_to_next_mapping( i + first_sample_index );
+                    if( temp_len == 0 )
+                    {
+                        throw new DataSourceException( "Distance to next mapping is 0!", DataSourceExceptionCause.THIS_SHOULD_NEVER_HAPPEN );
+                    }
+                    temp_len = Math.min( length, temp_len );
+                    win = new AudioSamplesWindow( new float[ channel_number ][ temp_len ], 0, temp_len, channel_number );
+                }
             }
-
-            if( r_fileAudioDataSource == null || !r_fileAudioDataSource.getFile_path().equals( map.file_name ) )
+            else
             {
-                r_fileAudioDataSource = FileADSManager.get_file_ADS( map.file_name );
+                if( r_fileAudioDataSource == null || !r_fileAudioDataSource.getFile_path().equals( map.file_name ) )
+                {
+                    r_fileAudioDataSource = FileADSManager.get_file_ADS( map.file_name );
+                }
+                temp_len = Math.min( length - i, map.project_interval.r - i - first_sample_index );
+                file_first_sample_index = i + first_sample_index - map.project_interval.l + map.file_interval.l;
+                win = r_fileAudioDataSource.get_samples( file_first_sample_index, temp_len );
             }
-            temp_len = Math.min( length - i, map.project_interval.r - i - first_sample_index );
-            file_first_sample_index = i + first_sample_index - map.project_interval.l + map.file_interval.l;
-            win = r_fileAudioDataSource.get_samples( file_first_sample_index, temp_len );
 
             if( temp_len == length )
             {
@@ -308,11 +343,13 @@ public class AudioDataSourceVersion implements IAudioDataSource
             {
                 buf = new float[ channel_number ][ length ];
             }
+
+            src = win.getSamples();
             for( k = 0; k < channel_number; k++ )
             {
                 for( j = 0; j < temp_len; j++ )
                 {
-                    buf[ k ][ j + i ] = win.getSample( file_first_sample_index + j, k );
+                    buf[ k ][ j + i ] = src[ k ][ j ];
                 }
             }
             i += temp_len;
@@ -349,7 +386,7 @@ public class AudioDataSourceVersion implements IAudioDataSource
             if( w_fileAudioDataSource == null || w_fileAudioDataSource.get_sample_number() >= ProjectStatics.get_temp_file_max_samples() )
             {
                 /* Create and immediately release the file handle */
-                IFileAudioDataSource new_chunk_file_ADS = FileAudioSourceFactory.createFile( ProjectStatics.get_temp_files_path() + FileADSManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, 4 );
+                IFileAudioDataSource new_chunk_file_ADS = FileAudioSourceFactory.createFile( ProjectStatics.get_temp_files_path() + FileADSManager.gimme_a_new_files_name(), samples.get_channel_number(), sample_rate, byte_depth );
                 new_chunk_file_ADS.close();
 
                 FileADSManager.associate_file_with_version( new_chunk_file_ADS.getFile_path(), true, version );
@@ -380,5 +417,25 @@ public class AudioDataSourceVersion implements IAudioDataSource
     public int getVersion()
     {
         return version;
+    }
+
+    public void setAllow_unmapped_get( boolean allow_unmapped_get )
+    {
+        this.allow_unmapped_get = allow_unmapped_get;
+    }
+
+    public boolean isAllow_unmapped_get()
+    {
+        return allow_unmapped_get;
+    }
+
+    public byte getByte_depth()
+    {
+        return byte_depth;
+    }
+
+    public void setByte_depth( byte byte_depth )
+    {
+        this.byte_depth = byte_depth;
     }
 }

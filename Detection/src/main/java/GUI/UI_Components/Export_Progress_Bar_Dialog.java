@@ -39,6 +39,7 @@ public class Export_Progress_Bar_Dialog
 
     private IEffect effect;
     private Interval applying_interval;
+    private IAudioDataSource source_ADS = null;
     private String destPath;
     private boolean finished_working = false;
 
@@ -47,13 +48,12 @@ public class Export_Progress_Bar_Dialog
         try
         {
             ProjectManager.lock_access();
-            CachedAudioDataSource cache = ProjectManager.getCache();
-            if( cache == null )
+            if( source_ADS == null )
             {
-                throw new DataSourceException( "Current project is empty", DataSourceExceptionCause.INVALID_STATE );
+                throw new DataSourceException( "Data source is not set", DataSourceExceptionCause.INVALID_STATE );
             }
-            IAudioDataSource file = FileAudioSourceFactory.createFile( destPath, cache.get_channel_number(), cache.get_sample_rate(), 2 );
-            effect.apply( cache, file, applying_interval );
+            IAudioDataSource file = FileAudioSourceFactory.createFile( destPath, source_ADS.get_channel_number(), source_ADS.get_sample_rate(), 2 );
+            effect.apply( source_ADS, file, applying_interval );
             file.close();
         }
         catch( DataSourceException e )
@@ -117,7 +117,7 @@ public class Export_Progress_Bar_Dialog
         onTop.showAndWait();
     }
 
-    public Export_Progress_Bar_Dialog( String filePath,Interval applying_interval ) throws IOException, DataSourceException
+    public Export_Progress_Bar_Dialog( String filePath, Interval applying_interval, IAudioDataSource source ) throws IOException, DataSourceException
     {
         FXMLLoader l = new FXMLLoader();
         l.setController( this );
@@ -128,6 +128,7 @@ public class Export_Progress_Bar_Dialog
             throw new IOException( "Failed to load FXML file" );
         }
         destPath = filePath;
+        this.source_ADS = source;
         this.applying_interval = new Interval( applying_interval.l, applying_interval.r, false );
         effect = new Copy_to_ADS();
     }

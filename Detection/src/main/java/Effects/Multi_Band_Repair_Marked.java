@@ -3,6 +3,7 @@ package Effects;
 import AudioDataSource.AudioSamplesWindow;
 import AudioDataSource.IAudioDataSource;
 import AudioDataSource.MemoryADS.SingleWindowMemoryADS;
+import Utils.DataTypes.EffectType;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import Utils.DataStructures.MarkerFile.Marking;
@@ -331,6 +332,12 @@ public class Multi_Band_Repair_Marked implements IEffect
     public float getProgress()
     {
         return progress;
+    }
+
+    @Override
+    public EffectType getEffectType()
+    {
+        return EffectType.NORMAL_AUDIO_EFFECT;
     }
 
     public ArrayList< Integer > getBand_cutoffs()
