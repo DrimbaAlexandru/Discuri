@@ -1,0 +1,2005 @@
+reg_96000_257_1_20200618-121114.h5
+Number of learning samples: 397312
+Number of validation samples: 132096
+Number of testing samples: 74752
+
+  Epoch 1 
+validation dataset
+val_loss
+1.070693997462513e-05
+val_mse
+1.0977933015965391e-05
+val_mae
+0.0021477192640304565
+loss
+0.005181857154562924
+mse
+0.005181855
+mae
+0.01947791
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 2 
+validation dataset
+val_loss
+1.8693010588322068e-06
+val_mse
+3.134060989395948e-06
+val_mae
+0.0011380279902368784
+loss
+6.912984660898049e-06
+mse
+6.9129856e-06
+mae
+0.0017228718
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 3 
+validation dataset
+val_loss
+1.4075380931899417e-06
+val_mse
+1.439866309738136e-06
+val_mae
+0.000771022867411375
+loss
+2.487390682538036e-06
+mse
+2.48739e-06
+mae
+0.0010367421
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 4 
+validation dataset
+val_loss
+3.1498109365202254e-07
+val_mse
+7.996192721293482e-07
+val_mae
+0.0005733224679715931
+loss
+1.2592094133396963e-06
+mse
+1.2592092e-06
+mae
+0.00073776534
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 5 
+validation dataset
+val_loss
+1.5193231774901506e-06
+val_mse
+4.921354843645531e-07
+val_mae
+0.0004485588287934661
+loss
+7.327610723297324e-07
+mse
+7.3276095e-07
+mae
+0.00056297303
+lr
+0.0025
+
+test dataset
+
+
+  Epoch 6 
+validation dataset
+val_loss
+2.597122090719495e-07
+val_mse
+3.916021285021998e-07
+val_mae
+0.0003995433507952839
+loss
+5.14892164803762e-07
+mse
+5.148921e-07
+mae
+0.0004727121
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 7 
+validation dataset
+val_loss
+4.35545501886736e-07
+val_mse
+3.121968461528013e-07
+val_mae
+0.0003566131053958088
+loss
+4.077012484611552e-07
+mse
+4.0770124e-07
+mae
+0.00041987016
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 8 
+validation dataset
+val_loss
+3.6286155591369607e-07
+val_mse
+2.4748882765379676e-07
+val_mae
+0.00031765695894137025
+loss
+3.23867544692414e-07
+mse
+3.2386754e-07
+mae
+0.00037412983
+lr
+0.00125
+
+test dataset
+
+
+  Epoch 9 
+validation dataset
+val_loss
+2.2786278464081988e-07
+val_mse
+2.1896035207191744e-07
+val_mae
+0.0002985679020639509
+loss
+2.7142995286108356e-07
+mse
+2.7142994e-07
+mae
+0.00034255066
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 10 
+validation dataset
+val_loss
+7.908400334599719e-07
+val_mse
+1.9167011089393782e-07
+val_mae
+0.0002792618179228157
+loss
+2.3858784322530963e-07
+mse
+2.3858775e-07
+mae
+0.00032078725
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 11 
+validation dataset
+val_loss
+2.1164491670333518e-07
+val_mse
+1.6571638639106823e-07
+val_mae
+0.0002594070101622492
+loss
+2.0785162496436272e-07
+mse
+2.0785161e-07
+mae
+0.00029938473
+lr
+0.000625
+
+test dataset
+
+
+  Epoch 12 
+validation dataset
+val_loss
+2.979843998218712e-07
+val_mse
+1.5332541636325914e-07
+val_mae
+0.00024976421264000237
+loss
+1.8607126594957892e-07
+mse
+1.8607125e-07
+mae
+0.0002833038
+lr
+0.0003125
+
+test dataset
+
+
+  Epoch 13 
+validation dataset
+val_loss
+1.2675255334215763e-07
+val_mse
+1.4057938813039073e-07
+val_mae
+0.00023908657021820545
+loss
+1.7085678487966793e-07
+mse
+1.7085675e-07
+mae
+0.00027134747
+lr
+0.0003125
+
+test dataset
+
+
+  Epoch 14 
+validation dataset
+val_loss
+1.2051106068611261e-07
+val_mse
+1.271388896384451e-07
+val_mae
+0.00022757255646865815
+loss
+1.5528808348795047e-07
+mse
+1.5528813e-07
+mae
+0.00025843145
+lr
+0.0003125
+
+test dataset
+
+
+  Epoch 15 
+validation dataset
+val_loss
+1.2487868161770166e-07
+val_mse
+1.213163756119684e-07
+val_mae
+0.00022215000353753567
+loss
+1.443282103398627e-07
+mse
+1.443283e-07
+mae
+0.000249412
+lr
+0.00015625
+
+test dataset
+
+
+  Epoch 16 
+validation dataset
+val_loss
+9.216852703275435e-08
+val_mse
+1.1333010974112767e-07
+val_mae
+0.00021462197764776647
+loss
+1.3574331171832766e-07
+mse
+1.3574325e-07
+mae
+0.00024213278
+lr
+0.00015625
+
+test dataset
+
+
+  Epoch 17 
+validation dataset
+val_loss
+7.936810675346351e-08
+val_mse
+1.0493527469179753e-07
+val_mae
+0.00020598529954440892
+loss
+1.2667633156583442e-07
+mse
+1.2667631e-07
+mae
+0.00023353013
+lr
+0.00015625
+
+test dataset
+
+
+  Epoch 18 
+validation dataset
+val_loss
+1.1343344397118926e-07
+val_mse
+1.0021747698374384e-07
+val_mae
+0.00020138142281211913
+loss
+1.1977381951786623e-07
+mse
+1.1977377e-07
+mae
+0.00022730406
+lr
+7.8125e-05
+
+test dataset
+
+
+  Epoch 19 
+validation dataset
+val_loss
+1.7156963849629392e-07
+val_mse
+9.58831378738978e-08
+val_mae
+0.00019747290934901685
+loss
+1.1445540674676455e-07
+mse
+1.14455446e-07
+mae
+0.00022212666
+lr
+7.8125e-05
+
+test dataset
+
+
+  Epoch 20 
+validation dataset
+val_loss
+4.752302018573573e-08
+val_mse
+9.04734491768977e-08
+val_mae
+0.00019123453239444643
+loss
+1.0853612304077775e-07
+mse
+1.08536106e-07
+mae
+0.00021614334
+lr
+7.8125e-05
+
+test dataset
+
+
+  Epoch 21 
+validation dataset
+val_loss
+2.5299858208427395e-08
+val_mse
+8.739714019156963e-08
+val_mae
+0.00018832659407053143
+loss
+1.0350040351853169e-07
+mse
+1.0350045e-07
+mae
+0.00021103972
+lr
+3.90625e-05
+
+test dataset
+
+
+  Epoch 22 
+validation dataset
+val_loss
+4.179578638741077e-08
+val_mse
+8.432284204218377e-08
+val_mae
+0.00018481934966985136
+loss
+9.995208196578954e-08
+mse
+9.995211e-08
+mae
+0.00020725475
+lr
+3.90625e-05
+
+test dataset
+
+
+  Epoch 23 
+validation dataset
+val_loss
+1.358922645522398e-07
+val_mse
+8.1215780767252e-08
+val_mae
+0.0001816424774006009
+loss
+9.647087141660733e-08
+mse
+9.6470835e-08
+mae
+0.00020386728
+lr
+3.90625e-05
+
+test dataset
+
+
+  Epoch 24 
+validation dataset
+val_loss
+4.7058772878472155e-08
+val_mse
+7.845615357382485e-08
+val_mae
+0.00017810118151828647
+loss
+9.309440932803376e-08
+mse
+9.3094336e-08
+mae
+0.00020027913
+lr
+1.953125e-05
+
+test dataset
+
+
+  Epoch 25 
+validation dataset
+val_loss
+4.717009360888369e-08
+val_mse
+7.630959686366623e-08
+val_mae
+0.00017553134239278734
+loss
+9.038962875070854e-08
+mse
+9.03896e-08
+mae
+0.00019729487
+lr
+1.953125e-05
+
+test dataset
+
+
+  Epoch 26 
+validation dataset
+val_loss
+3.903189949028274e-08
+val_mse
+7.403806279171476e-08
+val_mae
+0.0001733476237859577
+loss
+8.737435137997708e-08
+mse
+8.73743e-08
+mae
+0.00019383393
+lr
+1.953125e-05
+
+test dataset
+
+
+  Epoch 27 
+validation dataset
+val_loss
+4.618579652060362e-08
+val_mse
+7.247418665201621e-08
+val_mae
+0.00017116655362769961
+loss
+8.513572928855532e-08
+mse
+8.5135696e-08
+mae
+0.00019133257
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 28 
+validation dataset
+val_loss
+2.187213823390266e-07
+val_mse
+7.091219345056743e-08
+val_mae
+0.00016970645810943097
+loss
+8.349090266430731e-08
+mse
+8.349088e-08
+mae
+0.00018971985
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 29 
+validation dataset
+val_loss
+4.4986943947833424e-08
+val_mse
+6.859454515506513e-08
+val_mae
+0.0001667823817115277
+loss
+8.114109264187185e-08
+mse
+8.1141074e-08
+mae
+0.00018688853
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 30 
+validation dataset
+val_loss
+3.383063074124948e-08
+val_mse
+6.663279350505036e-08
+val_mae
+0.00016419350868090987
+loss
+7.856799859900582e-08
+mse
+7.8567986e-08
+mae
+0.00018388311
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 31 
+validation dataset
+val_loss
+5.0285535735383746e-08
+val_mse
+6.450741096841739e-08
+val_mae
+0.00016178500663954765
+loss
+7.610031142428268e-08
+mse
+7.6100264e-08
+mae
+0.00018099655
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 32 
+validation dataset
+val_loss
+1.4658587232929676e-08
+val_mse
+6.156831489079195e-08
+val_mae
+0.00015812965284567326
+loss
+7.30989531497232e-08
+mse
+7.309891e-08
+mae
+0.00017735884
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 33 
+validation dataset
+val_loss
+3.163594186617047e-08
+val_mse
+5.888596632530607e-08
+val_mae
+0.00015455523680429906
+loss
+6.975804078477471e-08
+mse
+6.975803e-08
+mae
+0.00017310593
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 34 
+validation dataset
+val_loss
+1.0105016912120846e-07
+val_mse
+5.583664730579585e-08
+val_mae
+0.0001505650725448504
+loss
+6.62881395605067e-08
+mse
+6.628813e-08
+mae
+0.00016887327
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 35 
+validation dataset
+val_loss
+2.9901002562837675e-08
+val_mse
+5.2481141210591886e-08
+val_mae
+0.0001458858750993386
+loss
+6.264852610811159e-08
+mse
+6.2648496e-08
+mae
+0.00016413954
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 36 
+validation dataset
+val_loss
+6.376207295488712e-08
+val_mse
+4.905467676508124e-08
+val_mae
+0.0001410297118127346
+loss
+5.9022770482410944e-08
+mse
+5.9022764e-08
+mae
+0.00015951195
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 37 
+validation dataset
+val_loss
+1.848102826329523e-08
+val_mse
+4.5663153258601596e-08
+val_mae
+0.00013591765309683979
+loss
+5.496072295591526e-08
+mse
+5.4960747e-08
+mae
+0.00015373011
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 38 
+validation dataset
+val_loss
+2.6821883380989675e-08
+val_mse
+4.2343007322642734e-08
+val_mae
+0.00013112963642925024
+loss
+5.116191895525606e-08
+mse
+5.116194e-08
+mae
+0.00014838313
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 39 
+validation dataset
+val_loss
+1.0165642549964105e-08
+val_mse
+3.907873136199669e-08
+val_mae
+0.00012600087211467326
+loss
+4.719460679961812e-08
+mse
+4.7194618e-08
+mae
+0.00014254045
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 40 
+validation dataset
+val_loss
+4.5036074425297556e-08
+val_mse
+3.5775823192807366e-08
+val_mae
+0.00012069229705957696
+loss
+4.326926317888643e-08
+mse
+4.3269264e-08
+mae
+0.00013640984
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 41 
+validation dataset
+val_loss
+2.8148527064786322e-08
+val_mse
+3.273448712093341e-08
+val_mae
+0.00011538939725141972
+loss
+3.966856485539668e-08
+mse
+3.9668564e-08
+mae
+0.0001307635
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 42 
+validation dataset
+val_loss
+3.8572448346485544e-08
+val_mse
+2.950825184200312e-08
+val_mae
+0.0001093638056772761
+loss
+3.604808564632574e-08
+mse
+3.6048085e-08
+mae
+0.0001246346
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 43 
+validation dataset
+val_loss
+1.6013927961466834e-08
+val_mse
+2.6857538415470117e-08
+val_mae
+0.00010439746256452054
+loss
+3.269510790729614e-08
+mse
+3.2695116e-08
+mae
+0.0001188317
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 44 
+validation dataset
+val_loss
+1.5890922355765724e-08
+val_mse
+2.4110304863711463e-08
+val_mae
+9.88823885563761e-05
+loss
+2.9575898875511148e-08
+mse
+2.9575899e-08
+mae
+0.000113004906
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 45 
+validation dataset
+val_loss
+1.3304852330975336e-08
+val_mse
+2.1820053319743238e-08
+val_mae
+9.412116924067959e-05
+loss
+2.6721267853424165e-08
+mse
+2.6721256e-08
+mae
+0.00010755167
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 46 
+validation dataset
+val_loss
+1.0102141345669224e-08
+val_mse
+1.9639760040490728e-08
+val_mae
+8.936348604038358e-05
+loss
+2.4053494044603166e-08
+mse
+2.4053493e-08
+mae
+0.00010195518
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 47 
+validation dataset
+val_loss
+1.7891904846578655e-08
+val_mse
+1.7596558876675772e-08
+val_mae
+8.461099059786648e-05
+loss
+2.1660406466369843e-08
+mse
+2.166041e-08
+mae
+9.6844175e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 48 
+validation dataset
+val_loss
+5.540937930703649e-09
+val_mse
+1.599293675269564e-08
+val_mae
+8.09122429927811e-05
+loss
+1.945281413047665e-08
+mse
+1.945282e-08
+mae
+9.1748996e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 49 
+validation dataset
+val_loss
+2.837025547819394e-08
+val_mse
+1.4350222343750829e-08
+val_mae
+7.663104770472273e-05
+loss
+1.755981184892479e-08
+mse
+1.7559815e-08
+mae
+8.72929e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 50 
+validation dataset
+val_loss
+1.1827228973970705e-08
+val_mse
+1.2947742433766507e-08
+val_mae
+7.286171603482217e-05
+loss
+1.5735198032105075e-08
+mse
+1.5735198e-08
+mae
+8.261685e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 51 
+validation dataset
+val_loss
+2.4616060301241305e-09
+val_mse
+1.1702171676120088e-08
+val_mae
+6.934337579878047e-05
+loss
+1.4160069065413667e-08
+mse
+1.4160069e-08
+mae
+7.837115e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 52 
+validation dataset
+val_loss
+5.969857497234443e-09
+val_mse
+1.0516935766702318e-08
+val_mae
+6.566562660736963e-05
+loss
+1.2866827687794325e-08
+mse
+1.2866829e-08
+mae
+7.492251e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 53 
+validation dataset
+val_loss
+3.811689808230767e-08
+val_mse
+9.6024956874885e-09
+val_mae
+6.284427217906341e-05
+loss
+1.1602701401922047e-08
+mse
+1.1602698e-08
+mae
+7.1088754e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 54 
+validation dataset
+val_loss
+1.676766459013379e-08
+val_mse
+8.670113516018318e-09
+val_mae
+5.971968494122848e-05
+loss
+1.053926984962763e-08
+mse
+1.0539265e-08
+mae
+6.786153e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 55 
+validation dataset
+val_loss
+5.0966435516386355e-09
+val_mse
+7.904836785144198e-09
+val_mae
+5.69998228456825e-05
+loss
+9.574968303987716e-09
+mse
+9.57497e-09
+mae
+6.4655185e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 56 
+validation dataset
+val_loss
+5.324086949087814e-09
+val_mse
+7.2306249876419315e-09
+val_mae
+5.4544623708352447e-05
+loss
+8.737667353446249e-09
+mse
+8.737666e-09
+mae
+6.181556e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 57 
+validation dataset
+val_loss
+7.528385026489559e-09
+val_mse
+6.63657617749891e-09
+val_mae
+5.233038609731011e-05
+loss
+8.0093316644686e-09
+mse
+8.009332e-09
+mae
+5.9232563e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 58 
+validation dataset
+val_loss
+4.227090677488832e-09
+val_mse
+6.090724813390125e-09
+val_mae
+5.011875327909365e-05
+loss
+7.339736735631662e-09
+mse
+7.339739e-09
+mae
+5.6716464e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 59 
+validation dataset
+val_loss
+2.4188748781739378e-09
+val_mse
+5.632285748902177e-09
+val_mae
+4.8306807002518326e-05
+loss
+6.730645838628651e-09
+mse
+6.730649e-09
+mae
+5.4308624e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 60 
+validation dataset
+val_loss
+2.9372873022737167e-09
+val_mse
+5.1952633306484586e-09
+val_mae
+4.636531593860127e-05
+loss
+6.2234415950921065e-09
+mse
+6.2234418e-09
+mae
+5.2286236e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 61 
+validation dataset
+val_loss
+6.332432800348897e-09
+val_mse
+4.82944439994526e-09
+val_mae
+4.476978210732341e-05
+loss
+5.7829345329583045e-09
+mse
+5.7829364e-09
+mae
+5.047915e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 62 
+validation dataset
+val_loss
+3.528471070879391e-09
+val_mse
+4.517485052701886e-09
+val_mae
+4.3316740629961714e-05
+loss
+5.3697919403470886e-09
+mse
+5.3697895e-09
+mae
+4.8607457e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 63 
+validation dataset
+val_loss
+2.5997630714869047e-09
+val_mse
+4.21844736919752e-09
+val_mae
+4.192393316770904e-05
+loss
+5.001914137762479e-09
+mse
+5.001916e-09
+mae
+4.6950678e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 64 
+validation dataset
+val_loss
+2.0851964599444273e-09
+val_mse
+3.936848624874756e-09
+val_mae
+4.048540722578764e-05
+loss
+4.668841231197798e-09
+mse
+4.668842e-09
+mae
+4.534323e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 65 
+validation dataset
+val_loss
+2.8911568694667267e-09
+val_mse
+3.681626559171036e-09
+val_mae
+3.9110385841922835e-05
+loss
+4.390597826278049e-09
+mse
+4.3905968e-09
+mae
+4.402397e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 66 
+validation dataset
+val_loss
+1.4666693415321674e-09
+val_mse
+3.4768736778545417e-09
+val_mae
+3.8126865547383204e-05
+loss
+4.117399478408736e-09
+mse
+4.1173966e-09
+mae
+4.2665637e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 67 
+validation dataset
+val_loss
+6.218612291775116e-09
+val_mse
+3.2976066322021325e-09
+val_mae
+3.7077796150697395e-05
+loss
+3.891071700589212e-09
+mse
+3.891072e-09
+mae
+4.1510935e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 68 
+validation dataset
+val_loss
+2.9099296305901134e-09
+val_mse
+3.120190772420983e-09
+val_mae
+3.60843405360356e-05
+loss
+3.6746301735393684e-09
+mse
+3.6746293e-09
+mae
+4.0329556e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 69 
+validation dataset
+val_loss
+3.235931300693551e-09
+val_mse
+2.978526536523418e-09
+val_mae
+3.5336342989467084e-05
+loss
+3.4736943512503174e-09
+mse
+3.4736938e-09
+mae
+3.9216444e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 70 
+validation dataset
+val_loss
+1.220157641590447e-09
+val_mse
+2.8076039271240916e-09
+val_mae
+3.423884481890127e-05
+loss
+3.3057580938735643e-09
+mse
+3.3057581e-09
+mae
+3.8266906e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 71 
+validation dataset
+val_loss
+2.4934185827163446e-09
+val_mse
+2.6725390789295034e-09
+val_mae
+3.3433323551435024e-05
+loss
+3.149694551897674e-09
+mse
+3.1496958e-09
+mae
+3.7386846e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 72 
+validation dataset
+val_loss
+5.051748797058053e-09
+val_mse
+2.562401846262219e-09
+val_mae
+3.276213101344183e-05
+loss
+2.9971734282459e-09
+mse
+2.9971736e-09
+mae
+3.6483238e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 73 
+validation dataset
+val_loss
+1.3872794024649693e-09
+val_mse
+2.4533124420855756e-09
+val_mae
+3.2175652449950576e-05
+loss
+2.8678106640181364e-09
+mse
+2.8678122e-09
+mae
+3.5651094e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 74 
+validation dataset
+val_loss
+1.7174596189661884e-09
+val_mse
+2.3266617521500166e-09
+val_mae
+3.1214225600706413e-05
+loss
+2.736717879176875e-09
+mse
+2.7367182e-09
+mae
+3.4859397e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 75 
+validation dataset
+val_loss
+5.844911221686289e-10
+val_mse
+2.241166807692707e-09
+val_mae
+3.067191573791206e-05
+loss
+2.623183202868894e-09
+mse
+2.623183e-09
+mae
+3.4149478e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 76 
+validation dataset
+val_loss
+1.4551565508114095e-09
+val_mse
+2.157703349325857e-09
+val_mae
+3.0135423003230244e-05
+loss
+2.5142613848231064e-09
+mse
+2.5142606e-09
+mae
+3.3450342e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 77 
+validation dataset
+val_loss
+3.0660778360669383e-09
+val_mse
+2.0740063000346254e-09
+val_mae
+2.955786112579517e-05
+loss
+2.4167436201455785e-09
+mse
+2.416744e-09
+mae
+3.2798594e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 78 
+validation dataset
+val_loss
+1.7627432846722968e-09
+val_mse
+2.0019796931336487e-09
+val_mae
+2.9056738640065305e-05
+loss
+2.3274918821274232e-09
+mse
+2.3274924e-09
+mae
+3.2181986e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 79 
+validation dataset
+val_loss
+1.1320480108878428e-09
+val_mse
+1.9227035519264746e-09
+val_mae
+2.8421383831300773e-05
+loss
+2.2389678860548775e-09
+mse
+2.238967e-09
+mae
+3.1574196e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 80 
+validation dataset
+val_loss
+5.784274725861849e-10
+val_mse
+1.8568351300984887e-09
+val_mae
+2.797619890770875e-05
+loss
+2.1644278470578533e-09
+mse
+2.164427e-09
+mae
+3.1074775e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 81 
+validation dataset
+val_loss
+3.2835727470370557e-09
+val_mse
+1.7926529150003034e-09
+val_mae
+2.7466239771456458e-05
+loss
+2.0868023207826955e-09
+mse
+2.0868027e-09
+mae
+3.052905e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 82 
+validation dataset
+val_loss
+5.06893638174688e-09
+val_mse
+1.7311787559037839e-09
+val_mae
+2.7015197701985016e-05
+loss
+2.01859068727038e-09
+mse
+2.018591e-09
+mae
+2.9998744e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 83 
+validation dataset
+val_loss
+5.315281548234907e-10
+val_mse
+1.6834308391722175e-09
+val_mae
+2.6665973564377055e-05
+loss
+1.957382673483635e-09
+mse
+1.9573827e-09
+mae
+2.9588402e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 84 
+validation dataset
+val_loss
+9.565941372358111e-10
+val_mse
+1.6219811049822397e-09
+val_mae
+2.6144258299609646e-05
+loss
+1.892239524312843e-09
+mse
+1.8922393e-09
+mae
+2.908391e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 85 
+validation dataset
+val_loss
+9.219606189603269e-10
+val_mse
+1.5775670769713201e-09
+val_mae
+2.5829245714703575e-05
+loss
+1.833154919201167e-09
+mse
+1.8331555e-09
+mae
+2.8619315e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 86 
+validation dataset
+val_loss
+1.7898089677004236e-09
+val_mse
+1.5235460670837142e-09
+val_mae
+2.5330895368824713e-05
+loss
+1.7861818412812315e-09
+mse
+1.7861822e-09
+mae
+2.8280996e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 87 
+validation dataset
+val_loss
+7.482183761453598e-10
+val_mse
+1.489503298479633e-09
+val_mae
+2.5087261747103184e-05
+loss
+1.725565529181971e-09
+mse
+1.7255651e-09
+mae
+2.777454e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 88 
+validation dataset
+val_loss
+1.122972603795347e-09
+val_mse
+1.444904085268206e-09
+val_mae
+2.4717615815461613e-05
+loss
+1.6765113656389855e-09
+mse
+1.6765115e-09
+mae
+2.7395115e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 89 
+validation dataset
+val_loss
+8.255966466030884e-10
+val_mse
+1.4058993969001676e-09
+val_mae
+2.4404673240496777e-05
+loss
+1.6330243150752702e-09
+mse
+1.6330246e-09
+mae
+2.7031432e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 90 
+validation dataset
+val_loss
+1.028002905023584e-09
+val_mse
+1.3761741746165512e-09
+val_mae
+2.4162007321137935e-05
+loss
+1.5863747795344991e-09
+mse
+1.5863754e-09
+mae
+2.663523e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 91 
+validation dataset
+val_loss
+8.090360603674185e-10
+val_mse
+1.332963517342023e-09
+val_mae
+2.3752954803057946e-05
+loss
+1.5429817384359236e-09
+mse
+1.5429823e-09
+mae
+2.6255662e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 92 
+validation dataset
+val_loss
+4.985757362518939e-10
+val_mse
+1.2987646513806794e-09
+val_mae
+2.3412878363160416e-05
+loss
+1.5110208941903444e-09
+mse
+1.511021e-09
+mae
+2.6017151e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 93 
+validation dataset
+val_loss
+4.762112926215423e-09
+val_mse
+1.2767856771844777e-09
+val_mae
+2.3252598111866973e-05
+loss
+1.4663004506561552e-09
+mse
+1.466301e-09
+mae
+2.5632282e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 94 
+validation dataset
+val_loss
+1.3530727649424534e-09
+val_mse
+1.238285474158829e-09
+val_mae
+2.2894377252669074e-05
+loss
+1.4328353714688172e-09
+mse
+1.4328355e-09
+mae
+2.5350511e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 95 
+validation dataset
+val_loss
+1.5375065665068632e-09
+val_mse
+1.2132893578709059e-09
+val_mae
+2.2669970348943025e-05
+loss
+1.3957903260079213e-09
+mse
+1.3957898e-09
+mae
+2.4995988e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 96 
+validation dataset
+val_loss
+4.906814954352967e-10
+val_mse
+1.1729417437322809e-09
+val_mae
+2.222516923211515e-05
+loss
+1.3639916873245888e-09
+mse
+1.363992e-09
+mae
+2.472503e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 97 
+validation dataset
+val_loss
+1.0484235701824218e-09
+val_mse
+1.1524406984264601e-09
+val_mae
+2.209112062701024e-05
+loss
+1.334456117974353e-09
+mse
+1.3344568e-09
+mae
+2.4471909e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 98 
+validation dataset
+val_loss
+8.323797207054895e-10
+val_mse
+1.128256155169538e-09
+val_mae
+2.187072459491901e-05
+loss
+1.3031337633432449e-09
+mse
+1.303134e-09
+mae
+2.4167575e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 99 
+validation dataset
+val_loss
+8.070498713763641e-10
+val_mse
+1.1032241786779196e-09
+val_mae
+2.1588961317320354e-05
+loss
+1.2720544527173941e-09
+mse
+1.2720545e-09
+mae
+2.3884531e-05
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 100 
+validation dataset
+val_loss
+9.086864594110011e-10
+val_mse
+1.0781125991954355e-09
+val_mae
+2.1351057512219995e-05
+loss
+1.2451533623276387e-09
+mse
+1.2451536e-09
+mae
+2.3638404e-05
+lr
+1e-05
+
+test dataset
+
+

@@ -1,0 +1,103 @@
+reg_96000_257_1_20200621-234834.h5
+Number of learning samples: 1090
+Number of validation samples: 0
+Number of testing samples: 0
+
+  Epoch 1 
+validation dataset
+loss
+0.26961653284053533
+mse
+0.1765557
+mae
+0.26961657
+lr
+0.01
+
+test dataset
+
+
+  Epoch 2 
+validation dataset
+loss
+0.2545998920104934
+mse
+0.16339163
+mae
+0.2546
+lr
+0.01
+
+test dataset
+
+
+  Epoch 3 
+validation dataset
+loss
+0.2541921009238299
+mse
+0.1642396
+mae
+0.25419205
+lr
+0.01
+
+test dataset
+
+
+  Epoch 4 
+validation dataset
+loss
+0.2559115493220465
+mse
+0.16269602
+mae
+0.25591153
+lr
+0.01
+
+test dataset
+
+
+  Epoch 5 
+validation dataset
+loss
+0.2549923241357538
+mse
+0.16204785
+mae
+0.25499204
+lr
+0.01
+
+test dataset
+
+
+  Epoch 6 
+validation dataset
+loss
+0.2556442608446985
+mse
+0.16214056
+mae
+0.2556441
+lr
+0.01
+
+test dataset
+
+
+  Epoch 7 
+validation dataset
+loss
+0.2526678049969466
+mse
+0.15128112
+mae
+0.25266767
+lr
+0.01
+
+test dataset
+
+

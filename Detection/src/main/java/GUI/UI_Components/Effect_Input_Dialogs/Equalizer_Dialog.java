@@ -1,5 +1,6 @@
 package GUI.UI_Components.Effect_Input_Dialogs;
 
+import Effects.FIR_Equalizer;
 import Utils.Exceptions.DataSourceException;
 import Utils.Exceptions.DataSourceExceptionCause;
 import ProjectManager.ProjectStatics;
@@ -39,7 +40,8 @@ public class Equalizer_Dialog implements Effect_UI_Component
     private int sample_rate;
     private int filter_length;
 
-    private FFT_Equalizer effect = null;
+    private IEffect effect = null;
+    private boolean use_fir = false;
 
     private final HashMap< String, MyPair< float[], float[] > > equalization_curves = new HashMap<>();
 
@@ -77,7 +79,7 @@ public class Equalizer_Dialog implements Effect_UI_Component
 
         btn_apply.setOnAction( ev ->
                                {
-                                   effect = new FFT_Equalizer();
+
                                    try
                                    {
                                        if( ch_eq_curve.getValue() == null )
@@ -86,8 +88,20 @@ public class Equalizer_Dialog implements Effect_UI_Component
                                        }
                                        MyPair< float[], float[] > resp = equalization_curves.get( ch_eq_curve.getValue() );
                                        FIR fir = FIR.fromFreqResponse( resp.getLeft(), resp.getRight(), resp.getLeft().length, sample_rate, filter_length );
-                                       effect = new FFT_Equalizer();
-                                       effect.setFilter( fir );
+
+                                       if( use_fir )
+                                       {
+                                           FIR_Equalizer fir_eq = new FIR_Equalizer();
+                                           fir_eq.setFilter( fir );
+                                           effect = fir_eq;
+                                       }
+                                       else
+                                       {
+                                           FFT_Equalizer fft_eq = new FFT_Equalizer();
+                                           fft_eq.setFilter( fir );
+                                           effect = fft_eq;
+                                       }
+
                                    }
                                    catch( Exception e )
                                    {
@@ -113,13 +127,16 @@ public class Equalizer_Dialog implements Effect_UI_Component
         return effect;
     }
 
-    public Equalizer_Dialog( int project_sample_rate )
+    public Equalizer_Dialog( int project_sample_rate, boolean use_fir )
     {
         sample_rate = project_sample_rate;
         filter_length = 511;
+        this.use_fir = use_fir;
+
         equalization_curves.put( "RIAA curve", FIR.get_RIAA_response() );
         equalization_curves.put( "Inverse RIAA curve", FIR.get_inverse_RIAA_response() );
         equalization_curves.put( "Flat Impulse", FIR.get_flat_response() );
+
     }
 
     @Override

@@ -1,0 +1,205 @@
+reg_96000_257_1_20200621-204239.h5
+Number of learning samples: 450560
+Number of validation samples: 147456
+Number of testing samples: 81920
+
+  Epoch 1 
+validation dataset
+val_loss
+0.8566229343414307
+val_mse
+11.25971508026123
+val_mae
+1.2619668245315552
+loss
+1.5159079023136304
+mse
+15.618989
+mae
+1.5159081
+lr
+0.1
+
+test dataset
+
+
+  Epoch 2 
+validation dataset
+val_loss
+0.5785094499588013
+val_mse
+11.118194580078125
+val_mae
+1.213637113571167
+loss
+1.4670802275266734
+mse
+15.487227
+mae
+1.4670802
+lr
+0.1
+
+test dataset
+
+
+  Epoch 3 
+validation dataset
+val_loss
+1.0898715257644653
+val_mse
+11.11199951171875
+val_mae
+1.2133386135101318
+loss
+1.4401682104955698
+mse
+15.37602
+mae
+1.4401683
+lr
+0.1
+
+test dataset
+
+
+  Epoch 4 
+validation dataset
+val_loss
+0.8026957511901855
+val_mse
+11.143620491027832
+val_mae
+1.2154526710510254
+loss
+1.439765803120594
+mse
+15.369012
+mae
+1.4397657
+lr
+0.1
+
+test dataset
+
+
+  Epoch 5 
+validation dataset
+val_loss
+0.10145682096481323
+val_mse
+11.109856605529785
+val_mae
+1.2132858037948608
+loss
+1.440875667039416
+mse
+15.38877
+mae
+1.4408755
+lr
+0.1
+
+test dataset
+
+
+  Epoch 6 
+validation dataset
+val_loss
+1.5802032947540283
+val_mse
+11.059208869934082
+val_mae
+1.214078426361084
+loss
+1.4403089448740978
+mse
+15.373718
+mae
+1.4403088
+lr
+0.1
+
+test dataset
+
+
+  Epoch 7 
+validation dataset
+val_loss
+0.9914282560348511
+val_mse
+11.037684440612793
+val_mae
+1.2156492471694946
+loss
+1.4403315607815597
+mse
+15.3862095
+mae
+1.4403317
+lr
+0.1
+
+test dataset
+
+
+  Epoch 8 
+validation dataset
+val_loss
+0.7931910157203674
+val_mse
+11.096354484558105
+val_mae
+1.2130388021469116
+loss
+1.441457758199275
+mse
+15.359544
+mae
+1.4414575
+lr
+0.1
+
+test dataset
+
+
+  Epoch 9 
+validation dataset
+val_loss
+0.9917386770248413
+val_mse
+11.081622123718262
+val_mae
+1.213135838508606
+loss
+1.4401114548852718
+mse
+15.3811655
+mae
+1.4401115
+lr
+0.1
+
+test dataset
+
+
+  Epoch 10 
+validation dataset
+val_loss
+0.11802736669778824
+val_mse
+11.072021484375
+val_mae
+1.2134556770324707
+loss
+1.4392516394563095
+mse
+15.36689
+mae
+1.4392515
+lr
+0.05
+
+test dataset
+
+

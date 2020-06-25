@@ -1,0 +1,205 @@
+reg_96000_257_1_20200621-205650.h5
+Number of learning samples: 397312
+Number of validation samples: 132096
+Number of testing samples: 74752
+
+  Epoch 1 
+validation dataset
+val_loss
+71.3337631225586
+val_mse
+15.986130714416504
+val_mae
+1.7716132402420044
+loss
+11.497238542257117
+mse
+11.4972315
+mae
+1.6001812
+lr
+0.001
+
+test dataset
+
+
+  Epoch 2 
+validation dataset
+val_loss
+2.157141923904419
+val_mse
+15.939065933227539
+val_mae
+1.7070978879928589
+loss
+11.384007482514287
+mse
+11.384009
+mae
+1.5948696
+lr
+0.001
+
+test dataset
+
+
+  Epoch 3 
+validation dataset
+val_loss
+0.7384050488471985
+val_mse
+15.914947509765625
+val_mae
+1.691313624382019
+loss
+11.348984007630103
+mse
+11.34898
+mae
+1.5445819
+lr
+0.001
+
+test dataset
+
+
+  Epoch 4 
+validation dataset
+val_loss
+2.185415267944336
+val_mse
+15.89401912689209
+val_mae
+1.6602201461791992
+loss
+11.327411944821757
+mse
+11.327416
+mae
+1.5198283
+lr
+0.001
+
+test dataset
+
+
+  Epoch 5 
+validation dataset
+val_loss
+1.999129295349121
+val_mse
+15.880383491516113
+val_mae
+1.662887692451477
+loss
+11.308555962874557
+mse
+11.3085575
+mae
+1.4951885
+lr
+0.001
+
+test dataset
+
+
+  Epoch 6 
+validation dataset
+val_loss
+0.7328364849090576
+val_mse
+15.847291946411133
+val_mae
+1.6235641241073608
+loss
+11.281994032413222
+mse
+11.282
+mae
+1.4767509
+lr
+0.001
+
+test dataset
+
+
+  Epoch 7 
+validation dataset
+val_loss
+3.822896957397461
+val_mse
+15.808104515075684
+val_mae
+1.601168155670166
+loss
+11.243543139452676
+mse
+11.243547
+mae
+1.4428385
+lr
+0.001
+
+test dataset
+
+
+  Epoch 8 
+validation dataset
+val_loss
+1.2116484642028809
+val_mse
+15.7686185836792
+val_mae
+1.546913504600525
+loss
+11.209117592036081
+mse
+11.209115
+mae
+1.4151204
+lr
+0.001
+
+test dataset
+
+
+  Epoch 9 
+validation dataset
+val_loss
+52.01865005493164
+val_mse
+15.77108383178711
+val_mae
+1.5428390502929688
+loss
+11.17436862000016
+mse
+11.174375
+mae
+1.3843337
+lr
+0.001
+
+test dataset
+
+
+  Epoch 10 
+validation dataset
+val_loss
+0.5720787644386292
+val_mse
+15.732793807983398
+val_mae
+1.5482518672943115
+loss
+11.154276772692729
+mse
+11.154275
+mae
+1.3638581
+lr
+0.001
+
+test dataset
+
+

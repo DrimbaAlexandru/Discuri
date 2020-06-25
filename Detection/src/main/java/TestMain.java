@@ -541,11 +541,11 @@ public class TestMain {
         ProjectManager.lock_access();
         String wav_base_path="e:\\datasets\\inv riaa\\";
         String marking_base_path="e:\\datasets\\inv riaa\\markings\\";
-        String dest_base_path="e:\\datasets\\257-1 regression\\";
+        String dest_base_path="e:\\datasets\\257-1 small\\";
         String mvg_avg_temp_path = "mvg_avg.wav";
 
-        float master_nonmarked = 0.25f;
-        float master_marked = 0.5f;
+        float master_nonmarked = 0.05f;
+        float master_marked = 0.2f;
         float master_doubling_prob = 0.1f;
         int side_grab = 128;
         int outputs = 1;
@@ -566,26 +566,26 @@ public class TestMain {
                 IFileAudioDataSource damageFile = null;
                 CachedAudioDataSource damage_cache = null;
 
-                if( file.dmg_path != null )
-                {
-                    diffFile = FileAudioSourceFactory.fromFile( wav_base_path + file.dmg_path );
-                    damageFile = FileAudioSourceFactory.createFile( dest_base_path + mvg_avg_temp_path, diffFile.get_channel_number(), diffFile.get_sample_rate(), 2 );
-                    damage_cache = new CachedAudioDataSource( damageFile, 96000, 4800 );
-
-                    MarkerFileGenerator generator = new MarkerFileGenerator();
-                    generator.setDest_path( dest_base_path + "mark_out.txt" );
-                    generator.setMoving_avg_size( 9 );
-                    generator.setGen_marker( false );
-                    generator.setGen_mvg_avg( true );
-                    generator.setAbs_threshold( 0.0001f );
-                    generator.setDamage_amplif( file.damage_amplif * 2.0f );
-
-                    generator.apply( diffFile, damage_cache, new Interval( 0, srcfile.get_sample_number(), false ) );
-                    damage_cache.flushAll();
-                }
+//                if( file.dmg_path != null )
+//                {
+//                    diffFile = FileAudioSourceFactory.fromFile( wav_base_path + file.dmg_path );
+//                    damageFile = FileAudioSourceFactory.createFile( dest_base_path + mvg_avg_temp_path, diffFile.get_channel_number(), diffFile.get_sample_rate(), 2 );
+//                    damage_cache = new CachedAudioDataSource( damageFile, 96000, 4800 );
+//
+//                    MarkerFileGenerator generator = new MarkerFileGenerator();
+//                    generator.setDest_path( dest_base_path + "mark_out.txt" );
+//                    generator.setMoving_avg_size( 9 );
+//                    generator.setGen_marker( false );
+//                    generator.setGen_mvg_avg( true );
+//                    generator.setAbs_threshold( 0.0001f );
+//                    generator.setDamage_amplif( 10.0f );
+//
+//                    generator.apply( diffFile, damage_cache, new Interval( 0, srcfile.get_sample_number(), false ) );
+//                    damage_cache.flushAll();
+//                }
 
                 dse.generate( srcfile,
-                              ( file.dmg_path != null ) ? damage_cache : null,
+                              ( file.dmg_path != null ) ? null : null,
                               new Interval( 0, srcfile.get_sample_number(), false ),
                               dest_base_path + file.dest_path,
                               side_grab / 2,

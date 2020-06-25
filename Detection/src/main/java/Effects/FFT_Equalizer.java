@@ -78,7 +78,7 @@ public class FFT_Equalizer implements IEffect
         Windowing.apply( OLA_window, OLA_window_size, window_function );
 
         filter.setFilter( fir_filter );
-        filter.setMax_chunk_size( OLA_window_size * 2 );
+        filter.setMax_chunk_size( FFT_length );
 
         init_done = true;
     }

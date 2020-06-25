@@ -43,7 +43,7 @@ class IOP_audio_classifier:
     iop_AUDIO_STATE_TX = 3
 
     SAMPLE_SIZE_BYTES = 2
-    PROBABILITY_SIZE_BYTES = 1
+    PROBABILITY_SIZE_BYTES = 2
 
     TX_BAUD_RATE_PER_CYCLE = 8192
 
@@ -173,7 +173,7 @@ class IOP_audio_classifier:
 
         status, probabilities = AI_audio_classify( self._rx_audio_buffer )
         if( status == IOP_AI_STATUS_OK ):
-            self._tx_probability_buffer = probabilities
+            self._tx_probability_buffer = np.clip( probabilities, 0.0, 1.0 )
         else:
             self._abort( b'Running the classifier returned a failed status' )
             return
@@ -201,8 +201,8 @@ class IOP_audio_classifier:
                     break
 
                 data_msg = struct.pack( "<IH", self._tx_offset, chunk_length )
-                data_msg += struct.pack( "B" * chunk_length ,
-                                         *[ int( i * 255 ) for i in self._tx_probability_buffer[ self._tx_offset:self._tx_offset + chunk_length ] ] )
+                data_msg += struct.pack( "H" * chunk_length,
+                                         *[ int( i * ( 2 ** 16 - 1 ) ) for i in self._tx_probability_buffer[ self._tx_offset:self._tx_offset + chunk_length ] ] )
                 txd_bytes += IOP_put_frame( IOP_MSG_ID_AUDIO_TX, IOP_MSG_SUBID_AUDIO_TX_DATA, data_msg )
 
                 self._tx_offset += chunk_length

@@ -497,9 +497,13 @@ public class Main_window
             menu_effects.getItems().add( mi );
             mi.setOnAction( this::on_Repair );
 
-            mi = new MenuItem( "Equalizer" );
+            mi = new MenuItem( "OLA STFT Equalizer" );
             menu_effects.getItems().add( mi );
-            mi.setOnAction( this::on_equalizer );
+            mi.setOnAction( this::on_fft_equalizer );
+
+            mi = new MenuItem( "FIR Equalizer" );
+            menu_effects.getItems().add( mi );
+            mi.setOnAction( this::on_fir_equalizer );
 
             mi = new MenuItem( "Discrete derivation" );
             menu_effects.getItems().add( mi );
@@ -967,9 +971,14 @@ public class Main_window
         start_effect_with_UI( new Amplify_Dialog() );
     }
 
-    private void on_equalizer( @Nullable ActionEvent ev )
+    private void on_fft_equalizer( @Nullable ActionEvent ev )
     {
-        start_effect_with_UI( new Equalizer_Dialog( sample_rate ) );
+        start_effect_with_UI( new Equalizer_Dialog( sample_rate, false ) );
+    }
+
+    private void on_fir_equalizer( @Nullable ActionEvent ev )
+    {
+        start_effect_with_UI( new Equalizer_Dialog( sample_rate, true ) );
     }
 
     private void on_Repair( @Nullable ActionEvent ev )

@@ -12,8 +12,8 @@ IOP_AI_STATUS_OK = 0
 IOP_AI_STATUS_FAIL = 1
 IOP_AI_STATUS_MODEL_UNAVAILABLE = 2
 
-#             Sample rate : path                                  IN   OUT  OFFSET
-CLASSIFIER_DICT = { 96000: ("reg_96000_257_1_20200624-131755.h5", 257, 1, 128 ) }
+#             Sample rate : path                              IN   OUT OFFSET
+CLASSIFIER_DICT = { 96000: ("96000_257_1_20200609-210550.h5", 257, 1,  128 ) }
 model = None
 success = False
 

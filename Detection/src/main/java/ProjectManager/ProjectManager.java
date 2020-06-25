@@ -132,12 +132,12 @@ public class ProjectManager
                 break;
 
             case DAMAGE_READ_EFFECT:
-                IFileAudioDataSource dest = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\damage_mvg_avg.wav", damageCache.get_channel_number(), damageCache.get_sample_rate(), 2 );
-                CachedAudioDataSource dest_cache = new CachedAudioDataSource( dest, ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
-                effect.apply( damageCache, dest_cache, interval );
-                dest_cache.flushAll();
-                dest_cache.close();
-                dest.close();
+//                IFileAudioDataSource dest = FileAudioSourceFactory.createFile( "C:\\Users\\Alex\\Desktop\\damage_mvg_avg.wav", damageCache.get_channel_number(), damageCache.get_sample_rate(), 2 );
+//                CachedAudioDataSource dest_cache = new CachedAudioDataSource( dest, ProjectStatics.getProject_cache_size(), ProjectStatics.getProject_cache_page_size() );
+                effect.apply( damageCache, null, interval );
+//                dest_cache.flushAll();
+//                dest_cache.close();
+//                dest.close();
                 break;
         }
     }

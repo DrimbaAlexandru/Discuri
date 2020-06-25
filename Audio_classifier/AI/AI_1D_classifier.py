@@ -250,7 +250,7 @@ class BinaryClassifierModelWithGenerator:
 
         self.model.add( Conv1D( filters = 128, kernel_size = self.INPUTS - self.OUTPUTS + 1 , activation = 'relu', input_shape = ( None, 1 ) ) )
         self.model.add( Conv1D( filters = 64, kernel_size = 1, activation = 'relu' ) )
-        self.model.add( Conv1D( filters = 32, kernel_size = 1, activation = 'tanh' ) )
+        self.model.add( Conv1D( filters = 16, kernel_size = 1, activation = 'tanh' ) )
         self.model.add( Conv1D( filters = 1, kernel_size = 1, activation = 'linear' ) )
 
         # inputs = Input(shape = (self.INPUTS,) )
@@ -276,7 +276,7 @@ class BinaryClassifierModelWithGenerator:
             return
 
         # Fit model
-        min_learning_rate = 0.00001  # once the learning rate reaches this value, do not decrease it further
+        min_learning_rate = 0.0001  # once the learning rate reaches this value, do not decrease it further
         learning_rate_reduction_factor = 0.707  # the factor used when reducing the learning rate -> learning_rate *= learning_rate_reduction_factor
         patience = 5  # how many epochs to wait before reducing the learning rate when the loss plateaus
 

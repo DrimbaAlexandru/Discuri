@@ -63,8 +63,8 @@ class MarkedAudioDataGenerator(Sequence):
             X, y = utils.load_marked_signal_file( this_file, start_idx, self.batch_size )
 
         # Augment the data by varying the input signal amplitude
-        factors = np.random.uniform( 0.25, 2.0, X.shape[ 0 ] ) * ( np.random.randint( 0, 2, X.shape[ 0 ] ) * 2 - 1 )
-        X = np.asarray( [ X[ i ] * factors[ i ] for i in range( 0, X.shape[ 0 ] ) ] )
+        # factors = np.random.uniform( 0.5, 2.0, X.shape[ 0 ] ) * ( np.random.randint( 0, 2, X.shape[ 0 ] ) * 2 - 1 )
+        # X = np.asarray( [ X[ i ] * factors[ i ] for i in range( 0, X.shape[ 0 ] ) ] )
 
         # scaler = StandardScaler()
         # scaler.fit( y )

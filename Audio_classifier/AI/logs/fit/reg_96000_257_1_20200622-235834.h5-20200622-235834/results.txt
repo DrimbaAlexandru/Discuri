@@ -1,0 +1,2805 @@
+reg_96000_257_1_20200622-235834.h5
+Number of learning samples: 358400
+Number of validation samples: 0
+Number of testing samples: 0
+
+  Epoch 1 
+validation dataset
+loss
+0.011822407123253538
+mse
+0.0017221501
+mae
+0.011822404
+lr
+0.001
+
+test dataset
+
+
+  Epoch 2 
+validation dataset
+loss
+0.0088423574946597
+mse
+0.0016430541
+mae
+0.008842357
+lr
+0.001
+
+test dataset
+
+
+  Epoch 3 
+validation dataset
+loss
+0.00870047859430298
+mse
+0.0016188576
+mae
+0.008700479
+lr
+0.001
+
+test dataset
+
+
+  Epoch 4 
+validation dataset
+loss
+0.008574719579450774
+mse
+0.001595621
+mae
+0.00857472
+lr
+0.001
+
+test dataset
+
+
+  Epoch 5 
+validation dataset
+loss
+0.00827148854965838
+mse
+0.0015465083
+mae
+0.008271488
+lr
+0.001
+
+test dataset
+
+
+  Epoch 6 
+validation dataset
+loss
+0.008197547288742876
+mse
+0.0015040074
+mae
+0.008197552
+lr
+0.001
+
+test dataset
+
+
+  Epoch 7 
+validation dataset
+loss
+0.00818199140048961
+mse
+0.0014627567
+mae
+0.008181994
+lr
+0.001
+
+test dataset
+
+
+  Epoch 8 
+validation dataset
+loss
+0.008061821792172892
+mse
+0.0014412857
+mae
+0.008061821
+lr
+0.001
+
+test dataset
+
+
+  Epoch 9 
+validation dataset
+loss
+0.007825535550900053
+mse
+0.0014033867
+mae
+0.007825541
+lr
+0.001
+
+test dataset
+
+
+  Epoch 10 
+validation dataset
+loss
+0.007800965857862396
+mse
+0.0013781522
+mae
+0.007800967
+lr
+0.001
+
+test dataset
+
+
+  Epoch 11 
+validation dataset
+loss
+0.00771044322856806
+mse
+0.0013573107
+mae
+0.007710443
+lr
+0.001
+
+test dataset
+
+
+  Epoch 12 
+validation dataset
+loss
+0.00750920732305922
+mse
+0.0013259
+mae
+0.0075092074
+lr
+0.001
+
+test dataset
+
+
+  Epoch 13 
+validation dataset
+loss
+0.007488258700278596
+mse
+0.0013161316
+mae
+0.0074882563
+lr
+0.001
+
+test dataset
+
+
+  Epoch 14 
+validation dataset
+loss
+0.007445262596122375
+mse
+0.0013105867
+mae
+0.00744526
+lr
+0.001
+
+test dataset
+
+
+  Epoch 15 
+validation dataset
+loss
+0.007379454259777237
+mse
+0.0012907468
+mae
+0.007379454
+lr
+0.001
+
+test dataset
+
+
+  Epoch 16 
+validation dataset
+loss
+0.007336536316627689
+mse
+0.0012626905
+mae
+0.0073365388
+lr
+0.001
+
+test dataset
+
+
+  Epoch 17 
+validation dataset
+loss
+0.007138613162193961
+mse
+0.0012062893
+mae
+0.0071386155
+lr
+0.001
+
+test dataset
+
+
+  Epoch 18 
+validation dataset
+loss
+0.0071184046013652415
+mse
+0.0011912843
+mae
+0.0071184062
+lr
+0.001
+
+test dataset
+
+
+  Epoch 19 
+validation dataset
+loss
+0.007056817755809171
+mse
+0.0011601723
+mae
+0.0070568193
+lr
+0.001
+
+test dataset
+
+
+  Epoch 20 
+validation dataset
+loss
+0.007006248185787445
+mse
+0.001141102
+mae
+0.00700625
+lr
+0.001
+
+test dataset
+
+
+  Epoch 21 
+validation dataset
+loss
+0.007003051917358681
+mse
+0.0011221636
+mae
+0.007003054
+lr
+0.001
+
+test dataset
+
+
+  Epoch 22 
+validation dataset
+loss
+0.0069562009447573375
+mse
+0.0011238897
+mae
+0.006956203
+lr
+0.001
+
+test dataset
+
+
+  Epoch 23 
+validation dataset
+loss
+0.006794025848302426
+mse
+0.0010615451
+mae
+0.0067940257
+lr
+0.001
+
+test dataset
+
+
+  Epoch 24 
+validation dataset
+loss
+0.006732670772705718
+mse
+0.001027976
+mae
+0.006732675
+lr
+0.001
+
+test dataset
+
+
+  Epoch 25 
+validation dataset
+loss
+0.006642793959326645
+mse
+0.0009745218
+mae
+0.0066427914
+lr
+0.001
+
+test dataset
+
+
+  Epoch 26 
+validation dataset
+loss
+0.006547893027765986
+mse
+0.0009316669
+mae
+0.006547895
+lr
+0.001
+
+test dataset
+
+
+  Epoch 27 
+validation dataset
+loss
+0.006532301403324356
+mse
+0.000894409
+mae
+0.0065323026
+lr
+0.001
+
+test dataset
+
+
+  Epoch 28 
+validation dataset
+loss
+0.006301581714512194
+mse
+0.0008241049
+mae
+0.0063015795
+lr
+0.001
+
+test dataset
+
+
+  Epoch 29 
+validation dataset
+loss
+0.0061852434458608075
+mse
+0.0007564712
+mae
+0.0061852424
+lr
+0.001
+
+test dataset
+
+
+  Epoch 30 
+validation dataset
+loss
+0.006132216323714671
+mse
+0.000760192
+mae
+0.0061322153
+lr
+0.001
+
+test dataset
+
+
+  Epoch 31 
+validation dataset
+loss
+0.005885776221827335
+mse
+0.0006996732
+mae
+0.0058857766
+lr
+0.001
+
+test dataset
+
+
+  Epoch 32 
+validation dataset
+loss
+0.005661483700830087
+mse
+0.00063881045
+mae
+0.005661483
+lr
+0.001
+
+test dataset
+
+
+  Epoch 33 
+validation dataset
+loss
+0.005574093531205306
+mse
+0.00062261696
+mae
+0.0055740913
+lr
+0.001
+
+test dataset
+
+
+  Epoch 34 
+validation dataset
+loss
+0.0054981845349192085
+mse
+0.00059863715
+mae
+0.005498183
+lr
+0.001
+
+test dataset
+
+
+  Epoch 35 
+validation dataset
+loss
+0.005448007214070866
+mse
+0.0005707278
+mae
+0.005448008
+lr
+0.001
+
+test dataset
+
+
+  Epoch 36 
+validation dataset
+loss
+0.005211827749151161
+mse
+0.00054927636
+mae
+0.0052118283
+lr
+0.001
+
+test dataset
+
+
+  Epoch 37 
+validation dataset
+loss
+0.005132365455007365
+mse
+0.0005206818
+mae
+0.0051323655
+lr
+0.001
+
+test dataset
+
+
+  Epoch 38 
+validation dataset
+loss
+0.005079118927148626
+mse
+0.0005001936
+mae
+0.005079121
+lr
+0.001
+
+test dataset
+
+
+  Epoch 39 
+validation dataset
+loss
+0.004986054716332521
+mse
+0.00048840436
+mae
+0.004986055
+lr
+0.001
+
+test dataset
+
+
+  Epoch 40 
+validation dataset
+loss
+0.005032487948550853
+mse
+0.00048627672
+mae
+0.0050324854
+lr
+0.001
+
+test dataset
+
+
+  Epoch 41 
+validation dataset
+loss
+0.004992617693819339
+mse
+0.00047878915
+mae
+0.004992618
+lr
+0.001
+
+test dataset
+
+
+  Epoch 42 
+validation dataset
+loss
+0.004759598559701729
+mse
+0.00044456794
+mae
+0.0047596
+lr
+0.001
+
+test dataset
+
+
+  Epoch 43 
+validation dataset
+loss
+0.004793262582612253
+mse
+0.00043722035
+mae
+0.004793263
+lr
+0.001
+
+test dataset
+
+
+  Epoch 44 
+validation dataset
+loss
+0.004701346069639395
+mse
+0.00044016808
+mae
+0.004701346
+lr
+0.001
+
+test dataset
+
+
+  Epoch 45 
+validation dataset
+loss
+0.004619107931071392
+mse
+0.00041323647
+mae
+0.0046191057
+lr
+0.001
+
+test dataset
+
+
+  Epoch 46 
+validation dataset
+loss
+0.004756115928468229
+mse
+0.00045996724
+mae
+0.004756115
+lr
+0.001
+
+test dataset
+
+
+  Epoch 47 
+validation dataset
+loss
+0.004594051318846537
+mse
+0.00041646825
+mae
+0.0045940503
+lr
+0.001
+
+test dataset
+
+
+  Epoch 48 
+validation dataset
+loss
+0.004494903259270187
+mse
+0.00039744398
+mae
+0.0044949055
+lr
+0.001
+
+test dataset
+
+
+  Epoch 49 
+validation dataset
+loss
+0.00464673864399216
+mse
+0.00042268093
+mae
+0.0046467413
+lr
+0.001
+
+test dataset
+
+
+  Epoch 50 
+validation dataset
+loss
+0.004406530359338792
+mse
+0.00038299413
+mae
+0.004406532
+lr
+0.001
+
+test dataset
+
+
+  Epoch 51 
+validation dataset
+loss
+0.004356830884293108
+mse
+0.0003764401
+mae
+0.004356833
+lr
+0.001
+
+test dataset
+
+
+  Epoch 52 
+validation dataset
+loss
+0.004467813837864153
+mse
+0.000383344
+mae
+0.0044678138
+lr
+0.001
+
+test dataset
+
+
+  Epoch 53 
+validation dataset
+loss
+0.004391598266712009
+mse
+0.00037486156
+mae
+0.004391597
+lr
+0.001
+
+test dataset
+
+
+  Epoch 54 
+validation dataset
+loss
+0.004329140581199272
+mse
+0.0003615877
+mae
+0.004329142
+lr
+0.001
+
+test dataset
+
+
+  Epoch 55 
+validation dataset
+loss
+0.004386180658779242
+mse
+0.00038283828
+mae
+0.0043861805
+lr
+0.001
+
+test dataset
+
+
+  Epoch 56 
+validation dataset
+loss
+0.004174313281886453
+mse
+0.00034715762
+mae
+0.0041743154
+lr
+0.001
+
+test dataset
+
+
+  Epoch 57 
+validation dataset
+loss
+0.004267070378912952
+mse
+0.0003514051
+mae
+0.004267072
+lr
+0.001
+
+test dataset
+
+
+  Epoch 58 
+validation dataset
+loss
+0.00442387285022903
+mse
+0.00037357124
+mae
+0.0044238726
+lr
+0.001
+
+test dataset
+
+
+  Epoch 59 
+validation dataset
+loss
+0.004212936403217569
+mse
+0.00035275295
+mae
+0.0042129364
+lr
+0.001
+
+test dataset
+
+
+  Epoch 60 
+validation dataset
+loss
+0.004258068117106084
+mse
+0.00035552194
+mae
+0.004258069
+lr
+0.001
+
+test dataset
+
+
+  Epoch 61 
+validation dataset
+loss
+0.004151436154315951
+mse
+0.00032972803
+mae
+0.0041514332
+lr
+0.001
+
+test dataset
+
+
+  Epoch 62 
+validation dataset
+loss
+0.003925830207712612
+mse
+0.00031033094
+mae
+0.003925828
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 63 
+validation dataset
+loss
+0.0039709467200758145
+mse
+0.0003177457
+mae
+0.0039709476
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 64 
+validation dataset
+loss
+0.0038084631841700705
+mse
+0.0002971211
+mae
+0.0038084632
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 65 
+validation dataset
+loss
+0.0038812396664387678
+mse
+0.00030158213
+mae
+0.0038812393
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 66 
+validation dataset
+loss
+0.0038967652529495475
+mse
+0.00030874126
+mae
+0.0038967633
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 67 
+validation dataset
+loss
+0.003797436325835978
+mse
+0.00028874728
+mae
+0.0037974361
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 68 
+validation dataset
+loss
+0.0038514876128373115
+mse
+0.0002921005
+mae
+0.0038514885
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 69 
+validation dataset
+loss
+0.003675287765814166
+mse
+0.00027823332
+mae
+0.0036752885
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 70 
+validation dataset
+loss
+0.003900459432231633
+mse
+0.00029534614
+mae
+0.0039004602
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 71 
+validation dataset
+loss
+0.0037754908152759317
+mse
+0.00028805627
+mae
+0.0037754893
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 72 
+validation dataset
+loss
+0.003753780802863822
+mse
+0.00028449367
+mae
+0.0037537816
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 73 
+validation dataset
+loss
+0.003711945681063212
+mse
+0.00027496132
+mae
+0.0037119472
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 74 
+validation dataset
+loss
+0.003739408233315725
+mse
+0.00027702263
+mae
+0.003739407
+lr
+0.000707
+
+test dataset
+
+
+  Epoch 75 
+validation dataset
+loss
+0.003655833179816881
+mse
+0.00028827315
+mae
+0.003655833
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 76 
+validation dataset
+loss
+0.0035540836667305874
+mse
+0.00026639496
+mae
+0.0035540818
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 77 
+validation dataset
+loss
+0.0034332654596530656
+mse
+0.00025512316
+mae
+0.0034332653
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 78 
+validation dataset
+loss
+0.003504376411355238
+mse
+0.00025717483
+mae
+0.0035043752
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 79 
+validation dataset
+loss
+0.003450688310294653
+mse
+0.00025440118
+mae
+0.0034506875
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 80 
+validation dataset
+loss
+0.003512457645271716
+mse
+0.00025369076
+mae
+0.0035124558
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 81 
+validation dataset
+loss
+0.003431090324410473
+mse
+0.00024673558
+mae
+0.0034310909
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 82 
+validation dataset
+loss
+0.0034496696440942756
+mse
+0.000252594
+mae
+0.0034496686
+lr
+0.00049984903
+
+test dataset
+
+
+  Epoch 83 
+validation dataset
+loss
+0.0033338350280424384
+mse
+0.00024131752
+mae
+0.003333834
+lr
+0.00035339326
+
+test dataset
+
+
+  Epoch 84 
+validation dataset
+loss
+0.003276713574494337
+mse
+0.00023984918
+mae
+0.0032767153
+lr
+0.00035339326
+
+test dataset
+
+
+  Epoch 85 
+validation dataset
+loss
+0.003241374244104985
+mse
+0.00023521134
+mae
+0.0032413735
+lr
+0.00035339326
+
+test dataset
+
+
+  Epoch 86 
+validation dataset
+loss
+0.003282563308784918
+mse
+0.00023712074
+mae
+0.0032825626
+lr
+0.00035339326
+
+test dataset
+
+
+  Epoch 87 
+validation dataset
+loss
+0.003223786035621278
+mse
+0.00023422597
+mae
+0.003223785
+lr
+0.00035339326
+
+test dataset
+
+
+  Epoch 88 
+validation dataset
+loss
+0.003302420113165196
+mse
+0.00023955811
+mae
+0.0033024196
+lr
+0.00035339326
+
+test dataset
+
+
+  Epoch 89 
+validation dataset
+loss
+0.0032646585427593892
+mse
+0.00023581619
+mae
+0.0032646584
+lr
+0.00035339326
+
+test dataset
+
+
+  Epoch 90 
+validation dataset
+loss
+0.0031601520964181944
+mse
+0.00023021954
+mae
+0.0031601526
+lr
+0.00024984905
+
+test dataset
+
+
+  Epoch 91 
+validation dataset
+loss
+0.0030958534235959842
+mse
+0.00022647387
+mae
+0.003095853
+lr
+0.00024984905
+
+test dataset
+
+
+  Epoch 92 
+validation dataset
+loss
+0.0031056303823294757
+mse
+0.00022553586
+mae
+0.0031056297
+lr
+0.00024984905
+
+test dataset
+
+
+  Epoch 93 
+validation dataset
+loss
+0.003098414665508423
+mse
+0.00022516052
+mae
+0.0030984145
+lr
+0.00024984905
+
+test dataset
+
+
+  Epoch 94 
+validation dataset
+loss
+0.003100363280012801
+mse
+0.00022376169
+mae
+0.0031003645
+lr
+0.00024984905
+
+test dataset
+
+
+  Epoch 95 
+validation dataset
+loss
+0.0030930291100761667
+mse
+0.0002248136
+mae
+0.00309303
+lr
+0.00024984905
+
+test dataset
+
+
+  Epoch 96 
+validation dataset
+loss
+0.003031333565658861
+mse
+0.00022151919
+mae
+0.0030313327
+lr
+0.00017664328
+
+test dataset
+
+
+  Epoch 97 
+validation dataset
+loss
+0.003002794989508088
+mse
+0.00022041205
+mae
+0.0030027947
+lr
+0.00017664328
+
+test dataset
+
+
+  Epoch 98 
+validation dataset
+loss
+0.0030034522301709914
+mse
+0.00021941937
+mae
+0.003003452
+lr
+0.00017664328
+
+test dataset
+
+
+  Epoch 99 
+validation dataset
+loss
+0.0030017714407847775
+mse
+0.00021938434
+mae
+0.0030017714
+lr
+0.00017664328
+
+test dataset
+
+
+  Epoch 100 
+validation dataset
+loss
+0.00298422650905212
+mse
+0.00021885183
+mae
+0.0029842267
+lr
+0.00017664328
+
+test dataset
+
+
+  Epoch 101 
+validation dataset
+loss
+0.0029908656991123367
+mse
+0.00021836202
+mae
+0.0029908665
+lr
+0.00017664328
+
+test dataset
+
+
+  Epoch 102 
+validation dataset
+loss
+0.0029639078372096198
+mse
+0.00021705797
+mae
+0.0029639076
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 103 
+validation dataset
+loss
+0.0029395563514651593
+mse
+0.00021593279
+mae
+0.002939555
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 104 
+validation dataset
+loss
+0.0029162361854225194
+mse
+0.00021567583
+mae
+0.0029162373
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 105 
+validation dataset
+loss
+0.002906952334970937
+mse
+0.00021513467
+mae
+0.002906953
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 106 
+validation dataset
+loss
+0.0029032223635041448
+mse
+0.000214668
+mae
+0.002903223
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 107 
+validation dataset
+loss
+0.0029186780474761403
+mse
+0.0002143926
+mae
+0.0029186783
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 108 
+validation dataset
+loss
+0.0029082656598253863
+mse
+0.00021434757
+mae
+0.0029082661
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 109 
+validation dataset
+loss
+0.00290802526264626
+mse
+0.0002142639
+mae
+0.0029080254
+lr
+0.0001248868
+
+test dataset
+
+
+  Epoch 110 
+validation dataset
+loss
+0.002880830968118235
+mse
+0.00021270174
+mae
+0.002880832
+lr
+8.8294975e-05
+
+test dataset
+
+
+  Epoch 111 
+validation dataset
+loss
+0.002859404217526952
+mse
+0.0002124143
+mae
+0.0028594048
+lr
+8.8294975e-05
+
+test dataset
+
+
+  Epoch 112 
+validation dataset
+loss
+0.002861503579742798
+mse
+0.00021203997
+mae
+0.0028615033
+lr
+8.8294975e-05
+
+test dataset
+
+
+  Epoch 113 
+validation dataset
+loss
+0.00285748373151276
+mse
+0.00021225683
+mae
+0.0028574842
+lr
+8.8294975e-05
+
+test dataset
+
+
+  Epoch 114 
+validation dataset
+loss
+0.002854685961046257
+mse
+0.0002115074
+mae
+0.002854686
+lr
+8.8294975e-05
+
+test dataset
+
+
+  Epoch 115 
+validation dataset
+loss
+0.0028398157609086133
+mse
+0.00021143814
+mae
+0.0028398156
+lr
+6.2424544e-05
+
+test dataset
+
+
+  Epoch 116 
+validation dataset
+loss
+0.002822739048709934
+mse
+0.00021089046
+mae
+0.0028227393
+lr
+6.2424544e-05
+
+test dataset
+
+
+  Epoch 117 
+validation dataset
+loss
+0.0028243680448161506
+mse
+0.00021069952
+mae
+0.002824367
+lr
+6.2424544e-05
+
+test dataset
+
+
+  Epoch 118 
+validation dataset
+loss
+0.0028290176730971905
+mse
+0.00021085978
+mae
+0.002829018
+lr
+6.2424544e-05
+
+test dataset
+
+
+  Epoch 119 
+validation dataset
+loss
+0.0028337973980253573
+mse
+0.0002106271
+mae
+0.002833797
+lr
+6.2424544e-05
+
+test dataset
+
+
+  Epoch 120 
+validation dataset
+loss
+0.0028066868944022563
+mse
+0.00020988582
+mae
+0.002806686
+lr
+4.413415e-05
+
+test dataset
+
+
+  Epoch 121 
+validation dataset
+loss
+0.002801010844833005
+mse
+0.00020990691
+mae
+0.00280101
+lr
+4.413415e-05
+
+test dataset
+
+
+  Epoch 122 
+validation dataset
+loss
+0.002795864663522031
+mse
+0.00020971791
+mae
+0.0027958646
+lr
+4.413415e-05
+
+test dataset
+
+
+  Epoch 123 
+validation dataset
+loss
+0.0027958862329997267
+mse
+0.00020960195
+mae
+0.0027958853
+lr
+4.413415e-05
+
+test dataset
+
+
+  Epoch 124 
+validation dataset
+loss
+0.0027945494845849645
+mse
+0.00020947619
+mae
+0.0027945484
+lr
+4.413415e-05
+
+test dataset
+
+
+  Epoch 125 
+validation dataset
+loss
+0.002796272846716309
+mse
+0.00020936056
+mae
+0.002796273
+lr
+4.413415e-05
+
+test dataset
+
+
+  Epoch 126 
+validation dataset
+loss
+0.002782971841477499
+mse
+0.00020907623
+mae
+0.002782972
+lr
+3.1202846e-05
+
+test dataset
+
+
+  Epoch 127 
+validation dataset
+loss
+0.0027806335005274435
+mse
+0.00020893475
+mae
+0.0027806326
+lr
+3.1202846e-05
+
+test dataset
+
+
+  Epoch 128 
+validation dataset
+loss
+0.002779649873963795
+mse
+0.00020894379
+mae
+0.00277965
+lr
+3.1202846e-05
+
+test dataset
+
+
+  Epoch 129 
+validation dataset
+loss
+0.0027792903141365182
+mse
+0.00020875834
+mae
+0.0027792898
+lr
+3.1202846e-05
+
+test dataset
+
+
+  Epoch 130 
+validation dataset
+loss
+0.002779011193905238
+mse
+0.00020873542
+mae
+0.002779012
+lr
+3.1202846e-05
+
+test dataset
+
+
+  Epoch 131 
+validation dataset
+loss
+0.0027694255794086116
+mse
+0.00020863161
+mae
+0.0027694271
+lr
+2.2060412e-05
+
+test dataset
+
+
+  Epoch 132 
+validation dataset
+loss
+0.002766544003456255
+mse
+0.0002084603
+mae
+0.0027665438
+lr
+2.2060412e-05
+
+test dataset
+
+
+  Epoch 133 
+validation dataset
+loss
+0.002766391575884783
+mse
+0.00020833767
+mae
+0.002766392
+lr
+2.2060412e-05
+
+test dataset
+
+
+  Epoch 134 
+validation dataset
+loss
+0.0027648979529025326
+mse
+0.00020838315
+mae
+0.0027648981
+lr
+2.2060412e-05
+
+test dataset
+
+
+  Epoch 135 
+validation dataset
+loss
+0.0027655423441520248
+mse
+0.0002082917
+mae
+0.002765543
+lr
+2.2060412e-05
+
+test dataset
+
+
+  Epoch 136 
+validation dataset
+loss
+0.0027602148714850642
+mse
+0.00020819838
+mae
+0.0027602152
+lr
+1.5596712e-05
+
+test dataset
+
+
+  Epoch 137 
+validation dataset
+loss
+0.0027575857257560277
+mse
+0.0002081532
+mae
+0.0027575872
+lr
+1.5596712e-05
+
+test dataset
+
+
+  Epoch 138 
+validation dataset
+loss
+0.0027567630522784166
+mse
+0.00020809816
+mae
+0.0027567635
+lr
+1.5596712e-05
+
+test dataset
+
+
+  Epoch 139 
+validation dataset
+loss
+0.0027559784343727228
+mse
+0.0002081128
+mae
+0.0027559786
+lr
+1.5596712e-05
+
+test dataset
+
+
+  Epoch 140 
+validation dataset
+loss
+0.002755104844812434
+mse
+0.00020800008
+mae
+0.0027551053
+lr
+1.5596712e-05
+
+test dataset
+
+
+  Epoch 141 
+validation dataset
+loss
+0.0027525228239455527
+mse
+0.00020790217
+mae
+0.0027525225
+lr
+1.1026876e-05
+
+test dataset
+
+
+  Epoch 142 
+validation dataset
+loss
+0.0027504178103983723
+mse
+0.00020789851
+mae
+0.0027504186
+lr
+1.1026876e-05
+
+test dataset
+
+
+  Epoch 143 
+validation dataset
+loss
+0.0027489623232649363
+mse
+0.0002078771
+mae
+0.0027489618
+lr
+1.1026876e-05
+
+test dataset
+
+
+  Epoch 144 
+validation dataset
+loss
+0.0027484297927843158
+mse
+0.00020785729
+mae
+0.00274843
+lr
+1.1026876e-05
+
+test dataset
+
+
+  Epoch 145 
+validation dataset
+loss
+0.0027483493842703254
+mse
+0.00020780301
+mae
+0.002748349
+lr
+1.1026876e-05
+
+test dataset
+
+
+  Epoch 146 
+validation dataset
+loss
+0.0027470317876220987
+mse
+0.00020776723
+mae
+0.0027470326
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 147 
+validation dataset
+loss
+0.0027476888736299825
+mse
+0.00020775135
+mae
+0.0027476894
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 148 
+validation dataset
+loss
+0.002745080032939392
+mse
+0.00020777175
+mae
+0.0027450805
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 149 
+validation dataset
+loss
+0.002746368419395386
+mse
+0.00020768223
+mae
+0.0027463695
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 150 
+validation dataset
+loss
+0.0027457855258304444
+mse
+0.00020765053
+mae
+0.0027457864
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 151 
+validation dataset
+loss
+0.002745241019436239
+mse
+0.00020771478
+mae
+0.0027452419
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 152 
+validation dataset
+loss
+0.0027451987600550652
+mse
+0.00020758368
+mae
+0.0027451976
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 153 
+validation dataset
+loss
+0.002744405289868882
+mse
+0.00020752817
+mae
+0.002744405
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 154 
+validation dataset
+loss
+0.0027438209125438657
+mse
+0.00020758051
+mae
+0.002743821
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 155 
+validation dataset
+loss
+0.0027439523220461393
+mse
+0.00020759112
+mae
+0.0027439524
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 156 
+validation dataset
+loss
+0.0027433207790009614
+mse
+0.00020738965
+mae
+0.0027433196
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 157 
+validation dataset
+loss
+0.002743081367020349
+mse
+0.00020757435
+mae
+0.002743082
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 158 
+validation dataset
+loss
+0.002742909330765333
+mse
+0.00020750552
+mae
+0.0027429098
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 159 
+validation dataset
+loss
+0.0027420247972851706
+mse
+0.00020745047
+mae
+0.0027420246
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 160 
+validation dataset
+loss
+0.0027422948787178495
+mse
+0.00020741996
+mae
+0.002742296
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 161 
+validation dataset
+loss
+0.002741615019856416
+mse
+0.00020738046
+mae
+0.0027416153
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 162 
+validation dataset
+loss
+0.0027413225102282624
+mse
+0.00020736517
+mae
+0.0027413233
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 163 
+validation dataset
+loss
+0.002740738382653025
+mse
+0.00020737051
+mae
+0.0027407382
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 164 
+validation dataset
+loss
+0.0027413434758287013
+mse
+0.00020734414
+mae
+0.0027413424
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 165 
+validation dataset
+loss
+0.002739757099196305
+mse
+0.00020728548
+mae
+0.0027397578
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 166 
+validation dataset
+loss
+0.002740689257167801
+mse
+0.00020726398
+mae
+0.0027406903
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 167 
+validation dataset
+loss
+0.0027392502383736415
+mse
+0.00020719395
+mae
+0.0027392504
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 168 
+validation dataset
+loss
+0.002739198069955979
+mse
+0.00020721264
+mae
+0.002739198
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 169 
+validation dataset
+loss
+0.002738812229950052
+mse
+0.00020723116
+mae
+0.002738811
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 170 
+validation dataset
+loss
+0.0027383329405347473
+mse
+0.00020721028
+mae
+0.002738333
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 171 
+validation dataset
+loss
+0.002738992955254383
+mse
+0.00020718486
+mae
+0.0027389925
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 172 
+validation dataset
+loss
+0.002737998979476812
+mse
+0.00020706911
+mae
+0.0027379983
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 173 
+validation dataset
+loss
+0.0027372979057117097
+mse
+0.00020711402
+mae
+0.002737298
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 174 
+validation dataset
+loss
+0.002738408596053267
+mse
+0.00020711093
+mae
+0.0027384097
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 175 
+validation dataset
+loss
+0.0027373920544986486
+mse
+0.00020703333
+mae
+0.0027373924
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 176 
+validation dataset
+loss
+0.0027361760546761827
+mse
+0.0002070393
+mae
+0.0027361766
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 177 
+validation dataset
+loss
+0.002737218841704934
+mse
+0.00020703177
+mae
+0.0027372176
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 178 
+validation dataset
+loss
+0.0027364824744515004
+mse
+0.00020694855
+mae
+0.0027364818
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 179 
+validation dataset
+loss
+0.0027355400339625557
+mse
+0.0002069955
+mae
+0.002735541
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 180 
+validation dataset
+loss
+0.002737754437657998
+mse
+0.00020697751
+mae
+0.0027377543
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 181 
+validation dataset
+loss
+0.002736213330099381
+mse
+0.00020683993
+mae
+0.002736213
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 182 
+validation dataset
+loss
+0.0027354216289339653
+mse
+0.00020682077
+mae
+0.0027354218
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 183 
+validation dataset
+loss
+0.002735326974282089
+mse
+0.00020689545
+mae
+0.0027353268
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 184 
+validation dataset
+loss
+0.0027350583407094323
+mse
+0.00020683945
+mae
+0.0027350585
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 185 
+validation dataset
+loss
+0.0027342220777744172
+mse
+0.00020683436
+mae
+0.0027342227
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 186 
+validation dataset
+loss
+0.00273489014506875
+mse
+0.00020680272
+mae
+0.0027348897
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 187 
+validation dataset
+loss
+0.002733698143068742
+mse
+0.00020683352
+mae
+0.0027336979
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 188 
+validation dataset
+loss
+0.0027342636212211147
+mse
+0.00020676784
+mae
+0.0027342632
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 189 
+validation dataset
+loss
+0.0027328025830624576
+mse
+0.00020671058
+mae
+0.0027328029
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 190 
+validation dataset
+loss
+0.0027336670853985515
+mse
+0.00020675673
+mae
+0.0027336662
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 191 
+validation dataset
+loss
+0.0027324943833222067
+mse
+0.00020663835
+mae
+0.0027324932
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 192 
+validation dataset
+loss
+0.002733000252581387
+mse
+0.00020669476
+mae
+0.0027329999
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 193 
+validation dataset
+loss
+0.002732952929010093
+mse
+0.000206659
+mae
+0.0027329528
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 194 
+validation dataset
+loss
+0.0027321081737863738
+mse
+0.0002066247
+mae
+0.002732109
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 195 
+validation dataset
+loss
+0.0027324368289412333
+mse
+0.00020656762
+mae
+0.0027324366
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 196 
+validation dataset
+loss
+0.002730954632321186
+mse
+0.00020656067
+mae
+0.0027309551
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 197 
+validation dataset
+loss
+0.0027309271435261217
+mse
+0.00020658105
+mae
+0.002730928
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 198 
+validation dataset
+loss
+0.0027309131648138394
+mse
+0.00020650691
+mae
+0.0027309128
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 199 
+validation dataset
+loss
+0.002731226432431927
+mse
+0.00020652586
+mae
+0.002731226
+lr
+1e-05
+
+test dataset
+
+
+  Epoch 200 
+validation dataset
+loss
+0.002730686413868522
+mse
+0.00020645614
+mae
+0.0027306871
+lr
+1e-05
+
+test dataset
+
+

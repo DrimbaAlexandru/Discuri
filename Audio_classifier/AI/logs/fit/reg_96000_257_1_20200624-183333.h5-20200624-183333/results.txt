@@ -1,0 +1,33 @@
+reg_96000_257_1_20200624-183333.h5
+Number of learning samples: 671744
+Number of validation samples: 0
+Number of testing samples: 0
+
+  Epoch 1 
+validation dataset
+loss
+0.01640342894279499
+mse
+0.0049157613
+mae
+0.016403425
+lr
+0.001
+
+test dataset
+
+
+  Epoch 2 
+validation dataset
+loss
+0.015709917955551652
+mse
+0.00473964
+mae
+0.015709924
+lr
+0.001
+
+test dataset
+
+
